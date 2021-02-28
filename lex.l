@@ -24,6 +24,19 @@ plus [+]
 minus [-]
 equal [=]
 multiply [*]
+if [if]
+else [else]
+elif [elif]
+or [or]
+and [and]
+not [not]
+lt [<]
+gt [>]
+le [<=]
+ge [>=]
+ee [==]
+while [while]
+
 
 
 /* TRANSITION RULES */
@@ -35,7 +48,19 @@ multiply [*]
 {plus}                                  {return PLUS;}
 {minus}                                 {return MINUS;}
 {multiply}                              {return MULTIPLY;}
-{equal}                                 {return EQUALTO;}				
+{equal}                                 {return EQUALTO;}
+{if}                                    {return IF;}
+{elif}                                  {return ELIF;}
+{else}                                  {return ELSE;}
+{or}                                    {return OR;}
+{and}                                   {return AND;}
+{not}                                   {return NOT;}
+{lt}                                    {return LT;}
+{gt}                                    {return GT;}
+{le}                                    {return LE;}
+{ge}                                    {return GE;}
+{ee}                                    {return EE;}
+{while}                                 {return WHILE;}
 
 {letter}+{digit}?                       {strcpy(yylval.string, yytext);return IDENTIFIER;}
 ({plus}|{minus})?{digit}+				{strcpy(yylval.string, yytext);return NUMBER;}

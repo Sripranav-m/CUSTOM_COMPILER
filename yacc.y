@@ -33,6 +33,18 @@
 %token MINUS
 %token MULTIPLY
 %token EQUALTO
+%token IF
+%token ELSE
+%token ELIF
+%token OR
+%token AND
+%token NOT
+%token LT
+%token GT
+%token LE
+%token GE
+%token EE
+%token WHILE;
 
 %left PLUS
 %left MULTIPLY
@@ -60,20 +72,36 @@ PROGRAM : OFB STATEMENT CFB ;
 STATEMENT 	: LINE 
 			| LINE STATEMENT ;
 
-LINE : IDENTIFIER{push($1);} EQUALTO{push("=");} E  {codegen_assign();} SEMICOLON;
+LINE 	: IDENTIFIER{push($1);} EQUALTO{push("=");} AE  {codegen_assign();} SEMICOLON;  // AE is Arithmetic Expression
+		| IF ONB BE CNB OFB STATEMENT CFB ELSE STATEMENT SEMICOLON ;
+		| WHILE ONB BE CNB OFB STATEMENT CFB SEMICOLON;
 
-E 	: E PLUS{push("+");} T  {codegen();}
-	| E MINUS{push("-");} T  {codegen();}
+BE 	: BE OR BE ;
+	| BE AND BE ;
+	| NOT BE ;
+	| ONB BE CNB ;
+	| AE RELOP AE ;
+
+RELOP 	: LE;
+		| GE;
+		| LT;
+		| GT;
+		| EE;
+
+
+AE 	: AE PLUS{push("+");} T  {codegen();}
+	| AE MINUS{push("-");} T  {codegen();}
 	| T ;
 
 T 	: T MULTIPLY{push("*");} F {codegen();} 
 	| F;
 
-F 	: ONB E CNB 
+F 	: ONB AE CNB 
 	| MINUS{push("-");} F  {codegen_assign_unary_minus();} 
 	| IDENTIFIER{push($1);} 
 	| NUMBER{push($1);} ;
 
+BE : AE;
 
 %%
 /* Rules Section ends here */
