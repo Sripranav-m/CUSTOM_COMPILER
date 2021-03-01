@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "y.tab.h"
+#include "y.tab.hpp"
 extern char mytext[10000];
 %}
 
@@ -37,6 +37,7 @@ le [<=]
 ge [>=]
 ee [==]
 while [while]
+for [for]
 
 
 
@@ -45,28 +46,61 @@ while [while]
 
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
 
-{int}			                        {return INT;}
-{plus}                                  {return PLUS;}
-{minus}                                 {return MINUS;}
-{multiply}                              {return MULTIPLY;}
-{equal}                                 {return EQUALTO;}
-{if}                                    {return IF;}
-{elif}                                  {return ELIF;}
-{else}                                  {return ELSE;}
-{or}                                    {return OR;}
-{and}                                   {return AND;}
-{not}                                   {return NOT;}
-{lt}                                    {return LT;}
-{gt}                                    {return GT;}
-{le}                                    {return LE;}
-{ge}                                    {return GE;}
-{ee}                                    {return EE;}
-{while}                                 {return WHILE;}
+integer			                        {return INT;}
+"+"                                     {return PLUS;}
+"-"                                 {return MINUS;}
+"*"                              {return MULTIPLY;}
+"="                                 {return EQUALTO;}
+if                                    {return IF;}
+elif                                  {return ELIF;}
+else                                 {return ELSE;}
+"||"                                    {return OR;}
+"&&"                                   {return AND;}
+"!"                                   {return NOT;}
+"<"                                    {return LT;}
+">"                                    {return GT;}
+"<="                                    {return LE;}
+">="                                    {return GE;}
+"=="                                    {return EE;}
+
+
+
+
+
+
+
+
+for {
+    return FOR;
+}
+
+while {
+    return WHILE;
+}
+
+break {
+    return BREAK;
+}
+
+continue {
+    return CONTINUE;
+}
+
+return {
+    return RETURN;
+}
+
+print {
+    return PRINT;
+}
+
+scan {
+    return SCAN;
+}
 
 {letter}+{digit}?                       {strcpy(mytext, yytext);return IDENTIFIER;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return IDENTIFIER;}
 ({plus}|{minus})?{digit}+				{strcpy(mytext, yytext);return NUMBER;}
-
 
 
 ","										{return COMMA;}
@@ -75,6 +109,11 @@ while [while]
 "}"										{return CFB;}
 "("                                     {return ONB;}
 ")"                                     {return CNB;}
+"["                                     {return OSQB;}
+"]"                                     {return CSQB;}
+":"                                     {return COLON;}
+"++"                                    {return INC;}
+"--"                                    {return DEC;}
 [ \t\r\n]	                                        ;
 .                                                   ;
 
@@ -90,6 +129,6 @@ while [while]
 /* If the programmer wishes to scan more than one input file using the generated lexical analyzer, it can be simply done by setting yyin to a new input file in yywrap() and return 0. */
 
 
-// int yywrap(){
-//     return 1;
-// }
+int yywrap(void){
+    return 1;
+}
