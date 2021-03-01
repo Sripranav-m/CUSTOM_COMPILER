@@ -54,7 +54,8 @@
 %token LE
 %token GE
 %token EE
-%token WHILE;
+%token WHILE
+%token FUNCTION_IDENTIFIER;
 
 %left PLUS
 %left MULTIPLY
@@ -70,7 +71,18 @@
 %type<node> DECLARATION
 %type<node> VARIABLE_DECLARATION
 %type<node> VARIABLE_TYPE
-%type<node> SEMICOLON
+%type<node> STATEMENT_LIST
+%type<node> STATEMENT
+%type<node> ASSIGNMENT_STATEMENT
+%type<node> IDENTIFIER_NT
+%type<node> EXPRESSION
+%type<node> PEXPRESSION
+%type<node> INTEGER
+%type<node> FUNCTION_DECLARATION
+%type<node> FUNCTION_IDENTIFIER_NT;
+%type<node> COMPOUND_STATEMENT
+%type<node> LOCAL_DECLARATION_LIST
+%type<node> LOCAL_DECLARATION
 
 /* End of YACC declarations */
 
@@ -79,6 +91,7 @@
 /* Rules Section begins here */
 
 %%
+
 
 PROGRAM : DECLARATION_LIST {
 							vector<TreeNode*> v={$1};
@@ -99,16 +112,123 @@ DECLARATION_LIST : DECLARATION_LIST DECLARATION{
 
 DECLARATION : VARIABLE_DECLARATION	{
 									vector<TreeNode*> v={$1};
-									$$=new TreeNode("VARIABLE_DECLARATION",v);
-									};
+									$$=new TreeNode("DECLARATION",v);
+									}
+			| FUNCTION_DECLARATION {
+				vector<TreeNode*> v={$1};
+				$$=new TreeNode("DECLARATION",v);
+			};
 
 								
 VARIABLE_DECLARATION : VARIABLE_TYPE IDENTIFIER SEMICOLON {
-															vector<treeNode*> v = {$1, $2, $3};
-                                        					$$ = new treeNode("var_decl", v); 
+															$3=new TreeNode("SEMICOLON");
+															vector<TreeNode*> v = {$1, $2, $3};
+                                        					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
 															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
-															}
+															};
+
+
+FUNCTION_DECLARATION : VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
+																								$3 = new TreeNode("ONB"); $5 = new TreeNode("CNB");
+																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
+																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
+																							}
+
+
+STATEMENT_LIST : STATEMENT_LIST STATEMENT {
+										vector<TreeNode*> v = {$1, $2};
+                                        $$ = new TreeNode("STATEMENT_LIST", v); 
+										}
+				| STATEMENT {
+							vector<TreeNode*> v = {$1};
+                            $$ = new TreeNode("STATEMENT_LIST", v); 
+							} ;
+
+
+STATEMENT : ASSIGNMENT_STATEMENT {
+								vector<TreeNode*> v = {$1};
+                        		$$ = new TreeNode("STATEMENT", v);
+								}
+			| COMPOUND_STATEMENT {
+				vector<TreeNode*> v = {$1};
+                $$ = new TreeNode("STATEMENT", v);
+			}
+
+
+COMPOUND_STATEMENT: OFB LOCAL_DECLARATION_LIST STATEMENT_LIST CFB    {
+                                                    $1 = new TreeNode("OFB"); $4 = new TreeNode("CFB");
+                                                    vector<TreeNode*> v = {$1, $2, $3, $4};
+                                                    $$ = new TreeNode("COMPOUND_STATEMENT", v);
+                                                };
+
+
+LOCAL_DECLARATION_LIST : LOCAL_DECLARATION_LIST LOCAL_DECLARATION {
+																vector<TreeNode*> v = {$1, $2};
+                                        						$$ = new TreeNode("LOCAL_DECLARATION_LIST", v);
+																}
+						| 	{
+							TreeNode* x = new TreeNode("EPSILON");
+							vector<TreeNode*> v = {x};
+							$$ = new TreeNode("LOCAL_DECLARATION_LIST", v);
+						};
+
+
+LOCAL_DECLARATION : VARIABLE_TYPE IDENTIFIER SEMICOLON {
+															$3=new TreeNode("SEMICOLON");
+															vector<TreeNode*> v = {$1, $2, $3};
+                                        					$$ = new TreeNode("LOCAL_DECLARATION", v);
+															Num_variables++;
+															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															};
+
+
+
+ASSIGNMENT_STATEMENT : IDENTIFIER_NT EQUALTO EXPRESSION SEMICOLON {									// Identifier and Expression are given as children to EQUAL TO OPERATOR IN SYNTAX TREE.
+																vector<TreeNode*> v={$1,$3};
+																$2=new TreeNode("EQUALTO",v);
+																$4=new TreeNode("SEMICOLON");
+																vector<TreeNode*> u={$2,$4};
+																$$=new TreeNode("ASSIGNMENT_STATEMENT",u);
+																};
+
+
+EXPRESSION : PEXPRESSION {	
+						vector<TreeNode*> v={$1};
+						$$=new TreeNode("EXPRESSION",v);
+						};
+
+
+PEXPRESSION : INTEGER {	
+					vector<TreeNode*> v={$1};
+					$$=new TreeNode("PEXPRESSION",v);
+					}
+			| IDENTIFIER_NT {
+				vector<TreeNode*> v={$1};
+				$$=new TreeNode("PEXPRESSION",v);
+			| ONB EXPRESSION CNB {
+				$1 = new TreeNode("ONB"); $3 = new TreeNode("CNB");
+                vector<TreeNode*> v = {$1, $2, $3};
+                $$ = new TreeNode("PEXPRESSION", v);
+			}
+			};
+
+
+INTEGER : NUMBER {
+				$1 = new TreeNode("NUMBER");
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("INTEGER", v);
+				$$->lexValue = mytext;
+				};
+
+
+IDENTIFIER_NT : IDENTIFIER {
+							$1 = new TreeNode("IDENTIFIER");
+                            vector<TreeNode*> v = {$1};
+                            $$ = new TreeNode("IDENTIFIER_NT", v);
+                            $$->lexValue = mytext;
+						} 
+
 
 %%
 /* Rules Section ends here */

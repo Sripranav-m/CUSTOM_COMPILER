@@ -64,6 +64,7 @@ while [while]
 {while}                                 {return WHILE;}
 
 {letter}+{digit}?                       {strcpy(mytext, yytext);return IDENTIFIER;}
+{underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return IDENTIFIER;}
 ({plus}|{minus})?{digit}+				{strcpy(mytext, yytext);return NUMBER;}
 
 
