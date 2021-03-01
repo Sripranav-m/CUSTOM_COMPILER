@@ -6,15 +6,25 @@
 	#include <string.h>
 	int yylex();
 	int yyerror(char *);
-	char st[100][100];
-	int top=0;
-	char temp[2]="t";
-	char temp_num=0;
-	void codegen_assign_unary_minus();
-	void codegen();
-	void push();
-	void codegen_assign();
-	void append(char* s, char c);
+	char mytext[10000]; // get from lex file.
+	class TreeNode {
+        public:
+            vector<TreeNode*> children;   // children
+            string NodeName;              // name of the node
+            string lex_val;               // lexical value, name of identifier etc.
+            int level;	                  // for printing
+            TreeNode(string NodeName, vector<TreeNode*> children) {
+                this->NodeName = NodeName;
+                this->children = children;
+            }
+            TreeNode(string NodeName) {  // for leaf nodes(No children nodes)
+                this->NodeName = NodeName;
+                children.assign(0, NULL);
+            }
+    };
+	TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
+	int Num_variables=0;
+	map<string, int> stck;
 %}
 /* End of C declarations */
 
@@ -52,11 +62,15 @@
 %right EQUALTO
 
 %union{
-	char string[100];
+	class TreeNode* node;
 }
 
-%type<string> NUMBER
-%type<string> IDENTIFIER
+%type<node> PROGRAM
+%type<node> DECLARATION_LIST
+%type<node> DECLARATION
+%type<node> VARIABLE_DECLARATION
+%type<node> VARIABLE_TYPE
+%type<node> SEMICOLON
 
 /* End of YACC declarations */
 
@@ -66,42 +80,35 @@
 
 %%
 
-
-PROGRAM : OFB STATEMENT CFB ;
-
-STATEMENT 	: LINE 
-			| LINE STATEMENT ;
-
-LINE 	: IDENTIFIER{push($1);} EQUALTO{push("=");} AE  {codegen_assign();} SEMICOLON;  // AE is Arithmetic Expression
-		| IF ONB BE CNB OFB STATEMENT CFB ELSE STATEMENT SEMICOLON ;
-		| WHILE ONB BE CNB OFB STATEMENT CFB SEMICOLON;
-
-BE 	: BE OR BE ;
-	| BE AND BE ;
-	| NOT BE ;
-	| ONB BE CNB ;
-	| AE RELOP AE ;
-
-RELOP 	: LE;
-		| GE;
-		| LT;
-		| GT;
-		| EE;
+PROGRAM : DECLARATION_LIST {
+							vector<TreeNode*> v={$1};
+							$$=new TreeNode("PROGRAM",v);
+							Abstract_Syntax_Tree=$$;
+							};
 
 
-AE 	: AE PLUS{push("+");} T  {codegen();}
-	| AE MINUS{push("-");} T  {codegen();}
-	| T ;
+DECLARATION_LIST : DECLARATION_LIST DECLARATION{
+												vector<TreeNode*> v={$1,$2};
+												$$=new TreeNode("DECLARATION_LIST",v);
+												}
+				| DECLARATION {
+								vector<TreeNode*> v={$1};
+								$$=new TreeNode("DECLARATION",v);
+							} ;
 
-T 	: T MULTIPLY{push("*");} F {codegen();} 
-	| F;
 
-F 	: ONB AE CNB 
-	| MINUS{push("-");} F  {codegen_assign_unary_minus();} 
-	| IDENTIFIER{push($1);} 
-	| NUMBER{push($1);} ;
+DECLARATION : VARIABLE_DECLARATION	{
+									vector<TreeNode*> v={$1};
+									$$=new TreeNode("VARIABLE_DECLARATION",v);
+									};
 
-BE : AE;
+								
+VARIABLE_DECLARATION : VARIABLE_TYPE IDENTIFIER SEMICOLON {
+															vector<treeNode*> v = {$1, $2, $3};
+                                        					$$ = new treeNode("var_decl", v); 
+															Num_variables++;
+															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															}
 
 %%
 /* Rules Section ends here */
@@ -117,32 +124,7 @@ int main(int argc,char** argv){
 	return 0;
 }
 
-void push(char* string){
-	strcpy(st[++top],string);
-}
 
-void codegen(){
-	strcpy(temp,"t");
-	sprintf(temp, "%s%d", temp, temp_num);
-	temp_num++;
-	printf("%s = %s %s %s\n",temp,st[top-2],st[top-1],st[top]);
-	top-=2;
-	strcpy(st[top],temp);
-}
-
-void codegen_assign(){
-	printf("%s %s %s\n",st[top-2],st[top-1],st[top]);
-	top-=2;
-}
-
-void codegen_assign_unary_minus(){
-	strcpy(temp,"t");
-	sprintf(temp, "%s%d", temp, temp_num);
-	temp_num++;
-	printf("%s = -%s\n",temp,st[top]);
-	top--;
-	strcpy(st[top],temp);
-}
 
 int yyerror(char* temp){
 	return 0;

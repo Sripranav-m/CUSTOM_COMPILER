@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "y.tab.h"
+extern char mytext[10000];
 %}
 
 
@@ -62,8 +63,8 @@ while [while]
 {ee}                                    {return EE;}
 {while}                                 {return WHILE;}
 
-{letter}+{digit}?                       {strcpy(yylval.string, yytext);return IDENTIFIER;}
-({plus}|{minus})?{digit}+				{strcpy(yylval.string, yytext);return NUMBER;}
+{letter}+{digit}?                       {strcpy(mytext, yytext);return IDENTIFIER;}
+({plus}|{minus})?{digit}+				{strcpy(mytext, yytext);return NUMBER;}
 
 
 
