@@ -48,6 +48,13 @@
 %token IF
 %token ELSE
 %token ELIF
+%token WHILE
+%token FUNCTION_IDENTIFIER
+%token FOR
+%token INC
+%token DEC
+%token PRINT
+%token SCAN
 %token OR
 %token AND
 %token NOT
@@ -56,19 +63,6 @@
 %token LE
 %token GE
 %token EE
-%token WHILE
-%token FUNCTION_IDENTIFIER
-%token OSQB
-%token CSQB
-%token COLON
-%token FOR
-%token INC
-%token DEC
-%token PRINT
-%token BREAK
-%token CONTINUE
-%token SCAN
-%token RETURN
 
 %left PLUS
 %left MULTIPLY
@@ -121,7 +115,6 @@
 %type<node> PARAMS
 %type<node>PARAM_LIST_NT
 
-
 %type<node> INT 
 %type<node> IDENTIFIER
 %type<node> NUMBER
@@ -148,8 +141,6 @@
 %type<node> EE
 %type<node> WHILE
 %type<node> FUNCTION_IDENTIFIER
-%type<node> OSQB
-%type<node> CSQB
 %type<node> COLON
 %type<node> FOR
 %type<node> INC
@@ -163,6 +154,7 @@
 
 
 
+
 /* End of YACC declarations */
 
 /* End of Declarations Part */
@@ -170,8 +162,6 @@
 /* Rules Section begins here */
 
 %%
-
-
 PROGRAM: DECLARATION_LIST {
 							vector<TreeNode*> v={$1};
 							$$=new TreeNode("PROGRAM",v);
@@ -200,6 +190,7 @@ DECLARATION: VARIABLE_DECLARATION	{
 				$$=new TreeNode("DECLARATION",v);
 			};
 
+
 								
 VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
@@ -207,24 +198,8 @@ VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
 															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
-															}
-					| VARIABLE_TYPE IDENTIFIER COMMA VARIABLE_DECLARATION {
-                                                $3 = new TreeNode("COMMA");
-                                                vector<TreeNode*> v = {$1, $2, $3, $4};
-                                                $$ = new TreeNode("VARIABLE_DECLARATION", v); 
-                                            }   
-
-        			| VARIABLE_TYPE IDENTIFIER OSQB INTEGER_NT CSQB COMMA   {
-                                                            $3 = new TreeNode("OSQB"); $5 = new TreeNode("CSQB"); $6 = new TreeNode("COMMA");
-                                                            vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
-                                                            $$ = new TreeNode("VARIABLE_DECLARATION", v); 
-                                                        }
-    
-        			| VARIABLE_TYPE IDENTIFIER OSQB INTEGER_NT CSQB COMMA VARIABLE_DECLARATION  {
-                                                                    $3 = new TreeNode("OSQB"); $5 = new TreeNode("CSQB"); $6 = new TreeNode("COMMA");
-                                                                    vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6, $7};
-                                                                    $$ = new TreeNode("VARIABLE_DECLARATION", v); 
-                                                                };
+															};
+					
 
 
 FUNCTION_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
@@ -232,6 +207,8 @@ FUNCTION_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEM
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
 																							};
+
+
 
 PARAMS: PARAM_LIST_NT {
 						vector<TreeNode*> v = {$1};
@@ -243,6 +220,8 @@ PARAMS: PARAM_LIST_NT {
 			$$ = new TreeNode("PARAMS",v);
 		};
 
+
+
 PARAM_LIST_NT: PARAM_LIST_NT COMMA PARAM {
 										$2 = new TreeNode("COMMA");
 										vector<TreeNode*> v = {$1,$2,$3};
@@ -253,14 +232,10 @@ PARAM_LIST_NT: PARAM_LIST_NT COMMA PARAM {
 					$$ = new TreeNode("PARAM_LIST_NT",v);
 				};
 
+
+
 PARAM: VARIABLE_TYPE IDENTIFIER_NT{
 									vector<TreeNode*> v = {$1,$2};
-									$$ = new TreeNode("PARAM",v);
-								}
-		| VARIABLE_TYPE IDENTIFIER_NT OSQB CSQB {
-									$3 = new TreeNode("OSQB");
-									$4 = new TreeNode("CSQB");
-									vector<TreeNode*> v = {$1,$2,$3,$4};
 									$$ = new TreeNode("PARAM",v);
 								};
 
@@ -274,6 +249,7 @@ STATEMENT_LIST: STATEMENT_LIST STATEMENT {
 							vector<TreeNode*> v = {$1};
                             $$ = new TreeNode("STATEMENT_LIST", v); 
 							} ;
+
 
 
 STATEMENT: ASSIGNMENT_STATEMENT {
@@ -319,6 +295,8 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 				$$ = new TreeNode("STATEMENT",v);
 			};
 
+
+
 IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 												$1 = new TreeNode("IF");
 												$2 = new TreeNode("ONB");
@@ -344,11 +322,13 @@ IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 													};
 
 
+
 ELSE_STATEMENT: ELSE STATEMENT {
 								$1 = new TreeNode("ELSE");
 								vector<TreeNode*> v = {$1,$2};
 								$$ = new TreeNode("ELSE_STATEMENT",v);
 							};
+
 
 ELIF_STATEMENT: ELIF ONB EXPRESSION CNB STATEMENT ELIF_STATEMENT{
 								$1 = new TreeNode("ELIF");
@@ -374,6 +354,7 @@ ELIF_STATEMENT: ELIF ONB EXPRESSION CNB STATEMENT ELIF_STATEMENT{
 								$$ = new TreeNode("ELIF_STATEMENT",v);
 							};
 
+
 WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT {
 													$1 = new TreeNode("WHILE_STATEMENT");
 													$2 = new TreeNode("ONB");
@@ -381,6 +362,7 @@ WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT {
 													vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 													$$ = new TreeNode("WHILE_STATEMENT",v);
 												};
+
 
 
 FOR_STATEMENT: FOR ONB VARIABLE_TYPE EXPRESSION SEMICOLON EXPRESSION SEMICOLON INCREMENT_STATEMENT CNB STATEMENT {
@@ -393,12 +375,16 @@ FOR_STATEMENT: FOR ONB VARIABLE_TYPE EXPRESSION SEMICOLON EXPRESSION SEMICOLON I
 												$$ = new TreeNode("FOR_STATEMENT",v);				
 										};
 
+
+
 INCREMENT_STATEMENT: IDENTIFIER_NT INC SEMICOLON   {
                                     $3 = new TreeNode("SEMICOLON");
                                     $2 = new TreeNode("INC");
                                     vector<TreeNode*> v = {$1, $2, $3};
                                     $$ = new TreeNode("INCREMENT_STATEMENT", v);
                                 };
+
+
 
 DECREMENT_STATEMENT: IDENTIFIER_NT DEC SEMICOLON   {
                                     $3 = new TreeNode("SEMICOLON");
@@ -419,11 +405,13 @@ VARIABLE_TYPE: INT {
 				};
 
 
+
 COMPOUND_STATEMENT: OFB LOCAL_DECLARATION_LIST STATEMENT_LIST CFB    {
                                                     $1 = new TreeNode("OFB"); $4 = new TreeNode("CFB");
                                                     vector<TreeNode*> v = {$1, $2, $3, $4};
                                                     $$ = new TreeNode("COMPOUND_STATEMENT", v);
                                                 };
+
 
 
 LOCAL_DECLARATION_LIST: LOCAL_DECLARATION_LIST LOCAL_DECLARATION {
@@ -437,6 +425,7 @@ LOCAL_DECLARATION_LIST: LOCAL_DECLARATION_LIST LOCAL_DECLARATION {
 						};
 
 
+
 LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
@@ -444,6 +433,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 															Num_variables++;
 															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
+
 
 
 
@@ -456,10 +446,12 @@ ASSIGNMENT_STATEMENT: IDENTIFIER_NT EQUALTO EXPRESSION SEMICOLON {									// Id
 																};
 
 
+
 EXPRESSION: PEXPRESSION {	
 						vector<TreeNode*> v={$1};
 						$$=new TreeNode("EXPRESSION",v);
 						};
+
 
 
 PEXPRESSION: INTEGER_NT {	
@@ -486,19 +478,13 @@ INTEGER_NT: NUMBER {
 			};
 
 
+
 IDENTIFIER_NT: IDENTIFIER {
 							$1 = new TreeNode("IDENTIFIER");
                             vector<TreeNode*> v = {$1};
                             $$ = new TreeNode("IDENTIFIER_NT", v);
                             $$->lex_val = mytext;
-						} 
-
-				| PRINT {
-					$1 = new TreeNode("IDENTIFIER");
-					vector<TreeNode*> v = {$1};
-					$$ = new TreeNode("IDENTIFIER_NT",v);
-					$$->lex_val = "print";
-				};
+						};
 
 
 %%

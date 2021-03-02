@@ -28,9 +28,9 @@ multiply [*]
 if [if]
 else [else]
 elif [elif]
-or [or]
-and [and]
-not [not]
+or [||]
+and [&&]
+not [!]
 lt [<]
 gt [>]
 le [<=]
@@ -38,6 +38,8 @@ ge [>=]
 ee [==]
 while [while]
 for [for]
+print [print]
+scan [scan]
 
 
 
@@ -46,57 +48,30 @@ for [for]
 
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
 
-integer			                        {return INT;}
-"+"                                     {return PLUS;}
-"-"                                 {return MINUS;}
-"*"                              {return MULTIPLY;}
-"="                                 {return EQUALTO;}
-if                                    {return IF;}
-elif                                  {return ELIF;}
-else                                 {return ELSE;}
-"||"                                    {return OR;}
-"&&"                                   {return AND;}
-"!"                                   {return NOT;}
-"<"                                    {return LT;}
-">"                                    {return GT;}
-"<="                                    {return LE;}
-">="                                    {return GE;}
-"=="                                    {return EE;}
+{int}			                        {return INT;}
+{plus}                                     {return PLUS;}
+{minus}                                 {return MINUS;}
+{multiply}                              {return MULTIPLY;}
+{equal}                                 {return EQUALTO;}
+{if}                                   {return IF;}
+{elif}                                  {return ELIF;}
+{else}                                 {return ELSE;}
+{or}                                    {return OR;}
+{and}                                   {return AND;}
+{not}                                   {return NOT;}
+{lt}                                   {return LT;}
+{gt}                                    {return GT;}
+{le}                                  {return LE;}
+{ge}                                  {return GE;}
+{ee}                                   {return EE;}
 
+{for}                                     {return FOR;}
 
+{while}                                   {return WHILE;}
 
+{print}                                   {return PRINT;}
 
-
-
-
-
-for {
-    return FOR;
-}
-
-while {
-    return WHILE;
-}
-
-break {
-    return BREAK;
-}
-
-continue {
-    return CONTINUE;
-}
-
-return {
-    return RETURN;
-}
-
-print {
-    return PRINT;
-}
-
-scan {
-    return SCAN;
-}
+{scan}                                    {return SCAN;}
 
 {letter}+{digit}?                       {strcpy(mytext, yytext);return IDENTIFIER;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return IDENTIFIER;}
@@ -109,9 +84,6 @@ scan {
 "}"										{return CFB;}
 "("                                     {return ONB;}
 ")"                                     {return CNB;}
-"["                                     {return OSQB;}
-"]"                                     {return CSQB;}
-":"                                     {return COLON;}
 "++"                                    {return INC;}
 "--"                                    {return DEC;}
 [ \t\r\n]	                                        ;
