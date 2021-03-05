@@ -1,6 +1,5 @@
-{
-    b=3;
-    a=5;
-    c=a+b;
-    d=a-(b+c);
+int main(){
+    int a;
+    a = 6;
+    return 0;
 }

@@ -265,16 +265,6 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
 			}
-			
-			| ELSE_STATEMENT {
-				vector<TreeNode*> v = {$1};
-				$$ = new TreeNode("STATEMENT",v);
-			}
-			| ELIF_STATEMENT {
-				vector<TreeNode*> v = {$1};
-				$$ = new TreeNode("STATEMENT",v);
-			}
-
 			| WHILE_STATEMENT {
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
@@ -296,7 +286,6 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 			};
 
 
-
 IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 												$1 = new TreeNode("IF");
 												$2 = new TreeNode("ONB");
@@ -311,48 +300,8 @@ IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 														
 														vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6};
 														$$ = new TreeNode("IF_STATEMENT",v);
-			  										}
-			  | IF ONB EXPRESSION CNB STATEMENT ELIF_STATEMENT {
-														$1 = new TreeNode("IF");
-														$2 = new TreeNode("ONB");
-														$4 = new TreeNode("CNB");
-														
-														vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6};
-														$$ = new TreeNode("IF_STATEMENT",v);
-													};
+			  										};
 
-
-
-ELSE_STATEMENT: ELSE STATEMENT {
-								$1 = new TreeNode("ELSE");
-								vector<TreeNode*> v = {$1,$2};
-								$$ = new TreeNode("ELSE_STATEMENT",v);
-							};
-
-
-ELIF_STATEMENT: ELIF ONB EXPRESSION CNB STATEMENT ELIF_STATEMENT{
-								$1 = new TreeNode("ELIF");
-								$2 = new TreeNode("ONB");
-								$4 = new TreeNode("CNB");
-								vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6};
-								$$ = new TreeNode("ELIF_STATEMENT",v);	
-							}
-
-				| ELIF ONB EXPRESSION CNB STATEMENT ELSE_STATEMENT{
-								$1 = new TreeNode("ELIF");
-								$2 = new TreeNode("ONB");
-								$4 = new TreeNode("CNB");
-								vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6};
-								$$ = new TreeNode("ELIF_STATEMENT",v);	
-							} 
-
-				| ELIF ONB EXPRESSION CNB STATEMENT {
-								$1 = new TreeNode("ELIF");
-								$2 = new TreeNode("ONB");
-								$4 = new TreeNode("CNB");
-								vector<TreeNode*> v = {$1,$2,$3,$4,$5};
-								$$ = new TreeNode("ELIF_STATEMENT",v);
-							};
 
 
 WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT {
@@ -395,15 +344,12 @@ DECREMENT_STATEMENT: IDENTIFIER_NT DEC SEMICOLON   {
 
 
 
-
-
 VARIABLE_TYPE: INT {
 					$1 = new TreeNode("INT");
 					vector<TreeNode*> v = {$1};
 					$$ = new TreeNode("VARIABLE_TYPE",v);
 
 				};
-
 
 
 COMPOUND_STATEMENT: OFB LOCAL_DECLARATION_LIST STATEMENT_LIST CFB    {
@@ -425,7 +371,6 @@ LOCAL_DECLARATION_LIST: LOCAL_DECLARATION_LIST LOCAL_DECLARATION {
 						};
 
 
-
 LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
@@ -433,7 +378,6 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 															Num_variables++;
 															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
-
 
 
 
@@ -470,6 +414,7 @@ PEXPRESSION: INTEGER_NT {
 			};
 
 
+
 INTEGER_NT: NUMBER {
 				$1 = new TreeNode("NUMBER");
 				vector<TreeNode*> v = {$1};
@@ -488,6 +433,7 @@ IDENTIFIER_NT: IDENTIFIER {
 
 
 %%
+
 /* Rules Section ends here */
 
 extern FILE *yyin;
@@ -498,9 +444,13 @@ int main(int argc,char** argv){
 		yyparse();
 	}
 	fclose(yyin);
+	doinorder(Abstract_Syntax_Tree);
 	return 0;
 }
 
+void doinorder(){
+
+}
 
 
 int yyerror(char* temp){
