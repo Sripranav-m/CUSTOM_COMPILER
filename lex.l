@@ -2,7 +2,6 @@
 #include <bits/stdc++.h>
 #include "y.tab.hpp"
 extern char mytext[10000];
-
 %}
 
 letter [A-Za-z]

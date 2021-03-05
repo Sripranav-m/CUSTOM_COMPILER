@@ -1,11 +1,9 @@
 int _main(){
-    c=10;
-    int a ;
-    a=10;
+    int a;
+    a=10;   
     int b;
     b=10;
-    print(b);
-    print("12345");
-    a=b+c;
+    int c;
+    c=a+b;
 }
 
