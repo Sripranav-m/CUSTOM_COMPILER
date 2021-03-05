@@ -1,6 +1,3 @@
-/* Beginning of Declarations part */
-
-/* Beginning of C declarations */
 %{
 	// #include <stdio.h>
 	// #include <string.h>
@@ -18,144 +15,65 @@
             TreeNode(string NodeName, vector<TreeNode*> children) {
                 this->NodeName = NodeName;
                 this->children = children;
+				this->lex_val="";
             }
             TreeNode(string NodeName) {  // for leaf nodes(No children nodes)
                 this->NodeName = NodeName;
                 children.assign(0, NULL);
+				this->lex_val="";
             }
     };
 	TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 	int Num_variables=0;
 	map<string, int> stck;
+	void dotraversal(TreeNode* head);
 %}
-/* End of C declarations */
+%union{
+	class TreeNode* node;
+}
 
-/* Beginning of YACC declarations  */
-
-%token INT 
-%token IDENTIFIER
-%token NUMBER
-%token COMMA
-%token SEMICOLON
-%token OFB
-%token CFB
-%token ONB
-%token CNB
-%token PLUS
-%token MINUS
-%token MULTIPLY
-%token EQUALTO
-%token IF
-%token ELSE
-%token ELIF
-%token WHILE
-%token FUNCTION_IDENTIFIER
-%token FOR
-%token INC
-%token DEC
-%token PRINT
-%token SCAN
-%token OR
-%token AND
-%token NOT
-%token LT
-%token GT
-%token LE
-%token GE
-%token EE
+%token 		INT IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC
 
 %left PLUS
 %left MULTIPLY
 %left MINUS
 %right EQUALTO
 
-
-
-
-%union{
-	class TreeNode* node;
-}
-
-%type<node> PROGRAM
-%type<node> DECLARATION_LIST
-%type<node> DECLARATION
-%type<node> VARIABLE_DECLARATION
-%type<node> VARIABLE_TYPE
-%type<node> STATEMENT_LIST
-%type<node> STATEMENT
-%type<node> ASSIGNMENT_STATEMENT
-%type<node> IDENTIFIER_NT
-%type<node> EXPRESSION
-%type<node> PEXPRESSION
-%type<node> INTEGER_NT
-%type<node> FUNCTION_DECLARATION
-// %type<node> FUNCTION_IDENTIFIER_NT
-%type<node> COMPOUND_STATEMENT
-%type<node> LOCAL_DECLARATION_LIST
-%type<node> LOCAL_DECLARATION
-
-
-
-%type<node>IF_STATEMENT
-%type<node>WHILE_STATEMENT
-%type<node>FOR_STATEMENT
-// %type<node>RETURN_STATEMENT
-// %type<node>BREAK_STATEMENT
-// %type<node>CONTINUE_STATEMENT
-// %type<node>PRINT_STATEMENT
-// %type<node>SCAN_STATEMENT
-%type<node>INCREMENT_STATEMENT
-%type<node>DECREMENT_STATEMENT
-
-
-
-%type<node>PARAM
-%type<node> PARAMS
-%type<node>PARAM_LIST_NT
-
-%type<node> INT 
-%type<node> IDENTIFIER
-%type<node> NUMBER
-%type<node> COMMA
-%type<node> SEMICOLON
-%type<node> OFB
-%type<node> CFB
-%type<node> ONB
-%type<node> CNB
-%type<node> PLUS
-%type<node> MINUS
-%type<node> MULTIPLY
-%type<node> EQUALTO
-%type<node> IF
-%type<node> ELSE
-%type<node> ELIF
-%type<node> OR
-%type<node> AND
-%type<node> NOT
-%type<node> LT
-%type<node> GT
-%type<node> LE
-%type<node> GE
-%type<node> EE
-%type<node> WHILE
-%type<node> FUNCTION_IDENTIFIER
-%type<node> FOR
-%type<node> INC
-%type<node> DEC
-%type<node> PRINT
-
-
-
-
-
-
-/* End of YACC declarations */
-
-/* End of Declarations Part */
-
-/* Rules Section begins here */
+%type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
+%type<node> EXPRESSION PEXPRESSION INTEGER_NT FUNCTION_DECLARATION COMPOUND_STATEMENT LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT PRINT_ITEM
+%type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCREMENT_STATEMENT DECREMENT_STATEMENT PARAM PARAMS PARAM_LIST_NT
+%type<node> INT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC 
 
 %%
+
+/* PROGRAM: DECLARATION_LIST ;
+DECLARATION_LIST: DECLARATION_LIST DECLARATION | DECLARATION  ;
+DECLARATION: VARIABLE_DECLARATION | FUNCTION_DECLARATION ;
+VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON ;
+FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT ;
+PARAMS: PARAM_LIST_NT | ;
+PARAM_LIST_NT: PARAM_LIST_NT COMMA PARAM | PARAM ;
+PARAM: VARIABLE_TYPE IDENTIFIER_NT ;
+STATEMENT_LIST: STATEMENT_LIST STATEMENT | STATEMENT ;
+STATEMENT: ASSIGNMENT_STATEMENT | COMPOUND_STATEMENT| IF_STATEMENT | WHILE_STATEMENT |  FOR_STATEMENT | INCREMENT_STATEMENT | DECREMENT_STATEMENT | LOCAL_DECLARATION_LIST | PRINT_STATEMENT;
+PRINT_STATEMENT : PRINT ONB PRINT_ITEM CNB SEMICOLON;
+IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT ;
+WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT ;
+FOR_STATEMENT: FOR ONB VARIABLE_TYPE EXPRESSION SEMICOLON EXPRESSION SEMICOLON INCREMENT_STATEMENT CNB STATEMENT ;
+INCREMENT_STATEMENT: IDENTIFIER_NT INC SEMICOLON ;
+DECREMENT_STATEMENT: IDENTIFIER_NT DEC SEMICOLON ;
+VARIABLE_TYPE: INT ;
+COMPOUND_STATEMENT: OFB STATEMENT_LIST CFB ;
+LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON ;
+ASSIGNMENT_STATEMENT: IDENTIFIER_NT EQUALTO EXPRESSION SEMICOLON ;
+EXPRESSION: PEXPRESSION ;
+PEXPRESSION: INTEGER_NT | IDENTIFIER_NT ONB EXPRESSION CNB;
+PRINT_ITEM : IC INTEGER_NT IC | IDENTIFIER_NT ;
+INTEGER_NT: NUMBER ;
+IDENTIFIER_NT: IDENTIFIER;
+FUNCTION_IDENTIFIER_NT : FUNCTION_IDENTIFIER ;  */
+
+
 PROGRAM: DECLARATION_LIST {
 							vector<TreeNode*> v={$1};
 							$$=new TreeNode("PROGRAM",v);
@@ -169,7 +87,7 @@ DECLARATION_LIST: DECLARATION_LIST DECLARATION{
 												}
 				| DECLARATION {
 								vector<TreeNode*> v={$1};
-								$$=new TreeNode("DECLARATION",v);
+								$$=new TreeNode("DECLARATION_LIST",v);
 							} ;
 
 
@@ -177,8 +95,7 @@ DECLARATION: VARIABLE_DECLARATION	{
 
 			vector<TreeNode*> v={$1};
 			$$=new TreeNode("DECLARATION",v);
-			
-									}
+			}
 			| FUNCTION_DECLARATION {
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("DECLARATION",v);
@@ -186,7 +103,7 @@ DECLARATION: VARIABLE_DECLARATION	{
 
 
 								
-VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
+VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
@@ -196,12 +113,11 @@ VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
 					
 
 
-FUNCTION_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
+FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
 																								$3 = new TreeNode("ONB"); $5 = new TreeNode("CNB");
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
 																							};
-
 
 
 PARAMS: PARAM_LIST_NT {
@@ -245,7 +161,6 @@ STATEMENT_LIST: STATEMENT_LIST STATEMENT {
 							} ;
 
 
-
 STATEMENT: ASSIGNMENT_STATEMENT {
 								vector<TreeNode*> v = {$1};
                         		$$ = new TreeNode("STATEMENT", v);
@@ -277,7 +192,34 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 			| DECREMENT_STATEMENT {
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
+			}
+			| LOCAL_DECLARATION {
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("STATEMENT",v);
+			}
+			| PRINT_STATEMENT{
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("STATEMENT",v);
 			};
+
+
+PRINT_STATEMENT : PRINT ONB PRINT_ITEM CNB SEMICOLON {
+												$1 = new TreeNode("PRINT");
+												$2 = new TreeNode("ONB");
+												$4 = new TreeNode("CNB");
+												$5=new TreeNode("SEMICOLON");
+												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
+												$$ = new TreeNode("PRINT_STATEMENT",v);
+											} ;
+
+
+
+COMPOUND_STATEMENT: OFB STATEMENT_LIST CFB    {
+                                                    $1 = new TreeNode("OFB"); $3 = new TreeNode("CFB");
+                                                    vector<TreeNode*> v = {$1, $2, $3};
+                                                    $$ = new TreeNode("COMPOUND_STATEMENT", v);
+                                                };
+
 
 
 IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
@@ -286,7 +228,7 @@ IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 												$4 = new TreeNode("CNB");
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("IF_STATEMENT",v);
-											}
+											};
 
 
 
@@ -338,26 +280,8 @@ VARIABLE_TYPE: INT {
 				};
 
 
-COMPOUND_STATEMENT: OFB LOCAL_DECLARATION_LIST STATEMENT_LIST CFB    {
-                                                    $1 = new TreeNode("OFB"); $4 = new TreeNode("CFB");
-                                                    vector<TreeNode*> v = {$1, $2, $3, $4};
-                                                    $$ = new TreeNode("COMPOUND_STATEMENT", v);
-                                                };
 
-
-
-LOCAL_DECLARATION_LIST: LOCAL_DECLARATION_LIST LOCAL_DECLARATION {
-																vector<TreeNode*> v = {$1, $2};
-                                        						$$ = new TreeNode("LOCAL_DECLARATION_LIST", v);
-																}
-						| 	{
-							TreeNode* x = new TreeNode("EPSILON");
-							vector<TreeNode*> v = {x};
-							$$ = new TreeNode("LOCAL_DECLARATION_LIST", v);
-						};
-
-
-LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER SEMICOLON {
+LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
@@ -400,6 +324,17 @@ PEXPRESSION: INTEGER_NT {
 			};
 
 
+PRINT_ITEM : IC INTEGER_NT IC {
+				$1 = new TreeNode("IC"); 
+				$3 = new TreeNode("IC");
+                vector<TreeNode*> v = {$1, $2, $3};
+                $$ = new TreeNode("PRINT_ITEM", v);
+			}
+			| IDENTIFIER_NT {
+				vector<TreeNode*> v = {$1};
+                $$ = new TreeNode("PRINT_ITEM", v);
+			};
+
 
 INTEGER_NT: NUMBER {
 				$1 = new TreeNode("NUMBER");
@@ -418,28 +353,38 @@ IDENTIFIER_NT: IDENTIFIER {
 						};
 
 
+FUNCTION_IDENTIFIER_NT : FUNCTION_IDENTIFIER {
+							$1 = new TreeNode("FUNCTION_IDENTIFIER");
+                            vector<TreeNode*> v = {$1};
+                            $$ = new TreeNode("FUNCTION_IDENTIFIER_NT", v);
+                            $$->lex_val = mytext;
+						};
+
 %%
 
 /* Rules Section ends here */
 
 extern FILE *yyin;
 
-int main(int argc,char** argv){
-	yyin = fopen(argv[1],"r");  
-	while(!feof(yyin)){
-		yyparse();
-	}
-	fclose(yyin);
-	//doinorder(Abstract_Syntax_Tree);
+int main(){
+	yyparse();
+	dotraversal(Abstract_Syntax_Tree);
 	return 0;
 }
-
-void doinorder(){
-
+// HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
+void dotraversal(TreeNode* head){
+	cout<<"NodeName: "<<head->NodeName<<"   ";
+	cout<<"Lexval: "<<head->lex_val<<endl;
+	vector<TreeNode*> children=head->children;
+	for(int i=0;i<children.size();i++){
+		dotraversal(children[i]);
+	}
+	return;
 }
+
 
 
 int yyerror(char* temp){
-	printf("ERROR in code:(\n");
+	cout<<"Error in the Code:("<<endl;
 	return 0;
 }

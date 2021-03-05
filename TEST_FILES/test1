@@ -1,5 +1,9 @@
-int main(){
-    int a;
-    a = 6;
-    return 0;
+int _main(){
+    c=10;
+    int a ;
+    a=10;
+    int b;
+    b=10;
+    print(b);
+    print("12345");
 }
