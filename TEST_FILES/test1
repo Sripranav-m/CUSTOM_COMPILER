@@ -6,4 +6,6 @@ int _main(){
     b=10;
     print(b);
     print("12345");
+    a=b+c;
 }
+
