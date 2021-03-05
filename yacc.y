@@ -97,8 +97,6 @@
 
 
 %type<node>IF_STATEMENT
-%type<node>ELSE_STATEMENT
-%type<node>ELIF_STATEMENT
 %type<node>WHILE_STATEMENT
 %type<node>FOR_STATEMENT
 // %type<node>RETURN_STATEMENT
@@ -141,15 +139,11 @@
 %type<node> EE
 %type<node> WHILE
 %type<node> FUNCTION_IDENTIFIER
-%type<node> COLON
 %type<node> FOR
 %type<node> INC
 %type<node> DEC
 %type<node> PRINT
-%type<node> BREAK
-%type<node> CONTINUE
-%type<node> SCAN
-%type<node> RETURN
+
 
 
 
@@ -293,14 +287,6 @@ IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("IF_STATEMENT",v);
 											}
-			  | IF ONB EXPRESSION CNB STATEMENT ELSE_STATEMENT {
-				  										$1 = new TreeNode("IF");
-														$2 = new TreeNode("ONB");
-														$4 = new TreeNode("CNB");
-														
-														vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6};
-														$$ = new TreeNode("IF_STATEMENT",v);
-			  										};
 
 
 
@@ -444,7 +430,7 @@ int main(int argc,char** argv){
 		yyparse();
 	}
 	fclose(yyin);
-	doinorder(Abstract_Syntax_Tree);
+	//doinorder(Abstract_Syntax_Tree);
 	return 0;
 }
 
