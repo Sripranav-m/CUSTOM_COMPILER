@@ -322,13 +322,7 @@ PEXPRESSION: INTEGER_NT {
 			};
 
 
-PRINT_ITEM : IC INTEGER_NT IC {
-				$1 = new TreeNode("IC"); 
-				$3 = new TreeNode("IC");
-                vector<TreeNode*> v = {$1, $2, $3};
-                $$ = new TreeNode("PRINT_ITEM", v);
-			}
-			| IDENTIFIER_NT {
+PRINT_ITEM : IDENTIFIER_NT {
 				vector<TreeNode*> v = {$1};
                 $$ = new TreeNode("PRINT_ITEM", v);
 			};
@@ -388,6 +382,18 @@ void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		text.push_back("section	.text");
 		text.push_back("global _start ");
+		printint.push_back("_printRAX:");printint.push_back("mov rcx, digitSpace");printint.push_back("mov rbx, 10");
+		printint.push_back("mov [rcx], rbx");printint.push_back("inc rcx");printint.push_back("mov [digitSpacePos], rcx");
+		printint.push_back("_printRAXLoop:");printint.push_back("mov rdx, 0");printint.push_back("mov rbx, 10");
+		printint.push_back("div rbx");printint.push_back("push rax");printint.push_back("add rdx, 48");
+		printint.push_back("mov rcx, [digitSpacePos]");printint.push_back("mov [rcx], dl");printint.push_back("inc rcx");
+		printint.push_back("mov [digitSpacePos], rcx");printint.push_back("pop rax");printint.push_back("cmp rax, 0");
+		printint.push_back("jne _printRAXLoop");printint.push_back("_printRAXLoop2:");printint.push_back("mov rcx, [digitSpacePos]");
+		printint.push_back("mov rax, 1");printint.push_back("mov rdi, 1");printint.push_back("mov rsi, rcx");
+		printint.push_back("mov rdx, 1");printint.push_back("syscall");printint.push_back("mov rcx, [digitSpacePos]");
+		printint.push_back("dec rcx");printint.push_back("mov [digitSpacePos], rcx");printint.push_back("cmp rcx, digitSpace");
+		printint.push_back("jge _printRAXLoop2");printint.push_back("ret");
+		bss.push_back("section .bss");bss.push_back("digitSpace resb 100");bss.push_back("digitSpacePos resb 8");
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="DECLARATION_LIST"){
@@ -418,13 +424,25 @@ void CodeGenerator(TreeNode* root){
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="LOCAL_DECLARATION"){
-		return;
+		text.push_back("sub rsp 8");
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
-		return;
+		text.push_back("mov rbx , rbp");
+		text.push_back("add rbx , "+stck[root->children[2]->lex_val]);
+		text.push_back("mov rax , rbx");
+		text.push_back("call _printRAX");
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-		return;
+		if(root->children[0].size()==2){
+			if(root->children[0]->children[1]->children[0].NodeName=="PEXPRESSION"){
+				if(root->children[0]->children[1]->children[0]->children[0].NodeName=="INTEGER_NT"){
+
+				}
+				if(root->children[0]->children[1]->children[0]->children[0].NodeName=="IDENTIFIER_NT"){
+					
+				}
+			}
+		}
 	}
 	else if(root->NodeName=="EXPRESSION"){
 		return;
