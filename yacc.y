@@ -31,6 +31,7 @@
 	vector<string> data;
 	vector<string> bss;
 	vector<string> printint;
+	void CodeGenerator(TreeNode* root);
 %}
 %union{
 	class TreeNode* node;
@@ -368,7 +369,7 @@ extern FILE *yyin;
 
 int main(){
 	yyparse();
-	CodeGenerator(Abstract_Syntax_Tree)
+	CodeGenerator(Abstract_Syntax_Tree);
 	return 0;
 }
 // HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
