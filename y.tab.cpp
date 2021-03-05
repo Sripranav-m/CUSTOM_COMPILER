@@ -73,7 +73,7 @@
 	#include<bits/stdc++.h>
 	using namespace std;
 	int yylex();
-	int yyerror(char *);
+	void yyerror(char *);
 	char mytext[10000]; // get from lex file.
 	class TreeNode {
         public:
@@ -94,7 +94,7 @@
     };
 	TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 	int Num_variables=0;
-	map<string, int> stck;
+	map<string, int> stck;   // Symbol Table
 	void dotraversal(TreeNode* head);
 
 #line 101 "y.tab.cpp"
@@ -602,11 +602,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    76,    76,    83,    87,    93,    98,   105,   115,   122,
-     126,   134,   139,   146,   153,   157,   163,   167,   172,   176,
-     181,   186,   191,   195,   199,   205,   216,   224,   234,   244,
-     256,   265,   274,   283,   293,   303,   307,   313,   319,   328,
-     332,   336,   344,   350,   356,   365,   373
+       0,    53,    53,    59,    63,    69,    74,    81,    91,    98,
+     102,   110,   115,   122,   129,   133,   139,   143,   148,   152,
+     157,   162,   167,   171,   175,   181,   192,   200,   210,   220,
+     232,   241,   250,   259,   269,   279,   283,   289,   295,   304,
+     308,   312,   320,   326,   332,   341,   349
 };
 #endif
 
@@ -1459,7 +1459,7 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 76 "yacc.y"
+#line 53 "yacc.y"
                           {
 							vector<TreeNode*> v={(yyvsp[0].node)};
 							(yyval.node)=new TreeNode("PROGRAM",v);
@@ -1469,7 +1469,7 @@ yyreduce:
     break;
 
   case 3:
-#line 83 "yacc.y"
+#line 59 "yacc.y"
                                               {
 												vector<TreeNode*> v={(yyvsp[-1].node),(yyvsp[0].node)};
 												(yyval.node)=new TreeNode("DECLARATION_LIST",v);
@@ -1478,7 +1478,7 @@ yyreduce:
     break;
 
   case 4:
-#line 87 "yacc.y"
+#line 63 "yacc.y"
                                               {
 								vector<TreeNode*> v={(yyvsp[0].node)};
 								(yyval.node)=new TreeNode("DECLARATION_LIST",v);
@@ -1487,7 +1487,7 @@ yyreduce:
     break;
 
   case 5:
-#line 93 "yacc.y"
+#line 69 "yacc.y"
                                         {
 
 			vector<TreeNode*> v={(yyvsp[0].node)};
@@ -1497,7 +1497,7 @@ yyreduce:
     break;
 
   case 6:
-#line 98 "yacc.y"
+#line 74 "yacc.y"
                                                {
 				vector<TreeNode*> v={(yyvsp[0].node)};
 				(yyval.node)=new TreeNode("DECLARATION",v);
@@ -1506,7 +1506,7 @@ yyreduce:
     break;
 
   case 7:
-#line 105 "yacc.y"
+#line 81 "yacc.y"
                                                             {
 															(yyvsp[0].node)=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {(yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)};
@@ -1518,7 +1518,7 @@ yyreduce:
     break;
 
   case 8:
-#line 115 "yacc.y"
+#line 91 "yacc.y"
                                                                                              {
 																								(yyvsp[-3].node) = new TreeNode("ONB"); (yyvsp[-1].node) = new TreeNode("CNB");
 																								vector<TreeNode*> v = {(yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)};
@@ -1528,7 +1528,7 @@ yyreduce:
     break;
 
   case 9:
-#line 122 "yacc.y"
+#line 98 "yacc.y"
                       {
 						vector<TreeNode*> v = {(yyvsp[0].node)};
 						(yyval.node) = new TreeNode("PARAMS",v);
@@ -1537,7 +1537,7 @@ yyreduce:
     break;
 
   case 10:
-#line 126 "yacc.y"
+#line 102 "yacc.y"
                   {
 			auto eps= new TreeNode("EPSILON");
 			vector<TreeNode*> v = {eps};
@@ -1547,7 +1547,7 @@ yyreduce:
     break;
 
   case 11:
-#line 134 "yacc.y"
+#line 110 "yacc.y"
                                          {
 										(yyvsp[-1].node) = new TreeNode("COMMA");
 										vector<TreeNode*> v = {(yyvsp[-2].node),(yyvsp[-1].node),(yyvsp[0].node)};
@@ -1557,7 +1557,7 @@ yyreduce:
     break;
 
   case 12:
-#line 139 "yacc.y"
+#line 115 "yacc.y"
                                         {
 					vector<TreeNode*> v = {(yyvsp[0].node)};
 					(yyval.node) = new TreeNode("PARAM_LIST_NT",v);
@@ -1566,7 +1566,7 @@ yyreduce:
     break;
 
   case 13:
-#line 146 "yacc.y"
+#line 122 "yacc.y"
                                   {
 									vector<TreeNode*> v = {(yyvsp[-1].node),(yyvsp[0].node)};
 									(yyval.node) = new TreeNode("PARAM",v);
@@ -1575,7 +1575,7 @@ yyreduce:
     break;
 
   case 14:
-#line 153 "yacc.y"
+#line 129 "yacc.y"
                                          {
 										vector<TreeNode*> v = {(yyvsp[-1].node), (yyvsp[0].node)};
                                         (yyval.node) = new TreeNode("STATEMENT_LIST", v); 
@@ -1584,7 +1584,7 @@ yyreduce:
     break;
 
   case 15:
-#line 157 "yacc.y"
+#line 133 "yacc.y"
                                             {
 							vector<TreeNode*> v = {(yyvsp[0].node)};
                             (yyval.node) = new TreeNode("STATEMENT_LIST", v); 
@@ -1593,7 +1593,7 @@ yyreduce:
     break;
 
   case 16:
-#line 163 "yacc.y"
+#line 139 "yacc.y"
                                 {
 								vector<TreeNode*> v = {(yyvsp[0].node)};
                         		(yyval.node) = new TreeNode("STATEMENT", v);
@@ -1602,7 +1602,7 @@ yyreduce:
     break;
 
   case 17:
-#line 167 "yacc.y"
+#line 143 "yacc.y"
                                              {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
                 (yyval.node) = new TreeNode("STATEMENT", v);
@@ -1611,7 +1611,7 @@ yyreduce:
     break;
 
   case 18:
-#line 172 "yacc.y"
+#line 148 "yacc.y"
                                        {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1620,7 +1620,7 @@ yyreduce:
     break;
 
   case 19:
-#line 176 "yacc.y"
+#line 152 "yacc.y"
                                           {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1629,7 +1629,7 @@ yyreduce:
     break;
 
   case 20:
-#line 181 "yacc.y"
+#line 157 "yacc.y"
                                          {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1638,7 +1638,7 @@ yyreduce:
     break;
 
   case 21:
-#line 186 "yacc.y"
+#line 162 "yacc.y"
                                               {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1647,7 +1647,7 @@ yyreduce:
     break;
 
   case 22:
-#line 191 "yacc.y"
+#line 167 "yacc.y"
                                               {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1656,7 +1656,7 @@ yyreduce:
     break;
 
   case 23:
-#line 195 "yacc.y"
+#line 171 "yacc.y"
                                             {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1665,7 +1665,7 @@ yyreduce:
     break;
 
   case 24:
-#line 199 "yacc.y"
+#line 175 "yacc.y"
                                          {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
 				(yyval.node) = new TreeNode("STATEMENT",v);
@@ -1674,7 +1674,7 @@ yyreduce:
     break;
 
   case 25:
-#line 205 "yacc.y"
+#line 181 "yacc.y"
                                                      {
 												(yyvsp[-4].node) = new TreeNode("PRINT");
 												(yyvsp[-3].node) = new TreeNode("ONB");
@@ -1687,7 +1687,7 @@ yyreduce:
     break;
 
   case 26:
-#line 216 "yacc.y"
+#line 192 "yacc.y"
                                               {
                                                     (yyvsp[-2].node) = new TreeNode("OFB"); (yyvsp[0].node) = new TreeNode("CFB");
                                                     vector<TreeNode*> v = {(yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)};
@@ -1697,7 +1697,7 @@ yyreduce:
     break;
 
   case 27:
-#line 224 "yacc.y"
+#line 200 "yacc.y"
                                               {
 												(yyvsp[-4].node) = new TreeNode("IF");
 												(yyvsp[-3].node) = new TreeNode("ONB");
@@ -1709,7 +1709,7 @@ yyreduce:
     break;
 
   case 28:
-#line 234 "yacc.y"
+#line 210 "yacc.y"
                                                     {
 													(yyvsp[-4].node) = new TreeNode("WHILE_STATEMENT");
 													(yyvsp[-3].node) = new TreeNode("ONB");
@@ -1721,7 +1721,7 @@ yyreduce:
     break;
 
   case 29:
-#line 244 "yacc.y"
+#line 220 "yacc.y"
                                                                                                                  {
 												(yyvsp[-9].node) = new TreeNode("FOR");
 												(yyvsp[-8].node) = new TreeNode("ONB");
@@ -1735,7 +1735,7 @@ yyreduce:
     break;
 
   case 30:
-#line 256 "yacc.y"
+#line 232 "yacc.y"
                                                    {
                                     (yyvsp[0].node) = new TreeNode("SEMICOLON");
                                     (yyvsp[-1].node) = new TreeNode("INC");
@@ -1746,7 +1746,7 @@ yyreduce:
     break;
 
   case 31:
-#line 265 "yacc.y"
+#line 241 "yacc.y"
                                                    {
                                     (yyvsp[0].node) = new TreeNode("SEMICOLON");
                                     (yyvsp[-1].node) = new TreeNode("DEC");
@@ -1757,7 +1757,7 @@ yyreduce:
     break;
 
   case 32:
-#line 274 "yacc.y"
+#line 250 "yacc.y"
                    {
 					(yyvsp[0].node) = new TreeNode("INT");
 					vector<TreeNode*> v = {(yyvsp[0].node)};
@@ -1768,7 +1768,7 @@ yyreduce:
     break;
 
   case 33:
-#line 283 "yacc.y"
+#line 259 "yacc.y"
                                                          {
 															(yyvsp[0].node)=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {(yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)};
@@ -1780,7 +1780,7 @@ yyreduce:
     break;
 
   case 34:
-#line 293 "yacc.y"
+#line 269 "yacc.y"
                                                                  {									// Identifier and Expression are given as children to EQUAL TO OPERATOR IN SYNTAX TREE.
 																vector<TreeNode*> v={(yyvsp[-3].node),(yyvsp[-1].node)};
 																(yyvsp[-2].node)=new TreeNode("EQUALTO",v);
@@ -1792,7 +1792,7 @@ yyreduce:
     break;
 
   case 35:
-#line 303 "yacc.y"
+#line 279 "yacc.y"
                         {	
 						vector<TreeNode*> v={(yyvsp[0].node)};
 						(yyval.node)=new TreeNode("EXPRESSION",v);
@@ -1801,7 +1801,7 @@ yyreduce:
     break;
 
   case 36:
-#line 307 "yacc.y"
+#line 283 "yacc.y"
                                             {
                 vector<TreeNode*> v={(yyvsp[-2].node),(yyvsp[0].node)};
                 (yyvsp[-1].node)=new TreeNode("PLUS",v);
@@ -1812,7 +1812,7 @@ yyreduce:
     break;
 
   case 37:
-#line 313 "yacc.y"
+#line 289 "yacc.y"
                                             {
                 vector<TreeNode*> v={(yyvsp[-2].node),(yyvsp[0].node)};
                 (yyvsp[-1].node)=new TreeNode("MINUS",v);
@@ -1823,7 +1823,7 @@ yyreduce:
     break;
 
   case 38:
-#line 319 "yacc.y"
+#line 295 "yacc.y"
                                                {
                 vector<TreeNode*> v={(yyvsp[-2].node),(yyvsp[0].node)};
                 (yyvsp[-1].node)=new TreeNode("MULTIPLY",v);
@@ -1834,7 +1834,7 @@ yyreduce:
     break;
 
   case 39:
-#line 328 "yacc.y"
+#line 304 "yacc.y"
                         {	
 					vector<TreeNode*> v={(yyvsp[0].node)};
 					(yyval.node)=new TreeNode("PEXPRESSION",v);
@@ -1843,7 +1843,7 @@ yyreduce:
     break;
 
   case 40:
-#line 332 "yacc.y"
+#line 308 "yacc.y"
                                         {
 				vector<TreeNode*> v={(yyvsp[0].node)};
 				(yyval.node)=new TreeNode("PEXPRESSION",v);
@@ -1852,7 +1852,7 @@ yyreduce:
     break;
 
   case 41:
-#line 336 "yacc.y"
+#line 312 "yacc.y"
                                              {
 				(yyvsp[-2].node) = new TreeNode("ONB"); (yyvsp[0].node) = new TreeNode("CNB");
                 vector<TreeNode*> v = {(yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)};
@@ -1863,7 +1863,7 @@ yyreduce:
     break;
 
   case 42:
-#line 344 "yacc.y"
+#line 320 "yacc.y"
                               {
 				(yyvsp[-2].node) = new TreeNode("IC"); 
 				(yyvsp[0].node) = new TreeNode("IC");
@@ -1874,7 +1874,7 @@ yyreduce:
     break;
 
   case 43:
-#line 350 "yacc.y"
+#line 326 "yacc.y"
                                         {
 				vector<TreeNode*> v = {(yyvsp[0].node)};
                 (yyval.node) = new TreeNode("PRINT_ITEM", v);
@@ -1883,7 +1883,7 @@ yyreduce:
     break;
 
   case 44:
-#line 356 "yacc.y"
+#line 332 "yacc.y"
                    {
 				(yyvsp[0].node) = new TreeNode("NUMBER");
 				vector<TreeNode*> v = {(yyvsp[0].node)};
@@ -1894,7 +1894,7 @@ yyreduce:
     break;
 
   case 45:
-#line 365 "yacc.y"
+#line 341 "yacc.y"
                           {
 							(yyvsp[0].node) = new TreeNode("IDENTIFIER");
                             vector<TreeNode*> v = {(yyvsp[0].node)};
@@ -1905,7 +1905,7 @@ yyreduce:
     break;
 
   case 46:
-#line 373 "yacc.y"
+#line 349 "yacc.y"
                                              {
 							(yyvsp[0].node) = new TreeNode("FUNCTION_IDENTIFIER");
                             vector<TreeNode*> v = {(yyvsp[0].node)};
@@ -2148,7 +2148,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 380 "yacc.y"
+#line 356 "yacc.y"
 
 
 /* Rules Section ends here */
@@ -2157,10 +2157,11 @@ extern FILE *yyin;
 
 int main(){
 	yyparse();
-	dotraversal(Abstract_Syntax_Tree);
+	//CodeGenerator(Abstract_Syntax_Tree)
 	return 0;
 }
 // HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
+// Basically,this is to check whether the Abstract syntax tree is correct or not
 void dotraversal(TreeNode* head){
 	cout<<"NodeName: "<<head->NodeName<<"   ";
 	cout<<"Lexval: "<<head->lex_val<<endl;
@@ -2171,9 +2172,14 @@ void dotraversal(TreeNode* head){
 	return;
 }
 
+/* void CodeGenerator(TreeNode* root){
+	if(root->NodeName=="PROGRAM"){
+		
+	}
+} */
 
 
-int yyerror(char* temp){
-	cout<<"Error in the Code:("<<endl;
-	return 0;
+void yyerror(char* temp){
+	cout<<"Parsing Terminated...Syntax Error:("<<endl;
+	exit(0);
 }

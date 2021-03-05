@@ -27,6 +27,10 @@
 	int Num_variables=0;
 	map<string, int> stck;   // Symbol Table
 	void dotraversal(TreeNode* head);
+	vector<string> text;
+	vector<string> data;
+	vector<string> bss;
+	vector<string> printint;
 %}
 %union{
 	class TreeNode* node;
@@ -359,6 +363,9 @@ FUNCTION_IDENTIFIER_NT : FUNCTION_IDENTIFIER {
 
 extern FILE *yyin;
 
+
+
+
 int main(){
 	yyparse();
 	CodeGenerator(Abstract_Syntax_Tree)
@@ -378,8 +385,50 @@ void dotraversal(TreeNode* head){
 
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
-		
+		text.push_back("section	.text");
+		text.push_back("global _start ");
+		CodeGenerator(root->children[0]);
 	}
+	else if(root->NodeName=="DECLARATION_LIST"){
+		CodeGenerator(root->children[0]);
+		if(root->children.size()>1){
+			CodeGenerator(root->children[1]);
+		}
+	}
+	else if(root->NodeName=="DECLARATION"){
+		CodeGenerator(root->children[0]);
+	}
+	else if(root->NodeName=="VARIABLE_DECLARATION"){
+		return;
+	}
+	else if(root->NodeName=="FUNCTION_DECLARATION"){
+		CodeGenerator(root->children[5]);
+	}
+	else if(root->NodeName=="COMPOUND_STATEMENT"){
+		CodeGenerator(root->children[1]);
+	}
+	else if(root->NodeName=="STATEMENT_LIST"){
+		CodeGenerator(root->children[0]);
+		if(root->children.size()>1){
+			CodeGenerator(root->children[1]);
+		}
+	}
+	else if(root->NodeName=="STATEMENT"){
+		CodeGenerator(root->children[0]);
+	}
+	else if(root->NodeName=="LOCAL_DECLARATION"){
+		return;
+	}
+	else if(root->NodeName=="PRINT_STATEMENT"){
+		return;
+	}
+	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
+		return;
+	}
+	else if(root->NodeName=="EXPRESSION"){
+		return;
+	}
+	return;
 }
 
 
