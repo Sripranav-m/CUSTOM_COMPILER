@@ -1,5 +1,5 @@
 a.out: y.tab.cpp lex.yy.c
-	g++ lex.yy.c y.tab.cpp
+	g++ -O3 lex.yy.c y.tab.cpp
 	@echo "Run the program as ./a.out < [input_file]"
 
 y.tab.cpp: yacc.y
