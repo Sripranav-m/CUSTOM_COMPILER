@@ -1,4 +1,15 @@
+<<<<<<< HEAD
+int _main(){
+    c=10;
+    int a ;
+    a=10;
+    int b;
+    b=10;
+    print(b);
+    print("12345");
+=======
 int main(){
     int a;
     int b;
+>>>>>>> 0aa4cf579b62f67acdc5d894d0387dd0e4aec4a9
 }

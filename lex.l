@@ -2,14 +2,26 @@
 #include <bits/stdc++.h>
 #include "y.tab.hpp"
 extern char mytext[10000];
+<<<<<<< HEAD
+
+=======
+>>>>>>> 0aa4cf579b62f67acdc5d894d0387dd0e4aec4a9
 %}
 
 letter [A-Za-z]
 underscore [_]
 digit [0-9]
+<<<<<<< HEAD
+ic ["]
+
 
 %%
 
+=======
+
+%%
+
+>>>>>>> 0aa4cf579b62f67acdc5d894d0387dd0e4aec4a9
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
 
 "int"			                        {return INT;}
@@ -56,6 +68,22 @@ digit [0-9]
 
 "++"                                    {return INC;}
 "--"                                    {return DEC;}
+<<<<<<< HEAD
+
+"+"                                     {return PLUS;}
+"-"                                     {return MINUS;}
+"*"                                     {return MULTIPLY;}
+"="                                     {return EQUALTO;}
+
+{ic}                                    {return IC;}
+({letter}+{digit}?)            {strcpy(mytext, yytext);return IDENTIFIER;}
+{underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
+("+"|"-")?{digit}+				        {strcpy(mytext, yytext);return NUMBER;}
+
+[ \t\r\n]	                                        ;
+.                                                   ;
+
+=======
 
 "+"                                     {return PLUS;}
 "-"                                     {return MINUS;}
@@ -69,6 +97,7 @@ digit [0-9]
 [ \t\r\n]	                                        ;
 .                                                   ;
 
+>>>>>>> 0aa4cf579b62f67acdc5d894d0387dd0e4aec4a9
 %%
 
 int yywrap(void){
