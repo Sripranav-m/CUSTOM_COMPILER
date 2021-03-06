@@ -41,13 +41,15 @@ ic ["]
     } 
 }
 
-"if"                                  {return IF;}
+"if"                                    {return IF;}
 "elif"                                  {return ELIF;}
-"else"                                {return ELSE;}
+"else"                                  {return ELSE;}
 "||"                                    {return OR;}
-"&&"                                   {return AND;}
-"!"                                   {return NOT;}
-
+"&&"                                    {return AND;}
+"!"                                     {return NOT;}
+"|"                                     {return BOR;}
+"&"                                     {return BAND;}
+"^"                                     {return BXOR;}
 ","										{return COMMA;}
 ";"										{return SEMICOLON;}
 

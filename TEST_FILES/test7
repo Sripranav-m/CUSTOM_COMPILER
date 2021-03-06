@@ -1,0 +1,5 @@
+int _main(){
+    int b;
+    b=23-120;
+    print(b);
+}

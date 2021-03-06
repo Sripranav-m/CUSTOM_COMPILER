@@ -39,7 +39,7 @@
 }
 
 %token 	INT IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
-%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC
+%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR
 
 %left PLUS
 %left MULTIPLY
@@ -52,7 +52,7 @@
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT PRINT_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCREMENT_STATEMENT DECREMENT_STATEMENT PARAM PARAMS PARAM_LIST_NT
 %type<node> INT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
-%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC 
+%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR
 
 %%
 
@@ -305,6 +305,24 @@ EXPRESSION: PEXPRESSION {
                 $2=new TreeNode("MULTIPLY",v);
                 vector<TreeNode*> u={$2};
                 $$=new TreeNode("EXPRESSION",u);
+            }
+			| PEXPRESSION BAND PEXPRESSION {
+                vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("BAND",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+            }
+			| PEXPRESSION BXOR PEXPRESSION {
+                vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("BXOR",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+            }
+			| PEXPRESSION BOR PEXPRESSION {
+                vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("BOR",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
             };
 
 
@@ -498,6 +516,15 @@ void CodeGenerator(TreeNode* root){
 			}
 			else if(typ=="MULTIPLY"){
 				text.push_back("mul rbx");
+			}
+			else if(typ=="BAND"){
+				text.push_back("and rbx");
+			}
+			else if(typ=="BOR"){
+				text.push_back("or rbx");
+			}
+			else if(typ=="BXOR"){
+				text.push_back("xor rbx");
 			}
 		}
 		else{

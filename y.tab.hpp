@@ -81,7 +81,10 @@ extern int yydebug;
     NEQ = 287,
     INC = 288,
     DEC = 289,
-    IC = 290
+    IC = 290,
+    BAND = 291,
+    BOR = 292,
+    BXOR = 293
   };
 #endif
 /* Tokens.  */
@@ -118,6 +121,9 @@ extern int yydebug;
 #define INC 288
 #define DEC 289
 #define IC 290
+#define BAND 291
+#define BOR 292
+#define BXOR 293
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -127,7 +133,7 @@ union YYSTYPE
 
 	class TreeNode* node;
 
-#line 131 "y.tab.hpp"
+#line 137 "y.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
