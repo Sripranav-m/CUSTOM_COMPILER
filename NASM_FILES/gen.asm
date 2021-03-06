@@ -7,19 +7,18 @@ _start:
 push rbp
 mov rbp , rsp
 sub rsp , 8
-sub rsp , 8
-sub rsp , 8
 mov rcx , rbp
 add rcx , -8
-mov rax , 10
-mov [rcx] , rax
-mov rcx , rbp
-add rcx , -16
 mov rax , 15
 mov [rcx] , rax
+sub rsp , 8
+mov rcx , 23
+mov rax , rcx
+mov rcx , 12
+mov rbx , rcx
+add rax , rbx
 mov rcx , rbp
-add rcx , -24
-mov rax , 20
+add rcx , -16
 mov [rcx] , rax
 mov rbx , rbp
 add rbx , -8
@@ -29,6 +28,17 @@ mov rbx , rbp
 add rbx , -16
 mov rax , [rbx]
 call _printRAX
+sub rsp , 8
+mov rcx , rbp
+add rcx , -8
+mov rax , [rcx]
+mov rcx , rbp
+add rcx , -16
+mov rbx , [rcx]
+mul rbx
+mov rcx , rbp
+add rcx , -24
+mov [rcx] , rax
 mov rbx , rbp
 add rbx , -24
 mov rax , [rbx]

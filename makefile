@@ -11,8 +11,25 @@ lex.yy.c: lex.l y.tab.hpp
 clean:
 	@rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen
 
-nasm:
+makenasm1:
 	./a.out < TEST_FILES/test1
+
+makenasm2:
+	./a.out < TEST_FILES/test2
+
+makenasm3:
+	./a.out < TEST_FILES/test3
+
+makenasm4:
+	./a.out < TEST_FILES/test4
+
+makenasm5:
+	./a.out < TEST_FILES/test5
+
+makenasm6:
+	./a.out < TEST_FILES/test6
+
+runnasm:
 	nasm -f elf64 -o gen.o NASM_FILES/gen.asm
 	ld gen.o -o gen
 	./gen

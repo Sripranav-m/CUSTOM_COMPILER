@@ -10,7 +10,7 @@
         public:
             vector<TreeNode*> children;   // children
             string NodeName;              // name of the node
-            string lex_val;               // lexical value, name of identifier etc.
+            string lex_val;              // lexical value, name of identifier etc.
             int level;	                  // for printing
             TreeNode(string NodeName, vector<TreeNode*> children) {
                 this->NodeName = NodeName;
@@ -461,13 +461,49 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov [rcx] , [rdx]");
 				}
 			}
+			else { // PLUS/MINUS/MULTIPLY NONE NAMES
+				CodeGenerator(root->children[0]->children[1]);
+                text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->lex_val]));
+				text.push_back("mov [rcx] , rax");
+            }
 		}
 	}
-	else if(root->NodeName=="EXPRESSION"){
-		///
-		return;
+	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
+		if(root->children[0]->NodeName=="PLUS" || root->children[0]->NodeName=="MINUS" || root->children[0]->NodeName=="MULTIPLY"){
+			if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->children[0]->lex_val]));
+				text.push_back("mov rax , [rcx]");
+			}
+			else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+				text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
+				text.push_back("mov rax , rcx");
+			}
+			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[1]->children[0]->lex_val]));
+				text.push_back("mov rbx , [rcx]");
+			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
+				text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
+				text.push_back("mov rbx , rcx");
+			}
+			string typ=root->children[0]->NodeName;
+			if(typ=="PLUS"){
+				text.push_back("add rax , rbx");
+			}
+			else if(typ=="MINUS"){
+				text.push_back("sub rax , rbx");
+			}
+			else if(typ=="MULTIPLY"){
+				text.push_back("mul rbx");
+			}
+		}
+		else{
+			return;
+		}
 	}
-	return;
 }
 void putx86inafile(){
 	ofstream MyFile("NASM_FILES/gen.asm");
