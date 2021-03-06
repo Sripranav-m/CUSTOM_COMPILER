@@ -367,7 +367,7 @@ extern FILE *yyin;
 
 int main(){
 	yyparse();
-	dotraversal(Abstract_Syntax_Tree);
+	//dotraversal(Abstract_Syntax_Tree);
 	CodeGenerator(Abstract_Syntax_Tree);
 	text.push_back("mov rax , 60");
 	text.push_back("mov rdi , 0");
@@ -440,8 +440,6 @@ void CodeGenerator(TreeNode* root){
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		text.push_back("mov rbx , rbp");
-		cout<<"===========\n";
-		cout<<to_string(stck[root->children[2]->lex_val])<<"\n";
 		text.push_back("add rbx , "+to_string(stck[root->children[2]->lex_val]));
 		text.push_back("mov rax , [rbx]");
 		text.push_back("call _printRAX");
