@@ -9,7 +9,7 @@ lex.yy.c: lex.l y.tab.hpp
 	lex lex.l
 
 clean:
-	@rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen
+	@rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen y.dot y.output 
 
 runnasm:
 	nasm -f elf64 -o gen.o NASM_FILES/gen.asm
