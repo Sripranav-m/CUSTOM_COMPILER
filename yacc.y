@@ -32,6 +32,7 @@
 	vector<string> bss;
 	vector<string> printint;
 	void CodeGenerator(TreeNode* root);
+	void putx86inafile();
 %}
 %union{
 	class TreeNode* node;
@@ -88,7 +89,7 @@ VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
-															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															stck[$2->lex_val]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
 					
 
@@ -98,6 +99,7 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
 																							};
+
 
 
 PARAMS: PARAM_LIST_NT {
@@ -139,6 +141,7 @@ STATEMENT_LIST: STATEMENT_LIST STATEMENT {
 							vector<TreeNode*> v = {$1};
                             $$ = new TreeNode("STATEMENT_LIST", v); 
 							} ;
+
 
 
 STATEMENT: ASSIGNMENT_STATEMENT {
@@ -266,7 +269,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
 															Num_variables++;
-															stck[$2->NodeName]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															stck[$2->lex_val]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
 
 
@@ -325,6 +328,7 @@ PEXPRESSION: INTEGER_NT {
 PRINT_ITEM : IDENTIFIER_NT {
 				vector<TreeNode*> v = {$1};
                 $$ = new TreeNode("PRINT_ITEM", v);
+				$$->lex_val=$1->lex_val;
 			};
 
 
@@ -363,7 +367,12 @@ extern FILE *yyin;
 
 int main(){
 	yyparse();
+	dotraversal(Abstract_Syntax_Tree);
 	CodeGenerator(Abstract_Syntax_Tree);
+	text.push_back("mov rax , 60");
+	text.push_back("mov rdi , 0");
+	text.push_back("syscall");
+	putx86inafile();
 	return 0;
 }
 // HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
@@ -377,11 +386,14 @@ void dotraversal(TreeNode* head){
 	}
 	return;
 }
-
+// This code generates the X86 code for our abstract syntax tree constructed.
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		text.push_back("section	.text");
 		text.push_back("global _start ");
+		text.push_back("_start:");
+		text.push_back("push rbp");
+		text.push_back("mov rbp , rsp");
 		printint.push_back("_printRAX:");printint.push_back("mov rcx, digitSpace");printint.push_back("mov rbx, 10");
 		printint.push_back("mov [rcx], rbx");printint.push_back("inc rcx");printint.push_back("mov [digitSpacePos], rcx");
 		printint.push_back("_printRAXLoop:");printint.push_back("mov rdx, 0");printint.push_back("mov rbx, 10");
@@ -424,30 +436,56 @@ void CodeGenerator(TreeNode* root){
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="LOCAL_DECLARATION"){
-		text.push_back("sub rsp 8");
+		text.push_back("sub rsp , 8");
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		text.push_back("mov rbx , rbp");
-		text.push_back("add rbx , "+stck[root->children[2]->lex_val]);
-		text.push_back("mov rax , rbx");
+		cout<<"===========\n";
+		cout<<to_string(stck[root->children[2]->lex_val])<<"\n";
+		text.push_back("add rbx , "+to_string(stck[root->children[2]->lex_val]));
+		text.push_back("mov rax , [rbx]");
 		text.push_back("call _printRAX");
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-		if(root->children[0].size()==2){
-			if(root->children[0]->children[1]->children[0].NodeName=="PEXPRESSION"){
-				if(root->children[0]->children[1]->children[0]->children[0].NodeName=="INTEGER_NT"){
-
+		if(root->children[0]->children.size()==2){
+			if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
+				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->lex_val]));
+					text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+					text.push_back("mov [rcx] , rax");
 				}
-				if(root->children[0]->children[1]->children[0]->children[0].NodeName=="IDENTIFIER_NT"){
-					
+				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->lex_val]));
+					text.push_back("mov rdx , rbp");
+					text.push_back("add rdx , "+to_string(stck[root->children[0]->children[1]->children[0]->children[0]->lex_val]));
+					text.push_back("mov [rcx] , [rdx]");
 				}
 			}
 		}
 	}
 	else if(root->NodeName=="EXPRESSION"){
+		///
 		return;
 	}
 	return;
+}
+void putx86inafile(){
+	ofstream MyFile("NASM_FILES/gen.asm");
+	for(int i=0;i<bss.size();i++){
+		MyFile<<bss[i]<<endl;
+	}
+	for(int i=0;i<data.size();i++){
+		MyFile<<data[i]<<endl;
+	}
+	for(int i=0;i<text.size();i++){
+		MyFile<<text[i]<<endl;
+	}
+	for(int i=0;i<printint.size();i++){
+		MyFile<<printint[i]<<endl;
+	}
+	MyFile.close();
 }
 
 

@@ -65,7 +65,7 @@ ic ["]
 "="                                     {return EQUALTO;}
 
 {ic}                                    {return IC;}
-({letter}+{digit}?)            {strcpy(mytext, yytext);return IDENTIFIER;}
+({letter}+{digit}?)                     {strcpy(mytext, yytext);return IDENTIFIER;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
 ("+"|"-")?{digit}+				        {strcpy(mytext, yytext);return NUMBER;}
 
