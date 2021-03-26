@@ -9,88 +9,65 @@ mov rbp , rsp
 sub rsp , 8
 mov rcx , rbp
 add rcx , -8
-mov rax , 25
+mov rax , 10
 mov [rcx] , rax
-mov rbx , rbp
-add rbx , -8
-mov rax , [rbx]
-call _printRAX
 sub rsp , 8
 mov rcx , rbp
 add rcx , -16
 mov rax , 20
 mov [rcx] , rax
-mov rbx , rbp
-add rbx , -16
-mov rax , [rbx]
-call _printRAX
 sub rsp , 8
 mov rcx , rbp
+add rcx , -24
+mov rax , 30
+mov [rcx] , rax
+LabelIf1:
+mov rcx , rbp
 add rcx , -8
 mov rax , [rcx]
 mov rcx , rbp
 add rcx , -16
 mov rbx , [rcx]
+cmp rax , rbx
+jge EndIf1
+mov rcx , rbp
+add rcx , -8
+mov rax , [rcx]
+mov rcx , 5
+mov rbx , rcx
 add rax , rbx
 mov rcx , rbp
-add rcx , -24
-mov [rcx] , rax
-mov rbx , rbp
-add rbx , -24
-mov rax , [rbx]
-call _printRAX
-mov rcx , rbp
 add rcx , -8
-mov rax , [rcx]
+mov [rcx] , rax
 mov rcx , rbp
 add rcx , -16
-mov rbx , [rcx]
-sub rax , rbx
-mov rcx , rbp
-add rcx , -24
-mov [rcx] , rax
-mov rbx , rbp
-add rbx , -24
-mov rax , [rbx]
-call _printRAX
-mov rcx , rbp
-add rcx , -8
 mov rax , [rcx]
+mov rcx , 5
+mov rbx , rcx
+add rax , rbx
 mov rcx , rbp
 add rcx , -16
-mov rbx , [rcx]
-mul rbx
+mov [rcx] , rax
 mov rcx , rbp
 add rcx , -24
-mov [rcx] , rax
-mov rbx , rbp
-add rbx , -24
-mov rax , [rbx]
-call _printRAX
-mov rcx , 20
-mov rax , rcx
-mov rcx , 30
+mov rax , [rcx]
+mov rcx , 5
 mov rbx , rcx
 add rax , rbx
 mov rcx , rbp
 add rcx , -24
 mov [rcx] , rax
+EndIf1:
 mov rbx , rbp
-add rbx , -24
+add rbx , -8
 mov rax , [rbx]
 call _printRAX
-sub rsp , 8
-mov rcx , 1
-mov rax , rcx
-mov rcx , rbp
-add rcx , -24
-mov rbx , [rcx]
-add rax , rbx
-mov rcx , rbp
-add rcx , -32
-mov [rcx] , rax
 mov rbx , rbp
-add rbx , -32
+add rbx , -16
+mov rax , [rbx]
+call _printRAX
+mov rbx , rbp
+add rbx , -24
 mov rax , [rbx]
 call _printRAX
 sub rsp , 8
@@ -98,58 +75,39 @@ mov rcx , rbp
 add rcx , -32
 mov rax , 0
 mov [rcx] , rax
-mov rcx , rbp
-add rcx , -40
-mov rax , 1
-mov [rcx] , rax
-mov rbx , rbp
-add rbx , -40
-mov rax , [rbx]
-call _printRAX
-mov rcx , rbp
-add rcx , -32
-mov [rcx] , rax
 mov rbx , rbp
 add rbx , -32
 mov rax , [rbx]
 call _printRAX
-sub rsp , 8
+LabelWhile2:
 mov rcx , rbp
-add rcx , -48
-mov [rcx] , rax
+add rcx , -8
+mov rax , [rcx]
+mov rcx , 100
+mov rbx , rcx
+cmp rax , rbx
+jge EndWhile2
 mov rbx , rbp
-add rbx , -48
+add rbx , -32
 mov rax , [rbx]
 call _printRAX
 mov rcx , rbp
-add rcx , -40
+add rcx , -8
+mov rax , [rcx]
+mov rcx , 20
+mov rbx , rcx
+add rax , rbx
+mov rcx , rbp
+add rcx , -8
 mov [rcx] , rax
-mov rbx , rbp
-add rbx , -40
-mov rax , [rbx]
-call _printRAX
 mov rbx , rbp
 add rbx , -8
 mov rax , [rbx]
 call _printRAX
-mov rbx , rbp
-add rbx , -16
-mov rax , [rbx]
-call _printRAX
-mov rbx , rbp
-add rbx , -24
-mov rax , [rbx]
-call _printRAX
+jmp LabelWhile2
+EndWhile2:
 mov rbx , rbp
 add rbx , -32
-mov rax , [rbx]
-call _printRAX
-mov rbx , rbp
-add rbx , -40
-mov rax , [rbx]
-call _printRAX
-mov rbx , rbp
-add rbx , -48
 mov rax , [rbx]
 call _printRAX
 mov rax , 60

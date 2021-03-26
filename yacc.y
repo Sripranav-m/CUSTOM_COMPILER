@@ -29,10 +29,11 @@
 	void dotraversal(TreeNode* head);
 	vector<string> text;
 	vector<string> data;
-	vector<string> bss;
-	vector<string> printint;
+	vector<string> bss; // 
+	vector<string> printint; // To include the print subroutine
 	void CodeGenerator(TreeNode* root);
 	void putx86inafile();
+	int count_loops=0;
 %}
 %union{
 	class TreeNode* node;
@@ -186,6 +187,7 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 			};
 
 
+
 PRINT_STATEMENT : PRINT ONB PRINT_ITEM CNB SEMICOLON {
 												$1 = new TreeNode("PRINT");
 												$2 = new TreeNode("ONB");
@@ -323,7 +325,43 @@ EXPRESSION: PEXPRESSION {
                 $2=new TreeNode("BOR",v);
                 vector<TreeNode*> u={$2};
                 $$=new TreeNode("EXPRESSION",u);
-            };
+            }
+			| PEXPRESSION GE PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("GE",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| PEXPRESSION LE PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("LE",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| PEXPRESSION GT PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("GT",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| PEXPRESSION LT PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("LT",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| PEXPRESSION EE PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("EE",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| PEXPRESSION NEQ PEXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("NEQ",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			};
 
 
 
@@ -367,6 +405,7 @@ IDENTIFIER_NT: IDENTIFIER {
 						};
 
 
+
 FUNCTION_IDENTIFIER_NT : FUNCTION_IDENTIFIER {
 							$1 = new TreeNode("FUNCTION_IDENTIFIER");
                             vector<TreeNode*> v = {$1};
@@ -395,6 +434,7 @@ int main(){
 }
 // HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
 // Basically,this is to check whether the Abstract syntax tree is correct or not
+// Doing a traversal on the tree that we generated
 void dotraversal(TreeNode* head){
 	cout<<"NodeName: "<<head->NodeName<<"   ";
 	cout<<"Lexval: "<<head->lex_val<<endl;
@@ -462,7 +502,7 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("mov rax , [rbx]");
 		text.push_back("call _printRAX");
 	}
-	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
+	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){ 
 		if(root->children[0]->children.size()==2){
 			if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
 				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
@@ -479,7 +519,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov [rcx] , [rdx]");
 				}
 			}
-			else { // PLUS/MINUS/MULTIPLY NONE NAMES
+			else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 				CodeGenerator(root->children[0]->children[1]);
                 text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->lex_val]));
@@ -487,48 +527,80 @@ void CodeGenerator(TreeNode* root){
             }
 		}
 	}
-	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		if(root->children[0]->NodeName=="PLUS" || root->children[0]->NodeName=="MINUS" || root->children[0]->NodeName=="MULTIPLY"){
-			if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->children[0]->lex_val]));
-				text.push_back("mov rax , [rcx]");
-			}
-			else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-				text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
-				text.push_back("mov rax , rcx");
-			}
-			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(stck[root->children[0]->children[1]->children[0]->lex_val]));
-				text.push_back("mov rbx , [rcx]");
-			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
-				text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
-				text.push_back("mov rbx , rcx");
-			}
-			string typ=root->children[0]->NodeName;
-			if(typ=="PLUS"){
-				text.push_back("add rax , rbx");
-			}
-			else if(typ=="MINUS"){
-				text.push_back("sub rax , rbx");
-			}
-			else if(typ=="MULTIPLY"){
-				text.push_back("mul rbx");
-			}
-			else if(typ=="BAND"){
-				text.push_back("and rbx");
-			}
-			else if(typ=="BOR"){
-				text.push_back("or rbx");
-			}
-			else if(typ=="BXOR"){
-				text.push_back("xor rbx");
-			}
+	else if(root->NodeName=="IF_STATEMENT"){
+		count_loops++;
+		string LabelIf="LabelIf"+to_string(count_loops);
+		string EndIf="EndIf"+to_string(count_loops);
+		text.push_back(LabelIf+":");
+		if(root->children[2]->children[0]->NodeName=="GE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jl "+EndIf);
 		}
-		else{
-			return;
+		if(root->children[2]->children[0]->NodeName=="LE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jg "+EndIf);
+		}
+		if(root->children[2]->children[0]->NodeName=="GT"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jle "+EndIf);
+		}
+		if(root->children[2]->children[0]->NodeName=="LT"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jge "+EndIf);
+
+		}
+		if(root->children[2]->children[0]->NodeName=="EE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jne "+EndIf);
+		}
+		if(root->children[2]->children[0]->NodeName=="NEQ"){
+			CodeGenerator(root->children[2]);
+			text.push_back("je "+EndIf);
+		}
+		CodeGenerator(root->children[4]);
+		/* text.push_back("jmp "+LabelIf); */
+		text.push_back(EndIf+":");
+	}
+	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
+		if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rcx , "+to_string(stck[root->children[0]->children[0]->children[0]->lex_val]));
+			text.push_back("mov rax , [rcx]");
+		}
+		else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+			text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
+			text.push_back("mov rax , rcx");
+		}
+		if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rcx , "+to_string(stck[root->children[0]->children[1]->children[0]->lex_val]));
+			text.push_back("mov rbx , [rcx]");
+		}
+		else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
+			text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
+			text.push_back("mov rbx , rcx");
+		}
+		string typ=root->children[0]->NodeName;
+		if(typ=="PLUS"){
+			text.push_back("add rax , rbx");
+		}
+		else if(typ=="MINUS"){
+			text.push_back("sub rax , rbx");
+		}
+		else if(typ=="MULTIPLY"){
+			text.push_back("mul rbx");
+		}
+		else if(typ=="BAND"){
+			text.push_back("and rbx");
+		}
+		else if(typ=="BOR"){
+			text.push_back("or rbx");
+		}
+		else if(typ=="BXOR"){
+			text.push_back("xor rbx");
+		}
+		else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
+			text.push_back("cmp rax , rbx");
 		}
 	}
 }
