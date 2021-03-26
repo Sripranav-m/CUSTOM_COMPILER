@@ -561,6 +561,41 @@ void CodeGenerator(TreeNode* root){
 		/* text.push_back("jmp "+LabelIf); */
 		text.push_back(EndIf+":");
 	}
+
+	else if(root->NodeName=="WHILE_STATEMENT"){
+		count_loops++;
+		string LabelWhile="LabelWhile"+to_string(count_loops);
+		string EndWhile="EndWhile"+to_string(count_loops);
+		text.push_back(LabelWhile+":");
+		if(root->children[2]->children[0]->NodeName=="GE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jl "+EndWhile);
+		}
+		if(root->children[2]->children[0]->NodeName=="LE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jg "+EndWhile);
+		}
+		if(root->children[2]->children[0]->NodeName=="GT"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jle "+EndWhile);
+		}
+		if(root->children[2]->children[0]->NodeName=="LT"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jge "+EndWhile);
+
+		}
+		if(root->children[2]->children[0]->NodeName=="EE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jne "+EndWhile);
+		}
+		if(root->children[2]->children[0]->NodeName=="NEQ"){
+			CodeGenerator(root->children[2]);
+			text.push_back("je "+EndWhile);
+		}
+		CodeGenerator(root->children[4]);
+		text.push_back("jmp "+LabelWhile);
+		text.push_back(EndWhile+":");
+	}
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
 		if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 			text.push_back("mov rcx , rbp");
