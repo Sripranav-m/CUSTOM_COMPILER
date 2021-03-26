@@ -1,33 +1,6 @@
 int _main(){
     int a;
-    a=10;
-    int b;
-    b=20;
-    int c;
-    c=30;
-    if(a<b){
-        a=a+5;
-        b=b+5;
-        c=c+5;
-    }
+    scan(a);
     print(a);
-    print(b);
-    print(c);
-    int d;
-    d=0;
-    print(d);
-    while(a<100){
-        print(d);
-        a=a+20;
-        print(a);
-    }
-    print(d);
-    int i;
-    for(i=1;i<5;i++;){
-        print(i);
-        print(d);
-        d++;
-    }
-    print(d);
 }
 

@@ -33,6 +33,9 @@
 	vector<string> printint; // To include the print subroutine
 	void CodeGenerator(TreeNode* root);
 	void putx86inafile();
+	void set_integer_print_subroutine();
+	void set_integer_scan_subroutine();
+	void string_to_number_subroutine();
 	int count_loops=0;
 %}
 %union{
@@ -50,7 +53,7 @@
 %type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
 %type<node> EXPRESSION PEXPRESSION INTEGER_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
-%type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT PRINT_ITEM
+%type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
 %type<node> INT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
 %type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR
@@ -179,17 +182,31 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 			| PRINT_STATEMENT{
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
+			}
+			| SCAN_STATEMENT{
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("STATEMENT",v);
 			};
 
 
 
-PRINT_STATEMENT : PRINT ONB PRINT_ITEM CNB SEMICOLON {
+PRINT_STATEMENT : PRINT ONB PRINT_SCAN_ITEM CNB SEMICOLON {
 												$1 = new TreeNode("PRINT");
 												$2 = new TreeNode("ONB");
 												$4 = new TreeNode("CNB");
 												$5=new TreeNode("SEMICOLON");
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("PRINT_STATEMENT",v);
+											} ;
+
+
+SCAN_STATEMENT : SCAN ONB PRINT_SCAN_ITEM CNB SEMICOLON {
+												$1 = new TreeNode("SCAN");
+												$2 = new TreeNode("ONB");
+												$4 = new TreeNode("CNB");
+												$5=new TreeNode("SEMICOLON");
+												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
+												$$ = new TreeNode("SCAN_STATEMENT",v);
 											} ;
 
 
@@ -373,9 +390,9 @@ PEXPRESSION: INTEGER_NT {
 			};
 
 
-PRINT_ITEM : IDENTIFIER_NT {
+PRINT_SCAN_ITEM : IDENTIFIER_NT {
 				vector<TreeNode*> v = {$1};
-                $$ = new TreeNode("PRINT_ITEM", v);
+                $$ = new TreeNode("PRINT_SCAN_ITEM", v);
 				$$->lex_val=$1->lex_val;
 			};
 
@@ -444,18 +461,8 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("_start:");
 		text.push_back("push rbp");
 		text.push_back("mov rbp , rsp");
-		printint.push_back("_printRAX:");printint.push_back("mov rcx, digitSpace");printint.push_back("mov rbx, 10");
-		printint.push_back("mov [rcx], rbx");printint.push_back("inc rcx");printint.push_back("mov [digitSpacePos], rcx");
-		printint.push_back("_printRAXLoop:");printint.push_back("mov rdx, 0");printint.push_back("mov rbx, 10");
-		printint.push_back("div rbx");printint.push_back("push rax");printint.push_back("add rdx, 48");
-		printint.push_back("mov rcx, [digitSpacePos]");printint.push_back("mov [rcx], dl");printint.push_back("inc rcx");
-		printint.push_back("mov [digitSpacePos], rcx");printint.push_back("pop rax");printint.push_back("cmp rax, 0");
-		printint.push_back("jne _printRAXLoop");printint.push_back("_printRAXLoop2:");printint.push_back("mov rcx, [digitSpacePos]");
-		printint.push_back("mov rax, 1");printint.push_back("mov rdi, 1");printint.push_back("mov rsi, rcx");
-		printint.push_back("mov rdx, 1");printint.push_back("syscall");printint.push_back("mov rcx, [digitSpacePos]");
-		printint.push_back("dec rcx");printint.push_back("mov [digitSpacePos], rcx");printint.push_back("cmp rcx, digitSpace");
-		printint.push_back("jge _printRAXLoop2");printint.push_back("ret");
-		bss.push_back("section .bss");bss.push_back("digitSpace resb 100");bss.push_back("digitSpacePos resb 8");
+		set_integer_print_subroutine();
+		set_integer_scan_subroutine();
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="DECLARATION_LIST"){
@@ -493,6 +500,18 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("add rbx , "+to_string(stck[root->children[2]->lex_val]));
 		text.push_back("mov rax , [rbx]");
 		text.push_back("call _printRAX");
+	}
+	else if(root->NodeName=="SCAN_STATEMENT"){
+		text.push_back("mov rax , 0");
+		text.push_back("mov rdi , 0");
+		text.push_back("mov rsi , scanned");
+		text.push_back("mov rdx , 16");
+		text.push_back("syscall");
+		string_to_number_subroutine();
+		text.push_back("mov rcx , rbp");
+		text.push_back("add rcx , "+to_string(stck[root->children[2]->children[0]->lex_val]));
+		text.push_back("mov [rcx] , rax");
+
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){ 
 		if(root->children[0]->children.size()==2){
@@ -703,4 +722,62 @@ void putx86inafile(){
 void yyerror(char* temp){
 	cout<<"Parsing Terminated...Syntax Error:("<<endl;
 	exit(0);
+}
+
+void set_integer_print_subroutine(){ // prints the string in the rax register , custom made subroutine by me
+	printint.push_back("_printRAX:");
+	printint.push_back("mov rcx, digitSpace");
+	printint.push_back("mov rbx, 10");
+	printint.push_back("mov [rcx], rbx");
+	printint.push_back("inc rcx");
+	printint.push_back("mov [digitSpacePos], rcx");
+	printint.push_back("_printRAXLoop:");
+	printint.push_back("mov rdx, 0");
+	printint.push_back("mov rbx, 10");
+	printint.push_back("div rbx");
+	printint.push_back("push rax");
+	printint.push_back("add rdx, 48");
+	printint.push_back("mov rcx, [digitSpacePos]");
+	printint.push_back("mov [rcx], dl");
+	printint.push_back("inc rcx");
+	printint.push_back("mov [digitSpacePos], rcx");
+	printint.push_back("pop rax");
+	printint.push_back("cmp rax, 0");
+	printint.push_back("jne _printRAXLoop");
+	printint.push_back("_printRAXLoop2:");
+	printint.push_back("mov rcx, [digitSpacePos]");
+	printint.push_back("mov rax, 1");
+	printint.push_back("mov rdi, 1");
+	printint.push_back("mov rsi, rcx");
+	printint.push_back("mov rdx, 1");
+	printint.push_back("syscall");
+	printint.push_back("mov rcx, [digitSpacePos]");
+	printint.push_back("dec rcx");
+	printint.push_back("mov [digitSpacePos], rcx");
+	printint.push_back("cmp rcx, digitSpace");
+	printint.push_back("jge _printRAXLoop2");
+	printint.push_back("ret");
+	bss.push_back("section .bss");
+	bss.push_back("digitSpace resb 100");
+	bss.push_back("digitSpacePos resb 8");
+}
+
+void set_integer_scan_subroutine(){
+	bss.push_back("scanned resb 16");
+}
+void string_to_number_subroutine(){ // takes the string inside the scanned in bss and returns output inside rax register , custom made subroutine by me
+	text.push_back("xor rax, rax");
+	text.push_back("mov rdx , scanned");
+	text.push_back("top:");
+	text.push_back("movzx rcx , byte [rdx]");
+	text.push_back("add rdx , 1");
+	text.push_back("cmp rcx , '0' ");
+	text.push_back("jl done");
+	text.push_back("cmp rcx , '9' ");
+	text.push_back("jg done");
+	text.push_back("sub rcx , '0'");
+	text.push_back("imul rax , 10");
+	text.push_back("add rax , rcx");
+	text.push_back("jmp top");
+	text.push_back("done:");
 }
