@@ -1,0 +1,62 @@
+if(a<b){
+    a
+    b
+    c
+
+}
+d
+e
+f
+
+
+LabelIf:
+cmp a b
+j x
+
+x:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT ;
+EXPRESSION :  PEXPRESSION LT PEXPRESSION
+PEXPRESSION: INTEGER_NT | IDENTIFIER_NT | ONB EXPRESSION CNB;
+
+
+
+
+
+a=b;
+a=10;
+
+A=10+20
+
+
+rax 30
+
+rcx rbp
+rcx = rcx -8
+
+mov [rcx] rax
+
+
+
+
+a=(b+c) (b-c)
+
+
+
+ASSI -> = -> I , E

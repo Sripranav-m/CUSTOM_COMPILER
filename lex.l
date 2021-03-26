@@ -1,68 +1,81 @@
-/*Auxiliary declarations start here*/
-
-/* The auxiliary declarations are copied as such by LEX to the output lex.yy.c file. */
-/* This C code consists of instructions to the C compiler and are not processed by the LEX tool. */
-/* The auxiliary declarations (which are optional) are written in C language and are enclosed within ' %{ ' and ' %} '. */
-/* It is generally used to declare functions, include header files, or define global variables and constants. */
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "y.tab.h"
+#include <bits/stdc++.h>
+#include "y.tab.hpp"
+extern char mytext[10000];
 %}
 
-
-
-/*Regular definitions */
-
-delim [ \t\n]*
 letter [A-Za-z]
 underscore [_]
 digit [0-9]
-int int
-plus [+]
-minus [-]
-equal [=]
-multiply [*]
+ic ["]
 
 
-/* TRANSITION RULES */
 %%
 
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
 
-{int}			                        {return INT;}
-{plus}                                  {return PLUS;}
-{minus}                                 {return MINUS;}
-{multiply}                              {return MULTIPLY;}
-{equal}                                 {return EQUALTO;}				
+"int"			                        {return INT;}
+"for"                                     {return FOR;}
+"while"                                   {return WHILE;}
+"print"                                   {return PRINT;}
+"scan"                                    {return SCAN;}
 
-{letter}+{digit}?                       {strcpy(yylval.string, yytext);return IDENTIFIER;}
-({plus}|{minus})?{digit}+				{strcpy(yylval.string, yytext);return NUMBER;}
+"=="|"<="|">="|">"|"<"|"!=" {
+    if(strcmp(yytext, "==") == 0) {
+        return EE;
+    }
+    else if(strcmp(yytext, ">=") == 0) {
+        return GE;
+    }
+    else if(strcmp(yytext, "<=") == 0) {
+        return LE;
+    }
+    else if(strcmp(yytext, ">") == 0) {
+        return GT;
+    }
+    else if(strcmp(yytext, "<") == 0) {
+        return LT;
+    }
+    else if(strcmp(yytext, "!=") == 0) {
+        return NEQ;
+    } 
+}
 
-
-
+"if"                                    {return IF;}
+"elif"                                  {return ELIF;}
+"else"                                  {return ELSE;}
+"||"                                    {return OR;}
+"&&"                                    {return AND;}
+"!"                                     {return NOT;}
+"|"                                     {return BOR;}
+"&"                                     {return BAND;}
+"^"                                     {return BXOR;}
 ","										{return COMMA;}
 ";"										{return SEMICOLON;}
+
 "{"										{return OFB;}
 "}"										{return CFB;}
 "("                                     {return ONB;}
 ")"                                     {return CNB;}
+
+"++"                                    {return INC;}
+"--"                                    {return DEC;}
+
+"+"                                     {return PLUS;}
+"-"                                     {return MINUS;}
+"*"                                     {return MULTIPLY;}
+"="                                     {return EQUALTO;}
+
+{ic}                                    {return IC;}
+({letter}+{digit}?)                     {strcpy(mytext, yytext);return IDENTIFIER;}
+{underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
+{digit}+				        {strcpy(mytext, yytext);return NUMBER;}
+
 [ \t\r\n]	                                        ;
 .                                                   ;
 
 %%
 
-
-/* AUXILIARY FUNCTIONS */
-
-
-
-/* If yywrap() returns zero (indicating false) yylex() assumes there is more input and it continues scanning from the location pointed to by yyin. */
-/* If yywrap() returns a non-zero value (indicating true), yylex() terminates the scanning process and returns 0 (i.e. “wraps up”). */
-/* If the programmer wishes to scan more than one input file using the generated lexical analyzer, it can be simply done by setting yyin to a new input file in yywrap() and return 0. */
-
-
-// int yywrap(){
-//     return 1;
-// }
+int yywrap(void){
+    return 1;
+}
