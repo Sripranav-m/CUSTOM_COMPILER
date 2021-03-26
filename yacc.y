@@ -40,7 +40,7 @@
 	class TreeNode* node;
 }
 
-%token 	INT STRING CHARACTER IDENTIFIER CHAR STR FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+%token 	INT STRING CHARACTER FLOAT IDENTIFIER CHAR STR FUNCTION_IDENTIFIER NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
 %token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR
 
 %left PLUS
@@ -50,10 +50,10 @@
 
 %type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
-%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S INTEGER_NT STRING_NT CHARACTER_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
+%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
-%type<node> INT STRING CHARACTER IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER STR CHAR COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+%type<node> INT STRING CHARACTER FLOAT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
 %type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR
 
 %%
@@ -91,7 +91,8 @@ VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
-															symbol_table[{$2->lex_val,"int"}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															string var_type=$1->children[0]->NodeName;
+															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
 					
 
@@ -237,6 +238,7 @@ WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT {
 
 
 
+
 FOR_STATEMENT: FOR ONB ASSIGNMENT_STATEMENT EXPRESSION SEMICOLON INCDEC_STATEMENT CNB STATEMENT {
 												$1 = new TreeNode("FOR");
 												$2 = new TreeNode("ONB");
@@ -279,7 +281,13 @@ VARIABLE_TYPE: INT {
 					$1 = new TreeNode("CHARACTER");
 					vector<TreeNode*> v = {$1};
 					$$ = new TreeNode("VARIABLE_TYPE",v);
+				}
+				| FLOAT {
+					$1 = new TreeNode("FLOAT");
+					vector<TreeNode*> v = {$1};
+					$$ = new TreeNode("VARIABLE_TYPE",v);
 				};
+
 
 
 
@@ -288,8 +296,8 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
 															Num_variables++;
-
-															symbol_table[{$2->lex_val,"int"}]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															string var_type=$1->children[0]->NodeName;
+															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 															};
 
 
@@ -383,6 +391,10 @@ EXPRESSION: PEXPRESSION {
 			| PEXPRESSION_S {
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("EXPRESSION",v);
+			}
+			| PEXPRESSION_F{
+				vector<TreeNode*> v={$1};
+				$$=new TreeNode("EXPRESSION",v);
 			};
 
 
@@ -412,6 +424,11 @@ PEXPRESSION_S : STRING_NT {
 			}
 
 
+PEXPRESSION_F : FLOAT_NT {
+					vector<TreeNode*> v={$1};
+					$$=new TreeNode("PEXPRESSION",v);
+				};
+
 
 PRINT_SCAN_ITEM : IDENTIFIER_NT {
 				vector<TreeNode*> v = {$1};
@@ -434,6 +451,13 @@ STRING_NT : STR{
 				$$->lex_val = mytext;
 			};
 
+
+FLOAT_NT : FLOATING{
+				$1 = new TreeNode("FLOATING");
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("FLOAT_NT", v);
+				$$->lex_val = mytext;
+			};
 
 
 CHARACTER_NT : CHAR {
@@ -535,7 +559,7 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		text.push_back("mov rbx , rbp");
 		
-		text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"int"}]));
+		text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"INT"}]));
 		text.push_back("mov rax , [rbx]");
 		text.push_back("call _printRAX");
 	}
@@ -547,31 +571,31 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("syscall");
 		string_to_number_subroutine();
 		text.push_back("mov rcx , rbp");
-		text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"int"}]));
+		text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
 		text.push_back("mov [rcx] , rax");
 
 	}
-	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){ 
+	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
 		if(root->children[0]->children.size()==2){
 			if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
 				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 					text.push_back("mov rcx , rbp");
-					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"int"}]));
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
 					text.push_back("mov [rcx] , rax");
 				}
 				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 					text.push_back("mov rcx , rbp");
-					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"int"}]));
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov rdx , rbp");
-					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"int"}]));
+					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov [rcx] , [rdx]");
 				}
 			}
 			else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 				CodeGenerator(root->children[0]->children[1]);
                 text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"int"}]));
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				text.push_back("mov [rcx] , rax");
             }
 		}
@@ -579,14 +603,14 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="INCDEC_STATEMENT"){
 		if(root->children[1]->NodeName=="INC"){
 			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->lex_val,"int"}]));
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->lex_val,"INT"}]));
 			text.push_back("mov rax , [rcx]");
 			text.push_back("add rax , 1");
 			text.push_back("mov [rcx] , rax");
 		}
 		else if(root->children[1]->NodeName=="DEC"){
 			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->lex_val,"int"}]));
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->lex_val,"INT"}]));
 			text.push_back("mov rax , [rcx]");
 			text.push_back("add rax , -1");
 			text.push_back("mov [rcx] , rax");
@@ -699,7 +723,7 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
 		if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"int"}]));
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
 			text.push_back("mov rax , [rcx]");
 		}
 		else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
@@ -708,7 +732,7 @@ void CodeGenerator(TreeNode* root){
 		}
 		if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
 			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"int"}]));
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
 			text.push_back("mov rbx , [rcx]");
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
@@ -726,13 +750,13 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mul rbx");
 		}
 		else if(typ=="BAND"){
-			text.push_back("and rbx");
+			text.push_back("and rax , rbx");
 		}
 		else if(typ=="BOR"){
-			text.push_back("or rbx");
+			text.push_back("or rax , rbx");
 		}
 		else if(typ=="BXOR"){
-			text.push_back("xor rbx");
+			text.push_back("xor rax , rbx");
 		}
 		else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
 			text.push_back("cmp rax , rbx");

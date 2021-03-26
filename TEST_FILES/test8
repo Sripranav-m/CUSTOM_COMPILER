@@ -10,8 +10,5 @@ int _main(){
     print(j);
     j=1+1;
     print(j);
-    g=0;
-    print(g);
-    j=i+j;
-    print(j);
+    
 }

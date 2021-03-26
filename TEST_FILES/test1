@@ -33,6 +33,7 @@ int _main(){
     print(d); # Print d
     
     int f;
+    f=1;
     f=d|f;
     print(f); # Print f
 

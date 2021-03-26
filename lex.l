@@ -17,6 +17,7 @@ ic ["]
 "int"			                          {return INT;}
 "string"                                  {return STRING;}
 "character"                               {return CHARACTER;}
+"float"                                   {return  FLOAT;}
 "for"                                     {return FOR;}
 "while"                                   {return WHILE;}
 "print"                                   {return PRINT;}
@@ -74,6 +75,7 @@ ic ["]
 ([']({letter}|{digit}|[" "]|{underscore})['])  {strcpy(mytext, yytext);return CHAR;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
 {digit}+				        {strcpy(mytext, yytext);return NUMBER;}
+([+|-]?{digit}+[.]{digit}?{digit}?{digit}?)       {strcpy(mytext,yytext);return FLOATING;}
 
 [ \t\r\n]	                                        ;
 .                                                   ;
