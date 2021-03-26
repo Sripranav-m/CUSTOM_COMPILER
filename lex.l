@@ -14,7 +14,9 @@ ic ["]
 
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
 
-"int"			                        {return INT;}
+"int"			                          {return INT;}
+"string"                                  {return STRING;}
+"character"                               {return CHARACTER;}
 "for"                                     {return FOR;}
 "while"                                   {return WHILE;}
 "print"                                   {return PRINT;}
@@ -68,6 +70,8 @@ ic ["]
 
 {ic}                                    {return IC;}
 ({letter}+{digit}?)                     {strcpy(mytext, yytext);return IDENTIFIER;}
+(["]({letter}|{digit}|[" "]|{underscore})*["])  {strcpy(mytext, yytext);return STR;}
+([']({letter}|{digit}|[" "]|{underscore})['])  {strcpy(mytext, yytext);return CHAR;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
 {digit}+				        {strcpy(mytext, yytext);return NUMBER;}
 
