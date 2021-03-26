@@ -51,7 +51,7 @@
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
 %type<node> EXPRESSION PEXPRESSION INTEGER_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT PRINT_ITEM
-%type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCREMENT_STATEMENT DECREMENT_STATEMENT PARAM PARAMS PARAM_LIST_NT
+%type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
 %type<node> INT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
 %type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR
 
@@ -168,12 +168,7 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 				$$ = new TreeNode("STATEMENT",v);
 			}
 
-			| INCREMENT_STATEMENT {
-				vector<TreeNode*> v = {$1};
-				$$ = new TreeNode("STATEMENT",v);
-			}
-
-			| DECREMENT_STATEMENT {
+			| INCDEC_STATEMENT {
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
 			}
@@ -227,33 +222,30 @@ WHILE_STATEMENT: WHILE ONB EXPRESSION CNB STATEMENT {
 
 
 
-FOR_STATEMENT: FOR ONB VARIABLE_TYPE EXPRESSION SEMICOLON EXPRESSION SEMICOLON INCREMENT_STATEMENT CNB STATEMENT {
+FOR_STATEMENT: FOR ONB ASSIGNMENT_STATEMENT EXPRESSION SEMICOLON INCDEC_STATEMENT CNB STATEMENT {
 												$1 = new TreeNode("FOR");
 												$2 = new TreeNode("ONB");
 												$5 = new TreeNode("SEMICOLON");
-												$7 = new TreeNode("SEMICOLON");
-												$9 = new TreeNode("CNB");
-												vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6,$7,$8,$9,$10};
+												$7 = new TreeNode("CNB");
+												vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6,$7,$8};
 												$$ = new TreeNode("FOR_STATEMENT",v);				
 										};
 
 
 
-INCREMENT_STATEMENT: IDENTIFIER_NT INC SEMICOLON   {
+INCDEC_STATEMENT: IDENTIFIER_NT INC SEMICOLON   {
                                     $3 = new TreeNode("SEMICOLON");
                                     $2 = new TreeNode("INC");
                                     vector<TreeNode*> v = {$1, $2, $3};
-                                    $$ = new TreeNode("INCREMENT_STATEMENT", v);
-                                };
-
-
-
-DECREMENT_STATEMENT: IDENTIFIER_NT DEC SEMICOLON   {
+                                    $$ = new TreeNode("INCDEC_STATEMENT", v);
+                                }
+				|
+				IDENTIFIER_NT DEC SEMICOLON {
                                     $3 = new TreeNode("SEMICOLON");
                                     $2 = new TreeNode("DEC");
                                     vector<TreeNode*> v = {$1, $2, $3};
-                                    $$ = new TreeNode("DECREMENT_STATEMENT", v);
-                                };
+                                    $$ = new TreeNode("INCDEC_STATEMENT", v);
+                };
 
 
 
@@ -527,6 +519,22 @@ void CodeGenerator(TreeNode* root){
             }
 		}
 	}
+	else if(root->NodeName=="INCDEC_STATEMENT"){
+		if(root->children[1]->NodeName=="INC"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rcx , "+to_string(stck[root->children[0]->lex_val]));
+			text.push_back("mov rax , [rcx]");
+			text.push_back("add rax , 1");
+			text.push_back("mov [rcx] , rax");
+		}
+		else if(root->children[1]->NodeName=="DEC"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rcx , "+to_string(stck[root->children[0]->lex_val]));
+			text.push_back("mov rax , [rcx]");
+			text.push_back("add rax , -1");
+			text.push_back("mov [rcx] , rax");
+		}
+	}
 	else if(root->NodeName=="IF_STATEMENT"){
 		count_loops++;
 		string LabelIf="LabelIf"+to_string(count_loops);
@@ -561,19 +569,54 @@ void CodeGenerator(TreeNode* root){
 		/* text.push_back("jmp "+LabelIf); */
 		text.push_back(EndIf+":");
 	}
+	else if(root->NodeName=="FOR_STATEMENT"){
+		count_loops++;
+		CodeGenerator(root->children[2]);
+		string LabelFor="LabelFor"+to_string(count_loops);
+		string EndFor="EndFor"+to_string(count_loops);
+		text.push_back(LabelFor+":");
+		if(root->children[3]->children[0]->NodeName=="NEQ"){
+			CodeGenerator(root->children[3]);
+			text.push_back("je "+EndFor);
+		}
+		if(root->children[3]->children[0]->NodeName=="GE"){
+			CodeGenerator(root->children[3]);
+			text.push_back("jl "+EndFor);
+		}
+		if(root->children[3]->children[0]->NodeName=="GT"){
+			CodeGenerator(root->children[3]);
+			text.push_back("jle "+EndFor);
+		}
+		if(root->children[3]->children[0]->NodeName=="LT"){
+			CodeGenerator(root->children[3]);
+			text.push_back("jge "+EndFor);
 
+		}
+		if(root->children[3]->children[0]->NodeName=="LE"){
+			CodeGenerator(root->children[3]);
+			text.push_back("jg "+EndFor);
+		}
+		if(root->children[3]->children[0]->NodeName=="EE"){
+			CodeGenerator(root->children[3]);
+			text.push_back("jne "+EndFor);
+		}
+		CodeGenerator(root->children[7]);
+		CodeGenerator(root->children[5]);
+		text.push_back("jmp "+LabelFor);
+		text.push_back(EndFor+":");
+	}
 	else if(root->NodeName=="WHILE_STATEMENT"){
 		count_loops++;
 		string LabelWhile="LabelWhile"+to_string(count_loops);
 		string EndWhile="EndWhile"+to_string(count_loops);
 		text.push_back(LabelWhile+":");
+		if(root->children[2]->children[0]->NodeName=="NEQ"){
+			CodeGenerator(root->children[2]);
+			text.push_back("je "+EndWhile);
+		}
 		if(root->children[2]->children[0]->NodeName=="GE"){
 			CodeGenerator(root->children[2]);
 			text.push_back("jl "+EndWhile);
-		}
-		if(root->children[2]->children[0]->NodeName=="LE"){
-			CodeGenerator(root->children[2]);
-			text.push_back("jg "+EndWhile);
 		}
 		if(root->children[2]->children[0]->NodeName=="GT"){
 			CodeGenerator(root->children[2]);
@@ -584,13 +627,13 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("jge "+EndWhile);
 
 		}
+		if(root->children[2]->children[0]->NodeName=="LE"){
+			CodeGenerator(root->children[2]);
+			text.push_back("jg "+EndWhile);
+		}
 		if(root->children[2]->children[0]->NodeName=="EE"){
 			CodeGenerator(root->children[2]);
 			text.push_back("jne "+EndWhile);
-		}
-		if(root->children[2]->children[0]->NodeName=="NEQ"){
-			CodeGenerator(root->children[2]);
-			text.push_back("je "+EndWhile);
 		}
 		CodeGenerator(root->children[4]);
 		text.push_back("jmp "+LabelWhile);
@@ -640,7 +683,7 @@ void CodeGenerator(TreeNode* root){
 	}
 }
 void putx86inafile(){
-	ofstream MyFile("NASM_FILES/gen.asm");
+	ofstream MyFile("gen.asm");
 	for(int i=0;i<bss.size();i++){
 		MyFile<<bss[i]<<endl;
 	}

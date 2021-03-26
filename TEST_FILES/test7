@@ -22,5 +22,12 @@ int _main(){
         print(a);
     }
     print(d);
+    int i;
+    for(i=1;i<5;i++;){
+        print(i);
+        print(d);
+        d++;
+    }
+    print(d);
 }
 
