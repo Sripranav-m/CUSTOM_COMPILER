@@ -447,14 +447,12 @@ PEXPRESSION_L : OSB LIST_ELEMENT  CSB {
 				};
 
 
-LIST_ELEMENT : LIST_ELEMENT NUMBER SEMICOLON {
-					$2 = new TreeNode("NUMBER");
+LIST_ELEMENT : LIST_ELEMENT INTEGER_NT SEMICOLON {
 					$3=new TreeNode("SEMICOLON");
 					vector<TreeNode*> v={$1,$2,$3};
 					$$=new TreeNode("LIST_ELEMENT",v);
 				} 
-				| NUMBER SEMICOLON {
-					$1 = new TreeNode("NUMBER");
+				| INTEGER_NT SEMICOLON {
 					$2=new TreeNode("SEMICOLON");
 					vector<TreeNode*> v={$1,$2};
 					$$=new TreeNode("LIST_ELEMENT",v);
@@ -657,7 +655,7 @@ void CodeGenerator(TreeNode* root){
 				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 					text.push_back("mov rcx , rbp");
 					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("fst rdx , rbp");
+					text.push_back("mov rdx , rbp");
 					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov [rcx] , [rdx]");
 				}
@@ -667,7 +665,22 @@ void CodeGenerator(TreeNode* root){
 
 				}
 				else{
-					
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
+					cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
+					TreeNode* elements=root->children[0]->children[1]->children[0]->children[1];
+					while(elements->children.size()>2){
+						string val_from_end=elements->children[1]->lex_val;
+						cout<<val_from_end<<endl;
+						text.push_back("mov rax , "+elements->children[1]->lex_val);
+						text.push_back("mov [rcx] , rax");
+						text.push_back("add rcx , 8");
+						elements=elements->children[0];
+					}
+					string val_from_end=elements->children[0]->lex_val;
+					cout<<val_from_end<<endl;
+					text.push_back("mov rax , "+elements->children[0]->lex_val);
+					text.push_back("mov [rcx] , rax");
 				}
 			}
 			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){

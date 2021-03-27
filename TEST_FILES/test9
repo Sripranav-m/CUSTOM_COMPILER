@@ -1,6 +1,6 @@
 int _main(){
-    list p[15];
-    
+    list p[6];
+    p=[99;88;77;66;55;44;];
     int a;
     a=12;
     scan(a);
