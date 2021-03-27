@@ -10,8 +10,8 @@ lex.yy.c: lex.l y.tab.hpp
 	lex lex.l
 
 clean:
-	@rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen y.dot y.output genn.asm
-	@echo "rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen y.dot y.output genn.asm"
+	@rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen y.dot y.output gen.asm
+	@echo "rm -rf lex.yy.c y.tab.hpp y.tab.cpp a.out gen.o gen y.dot y.output gen.asm"
 
 runnasm:
 	nasm -f elf64 -o gen.o gen.asm
