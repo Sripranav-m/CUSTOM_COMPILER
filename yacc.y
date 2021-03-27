@@ -440,7 +440,11 @@ PEXPRESSION_L : OSB LIST_ELEMENT  CSB {
 				$3 = new TreeNode("CSB");
 				vector<TreeNode*> v={$1,$2,$3};
 				$$=new TreeNode("PEXPRESSION_L",v);
-			};
+			}
+			| IDENTIFIER_NT{
+					vector<TreeNode*> v={$1};
+					$$=new TreeNode("PEXPRESSION_L",v);
+				};
 
 
 LIST_ELEMENT : LIST_ELEMENT NUMBER SEMICOLON {
@@ -659,7 +663,12 @@ void CodeGenerator(TreeNode* root){
 				}
 			}
 			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_L"){
+				if(root->children[0]->NodeName=="IDENTIFIER_NT"){
 
+				}
+				else{
+					
+				}
 			}
 			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
 				
