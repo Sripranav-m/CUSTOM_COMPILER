@@ -40,8 +40,8 @@
 	class TreeNode* node;
 }
 
-%token 	INT STRING CHARACTER FLOAT IDENTIFIER CHAR STR FUNCTION_IDENTIFIER NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
-%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR
+%token 	INT STRING CHARACTER FLOAT LIST IDENTIFIER CHAR STR FUNCTION_IDENTIFIER NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR OSB CSB 
 
 %left PLUS
 %left MULTIPLY
@@ -50,11 +50,11 @@
 
 %type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
-%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
+%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F PEXPRESSION_L LIST_ELEMENT INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
-%type<node> INT STRING CHARACTER FLOAT IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
-%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR
+%type<node> INT STRING CHARACTER FLOAT LIST IC IDENTIFIER FUNCTION_IDENTIFIER NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR OSB CSB LIST_TYPE
 
 %%
 
@@ -86,19 +86,38 @@ DECLARATION: VARIABLE_DECLARATION	{
 
 
 								
-VARIABLE_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
+VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
 															string var_type=$1->children[0]->NodeName;
 															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
-															};
+						}
+						| LIST_TYPE IDENTIFIER_NT OSB NUMBER CSB SEMICOLON {
+							$3=new TreeNode("OSB");
+							$5=new TreeNode("CSB");
+							$6=new TreeNode("SEMICOLON");
+							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6};
+							$$ = new TreeNode("VARIABLE_DECLARATION", v);
+							Num_variables+=atoi(mytext)+1;
+							string var_type=$1->children[0]->NodeName;
+							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
+						}
+						
+						;
+
+LIST_TYPE : LIST {
+				$1 = new TreeNode("LIST");
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("LIST_TYPE",v);
+				};
 					
 
 
 FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
-																								$3 = new TreeNode("ONB"); $5 = new TreeNode("CNB");
+																								$3 = new TreeNode("ONB"); 
+																								$5 = new TreeNode("CNB");
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
 																							};
@@ -292,13 +311,25 @@ VARIABLE_TYPE: INT {
 
 
 LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
+															
 															$3=new TreeNode("SEMICOLON");
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
 															Num_variables++;
 															string var_type=$1->children[0]->NodeName;
 															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
-															};
+					}
+					| LIST_TYPE IDENTIFIER_NT OSB INTEGER_NT CSB SEMICOLON {
+							
+							$3=new TreeNode("OSB");
+							$5=new TreeNode("CSB");
+							$6=new TreeNode("SEMICOLON");
+							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6};
+							$$ = new TreeNode("LOCAL_DECLARATION", v);
+							Num_variables+=atoi(mytext)+1;
+							string var_type=$1->children[0]->NodeName;
+							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
+						} ;
 
 
 
@@ -393,10 +424,37 @@ EXPRESSION: PEXPRESSION {
 				$$=new TreeNode("EXPRESSION",v);
 			}
 			| PEXPRESSION_F{
+				cout<<"HERE";
+				vector<TreeNode*> v={$1};
+				$$=new TreeNode("EXPRESSION",v);
+			}
+			| PEXPRESSION_L{
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("EXPRESSION",v);
 			};
 
+
+
+PEXPRESSION_L : OSB LIST_ELEMENT  CSB {
+				$1 = new TreeNode("OSB");
+				$3 = new TreeNode("CSB");
+				vector<TreeNode*> v={$1,$2,$3};
+				$$=new TreeNode("PEXPRESSION_L",v);
+			};
+
+
+LIST_ELEMENT : LIST_ELEMENT NUMBER SEMICOLON {
+					$2 = new TreeNode("NUMBER");
+					$3=new TreeNode("SEMICOLON");
+					vector<TreeNode*> v={$1,$2,$3};
+					$$=new TreeNode("LIST_ELEMENT",v);
+				} 
+				| NUMBER SEMICOLON {
+					$1 = new TreeNode("NUMBER");
+					$2=new TreeNode("SEMICOLON");
+					vector<TreeNode*> v={$1,$2};
+					$$=new TreeNode("LIST_ELEMENT",v);
+				};
 
 
 PEXPRESSION: INTEGER_NT {	
@@ -554,7 +612,16 @@ void CodeGenerator(TreeNode* root){
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="LOCAL_DECLARATION"){
-		text.push_back("sub rsp , 8");
+		if(root->children[0]->NodeName=="VARIABLE_TYPE"){
+			text.push_back("sub rsp , 8");
+		}
+		else if(root->children[0]->NodeName=="LIST_TYPE"){
+			text.push_back("sub rsp , 8");
+			text.push_back("mov rax, "+root->children[3]->lex_val);
+			text.push_back("mov [rsp] , rax");
+			int x=8*stoi(root->children[3]->lex_val);
+			text.push_back("sub rsp , "+to_string(x));
+		}
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		text.push_back("mov rbx , rbp");
@@ -573,7 +640,6 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("mov rcx , rbp");
 		text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
 		text.push_back("mov [rcx] , rax");
-
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
 		if(root->children[0]->children.size()==2){
@@ -587,10 +653,19 @@ void CodeGenerator(TreeNode* root){
 				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 					text.push_back("mov rcx , rbp");
 					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov rdx , rbp");
+					text.push_back("fst rdx , rbp");
 					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov [rcx] , [rdx]");
 				}
+			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_L"){
+
+			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
+				
+			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_S"){
+				
 			}
 			else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 				CodeGenerator(root->children[0]->children[1]);

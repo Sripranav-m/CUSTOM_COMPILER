@@ -1,0 +1,17 @@
+int _main(){
+    list p[15];
+    
+    int a;
+    a=12;
+    scan(a);
+    print(a);
+    int b;
+    b=15;
+    print(b);
+    
+    int c;
+    c=14;
+    print(c);
+    print(b);
+}
+

@@ -46,6 +46,10 @@ int _main(){
     print(d);
     print(e);
     print(f);
+
+    string str;
+    character chr;
+    float decimal;
 }
 
 

@@ -1,0 +1,26 @@
+     1                                  
+     2                                  extern printf
+     3                                  
+     4                                  
+     5                                  section .bss
+     6 00000000 <res 00000004>            num1: resb 4
+     7 00000004 <res 00000004>            num2: resb 4
+     8                                  section .data
+     9 00000000 54686520726573756C-       format_float: db "The result is %f", 10, 0
+     9 00000009 742069732025660A00 
+    10                                  _main:
+    11                                  
+    12 00000012 C70425[00000000]02-       mov dword [num1], 2
+    12 0000001A 000000             
+    13 0000001D C70425[04000000]00-       mov dword [num2], __float32__(3.25)
+    13 00000025 005040             
+    14                                  
+    15 00000028 83EC08                    sub esp, 8
+    16 0000002B DB0425[00000000]          fild dword [num1]
+    17 00000032 D80425[04000000]          fadd dword [num2]
+    18 00000039 67DD1C24                  fstp qword [esp]
+    19 0000003D 68[00000000]              push format_float
+    20 00000042 E8(00000000)              call printf
+    21 00000047 83C40C                    add esp, 12
+    22                                  
+    23 0000004A C3                      ret

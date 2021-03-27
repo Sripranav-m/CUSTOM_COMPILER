@@ -10,6 +10,7 @@ digit [0-9]
 ic ["]
 
 
+
 %%
 
 "#".*                                   {}  // This is a single line comment. Ignore the comments.
@@ -22,6 +23,7 @@ ic ["]
 "while"                                   {return WHILE;}
 "print"                                   {return PRINT;}
 "scan"                                    {return SCAN;}
+"list"                                    {return LIST;}
 
 "=="|"<="|">="|">"|"<"|"!=" {
     if(strcmp(yytext, "==") == 0) {
@@ -60,6 +62,8 @@ ic ["]
 "}"										{return CFB;}
 "("                                     {return ONB;}
 ")"                                     {return CNB;}
+"["                                     {return OSB;}
+"]"                                     {return CSB;}
 
 "++"                                    {return INC;}
 "--"                                    {return DEC;}
