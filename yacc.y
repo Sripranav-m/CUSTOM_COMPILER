@@ -24,6 +24,7 @@
 	TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 	int Num_variables=0;
 	map<pair<string,string>, int> symbol_table;
+	map<string,int> list_size;
 	void dotraversal(TreeNode* head);
 	vector<string> text;
 	vector<string> data;
@@ -35,6 +36,7 @@
 	void set_integer_scan_subroutine();
 	void string_to_number_subroutine();
 	int count_loops=0;
+	int num_scans=0;
 %}
 %union{
 	class TreeNode* node;
@@ -100,7 +102,8 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							$6=new TreeNode("SEMICOLON");
 							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6};
 							$$ = new TreeNode("VARIABLE_DECLARATION", v);
-							Num_variables+=atoi(mytext)+1;
+							Num_variables+=atoi(mytext);
+							list_size[$2->lex_val]=atoi(mytext);
 							string var_type=$1->children[0]->NodeName;
 							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
 						}
@@ -320,13 +323,13 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 					}
 					| LIST_TYPE IDENTIFIER_NT OSB INTEGER_NT CSB SEMICOLON {
-							
 							$3=new TreeNode("OSB");
 							$5=new TreeNode("CSB");
 							$6=new TreeNode("SEMICOLON");
 							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6};
 							$$ = new TreeNode("LOCAL_DECLARATION", v);
-							Num_variables+=atoi(mytext)+1;
+							Num_variables+=atoi(mytext);
+							list_size[$2->lex_val]=atoi(mytext);
 							string var_type=$1->children[0]->NodeName;
 							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
 						} ;
@@ -424,7 +427,6 @@ EXPRESSION: PEXPRESSION {
 				$$=new TreeNode("EXPRESSION",v);
 			}
 			| PEXPRESSION_F{
-				cout<<"HERE";
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("EXPRESSION",v);
 			}
@@ -618,21 +620,34 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("sub rsp , 8");
 		}
 		else if(root->children[0]->NodeName=="LIST_TYPE"){
-			text.push_back("sub rsp , 8");
-			text.push_back("mov rax, "+root->children[3]->lex_val);
-			text.push_back("mov [rsp] , rax");
 			int x=8*stoi(root->children[3]->lex_val);
 			text.push_back("sub rsp , "+to_string(x));
 		}
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
-		text.push_back("mov rbx , rbp");
-		
-		text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"INT"}]));
-		text.push_back("mov rax , [rbx]");
-		text.push_back("call _printRAX");
+		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
+			text.push_back("mov rbx , rbp");
+			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"INT"}]));
+			text.push_back("mov rax , [rbx]");
+			text.push_back("call _printRAX");
+		}
+		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
+			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
+			int number_of_times=list_size[{root->children[2]->lex_val}];
+			list_location+=8*number_of_times;
+			//cout<<list_location<<endl<<number_of_times<<endl;
+			while(number_of_times>0){
+				list_location-=8;
+				number_of_times-=1;
+				text.push_back("mov rbx , rbp");
+				text.push_back("add rbx , "+to_string(list_location));
+				text.push_back("mov rax , [rbx]");
+				text.push_back("call _printRAX");
+			}
+		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
+		num_scans++;
 		text.push_back("mov rax , 0");
 		text.push_back("mov rdi , 0");
 		text.push_back("mov rsi , scanned");
@@ -667,18 +682,18 @@ void CodeGenerator(TreeNode* root){
 				else{
 					text.push_back("mov rcx , rbp");
 					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
-					cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
+					//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
 					TreeNode* elements=root->children[0]->children[1]->children[0]->children[1];
 					while(elements->children.size()>2){
 						string val_from_end=elements->children[1]->lex_val;
-						cout<<val_from_end<<endl;
+						//cout<<val_from_end<<endl;
 						text.push_back("mov rax , "+elements->children[1]->lex_val);
 						text.push_back("mov [rcx] , rax");
 						text.push_back("add rcx , 8");
 						elements=elements->children[0];
 					}
 					string val_from_end=elements->children[0]->lex_val;
-					cout<<val_from_end<<endl;
+					//cout<<val_from_end<<endl;
 					text.push_back("mov rax , "+elements->children[0]->lex_val);
 					text.push_back("mov [rcx] , rax");
 				}
@@ -733,7 +748,6 @@ void CodeGenerator(TreeNode* root){
 		if(root->children[2]->children[0]->NodeName=="LT"){
 			CodeGenerator(root->children[2]);
 			text.push_back("jge "+EndIf);
-
 		}
 		if(root->children[2]->children[0]->NodeName=="EE"){
 			CodeGenerator(root->children[2]);
@@ -929,16 +943,16 @@ void string_to_number_subroutine(){ // takes the string inside the scanned in bs
 	
     text.push_back("xor rax, rax");
 	text.push_back("mov rdx , scanned");
-	text.push_back("top:");
+	text.push_back("top"+to_string(num_scans)+":");
 	text.push_back("movzx rcx , byte [rdx]");
 	text.push_back("add rdx , 1");
 	text.push_back("cmp rcx , '0' ");
-	text.push_back("jl done");
+	text.push_back("jl done"+to_string(num_scans));
 	text.push_back("cmp rcx , '9' ");
-	text.push_back("jg done");
+	text.push_back("jg done"+to_string(num_scans));
 	text.push_back("sub rcx , '0'");
 	text.push_back("imul rax , 10");
 	text.push_back("add rax , rcx");
-	text.push_back("jmp top");
-	text.push_back("done:");
+	text.push_back("jmp top"+to_string(num_scans));
+	text.push_back("done"+to_string(num_scans)+":");
 }
