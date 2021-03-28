@@ -433,6 +433,12 @@ EXPRESSION: PEXPRESSION {
 			| PEXPRESSION_L{
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("EXPRESSION",v);
+			}
+			| PEXPRESSION_L PLUS PEXPRESSION_L{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("PLUS",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
 			};
 
 
@@ -676,7 +682,29 @@ void CodeGenerator(TreeNode* root){
 				}
 			}
 			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_L"){
-				if(root->children[0]->NodeName=="IDENTIFIER_NT"){
+				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
+					TreeNode* left_list=root->children[0]->children[0];
+					int right_list_size=list_size[right_list->lex_val];
+					int left_list_size=list_size[left_list->lex_val];
+					if(right_list_size==left_list_size){
+						text.push_back("mov rcx , rbp");
+						text.push_back("add rcx , "+to_string(symbol_table[{right_list->lex_val,"LIST"}]));
+						text.push_back("mov rax , rbp");
+						text.push_back("add rax , "+to_string(symbol_table[{left_list->lex_val,"LIST"}]));
+						cout<<to_string(symbol_table[{right_list->lex_val,"LIST"}])<<endl;
+						int numer_of_elements=left_list_size;
+						while(numer_of_elements>0){
+							text.push_back("mov rdx , [rcx]");
+							text.push_back("mov [rax] , rdx");
+							text.push_back("add rax , 8");
+							text.push_back("add rcx , 8");
+							numer_of_elements--;
+						}
+					}
+					else{
+						//
+					}
 
 				}
 				else{
@@ -831,46 +859,65 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("jmp "+LabelWhile);
 		text.push_back(EndWhile+":");
 	}
+	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
-			text.push_back("mov rax , [rcx]");
+		if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
+			if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov rax , [rcx]");
+			}
+			else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+				text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
+				text.push_back("mov rax , rcx");
+			}
+			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov rbx , [rcx]");
+			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
+				text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
+				text.push_back("mov rbx , rcx");
+			}
+			string typ=root->children[0]->NodeName;
+			if(typ=="PLUS"){
+				text.push_back("add rax , rbx");
+			}
+			else if(typ=="MINUS"){
+				text.push_back("sub rax , rbx");
+			}
+			else if(typ=="MULTIPLY"){
+				text.push_back("mul rbx");
+			}
+			else if(typ=="BAND"){
+				text.push_back("and rax , rbx");
+			}
+			else if(typ=="BOR"){
+				text.push_back("or rax , rbx");
+			}
+			else if(typ=="BXOR"){
+				text.push_back("xor rax , rbx");
+			}
+			else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
+				text.push_back("cmp rax , rbx");
+			}
 		}
-		else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-			text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
-			text.push_back("mov rax , rcx");
-		}
-		if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-			text.push_back("mov rcx , rbp");
-			text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
-			text.push_back("mov rbx , [rcx]");
-		}
-		else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
-			text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
-			text.push_back("mov rbx , rcx");
-		}
-		string typ=root->children[0]->NodeName;
-		if(typ=="PLUS"){
-			text.push_back("add rax , rbx");
-		}
-		else if(typ=="MINUS"){
-			text.push_back("sub rax , rbx");
-		}
-		else if(typ=="MULTIPLY"){
-			text.push_back("mul rbx");
-		}
-		else if(typ=="BAND"){
-			text.push_back("and rax , rbx");
-		}
-		else if(typ=="BOR"){
-			text.push_back("or rax , rbx");
-		}
-		else if(typ=="BXOR"){
-			text.push_back("xor rax , rbx");
-		}
-		else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
-			text.push_back("cmp rax , rbx");
+		else if(root->children[0]->children[0]->NodeName=="PEXPRESSION_L"){
+			TreeNode* rightlist=root->children[0]->children[1];
+			TreeNode* leftlist=root->children[0]->children[0];
+			if(rightlist->children[0]->NodeName=="PEXPRESSION_L" && leftlist->children[0]->NodeName=="PEXPRESSION_L"){
+
+			}
+			else if(rightlist->children[0]->NodeName=="PEXPRESSION_L"){
+
+			}
+			else if(leftlist->children[0]->NodeName=="PEXPRESSION_L"){
+
+			}
+			else{
+				
+			}
 		}
 	}
 }

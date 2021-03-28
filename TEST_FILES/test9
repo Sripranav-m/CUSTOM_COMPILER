@@ -1,31 +1,12 @@
 int _main(){
-    int t;
-    t=1111111111;
-    print(t);
-
-    list p[6];
-    p=[99;88;77;66;55;44;];
-    print(p);
-
-    print(t);
-
+    list q[6];
+    q=[11;12;13;14;15;16;];
+    print(q);
     int a;
-    a=25;
-    scan(a);
+    a=0;
     print(a);
-
-    print(t);
-
-    int b;
-    list r[4];
-    r=[4;5;6;7;];
-    print(r);
-
-    print(t);
-
-    scan(b);
-    print(b);
-    
-    print(t);
+    list p[6];
+    p=q;
+    print(p);
 }
 
