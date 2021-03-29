@@ -9,4 +9,3 @@ int _main(){
     p=q;
     print(p);
 }
-

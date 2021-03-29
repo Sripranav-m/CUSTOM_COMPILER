@@ -4,12 +4,7 @@ int _main(){
     int c;
     a=10;
     b=15;
-    print(a);
-    print(b);
-    c=a+b;
-    int d;
-    d=5+6;
+    c=12+14;
     print(c);
-    print(d);
 }
 

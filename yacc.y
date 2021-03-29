@@ -25,6 +25,7 @@
 	int Num_variables=0;
 	map<pair<string,string>, int> symbol_table;
 	map<string,int> list_size;
+	map<string,string> variable_types; 
 	void dotraversal(TreeNode* head);
 	vector<string> text;
 	vector<string> data;
@@ -93,8 +94,14 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("VARIABLE_DECLARATION", v);
 															Num_variables++;
-															string var_type=$1->children[0]->NodeName;
-															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															if(variable_types.find($2->lex_val)==variable_types.end()){
+																string var_type=$1->children[0]->NodeName;
+																symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+																variable_types[$2->lex_val]=var_type;
+															}
+															else{
+																// error
+															}
 						}
 						| LIST_TYPE IDENTIFIER_NT OSB NUMBER CSB SEMICOLON {
 							$3=new TreeNode("OSB");
@@ -104,8 +111,14 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							$$ = new TreeNode("VARIABLE_DECLARATION", v);
 							Num_variables+=atoi(mytext);
 							list_size[$2->lex_val]=atoi(mytext);
-							string var_type=$1->children[0]->NodeName;
-							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
+							if(variable_types.find($2->lex_val)==variable_types.end()){
+								string var_type=$1->children[0]->NodeName;
+								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								variable_types[$2->lex_val]=var_type;
+							}
+							else{
+								// error
+							}
 						}
 						
 						;
@@ -319,8 +332,11 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
 															Num_variables++;
-															string var_type=$1->children[0]->NodeName;
-															symbol_table[{$2->lex_val,var_type}]=Num_variables*-8; // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+															if(variable_types.find($2->lex_val)==variable_types.end()){
+																string var_type=$1->children[0]->NodeName;
+																symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+																variable_types[$2->lex_val]=var_type;
+															}
 					}
 					| LIST_TYPE IDENTIFIER_NT OSB INTEGER_NT CSB SEMICOLON {
 							$3=new TreeNode("OSB");
@@ -330,8 +346,11 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							$$ = new TreeNode("LOCAL_DECLARATION", v);
 							Num_variables+=atoi(mytext);
 							list_size[$2->lex_val]=atoi(mytext);
-							string var_type=$1->children[0]->NodeName;
-							symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
+							if(variable_types.find($2->lex_val)==variable_types.end()){
+								string var_type=$1->children[0]->NodeName;
+								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								variable_types[$2->lex_val]=var_type;
+							}
 						} ;
 
 
@@ -429,30 +448,8 @@ EXPRESSION: PEXPRESSION {
 			| PEXPRESSION_F{
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("EXPRESSION",v);
-			}
-			| PEXPRESSION_L{
-				vector<TreeNode*> v={$1};
-				$$=new TreeNode("EXPRESSION",v);
-			}
-			| PEXPRESSION_L PLUS PEXPRESSION_L{
-				vector<TreeNode*> v={$1,$3};
-                $2=new TreeNode("PLUS",v);
-                vector<TreeNode*> u={$2};
-                $$=new TreeNode("EXPRESSION",u);
 			};
 
-
-
-PEXPRESSION_L : OSB LIST_ELEMENT  CSB {
-				$1 = new TreeNode("OSB");
-				$3 = new TreeNode("CSB");
-				vector<TreeNode*> v={$1,$2,$3};
-				$$=new TreeNode("PEXPRESSION_L",v);
-			}
-			| IDENTIFIER_NT{
-					vector<TreeNode*> v={$1};
-					$$=new TreeNode("PEXPRESSION_L",v);
-				};
 
 
 LIST_ELEMENT : LIST_ELEMENT INTEGER_NT SEMICOLON {
@@ -480,6 +477,12 @@ PEXPRESSION: INTEGER_NT {
                 vector<TreeNode*> v = {$1, $2, $3};
                 $$ = new TreeNode("PEXPRESSION", v);
 			
+			}
+			| OSB LIST_ELEMENT  CSB {
+				$1 = new TreeNode("OSB");
+				$3 = new TreeNode("CSB");
+				vector<TreeNode*> v={$1,$2,$3};
+				$$=new TreeNode("PEXPRESSION",v);
 			};
 
 PEXPRESSION_S : STRING_NT {
@@ -665,24 +668,24 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("mov [rcx] , rax");
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-		if(root->children[0]->children.size()==2){
-			if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
-				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-					text.push_back("mov rcx , rbp");
-					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
-					text.push_back("mov [rcx] , rax");
-				}
-				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+		if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
+			cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
+			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+				text.push_back("mov [rcx] , rax");
+			}
+			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
+				if(node_type=="INT"){
 					text.push_back("mov rcx , rbp");
 					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov rdx , rbp");
 					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
 					text.push_back("mov [rcx] , [rdx]");
 				}
-			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_L"){
-				if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				else if(node_type=="LIST"){
 					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
 					TreeNode* left_list=root->children[0]->children[0];
 					int right_list_size=list_size[right_list->lex_val];
@@ -705,39 +708,66 @@ void CodeGenerator(TreeNode* root){
 					else{
 						//
 					}
-
 				}
 				else{
-					text.push_back("mov rcx , rbp");
-					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
-					//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
-					TreeNode* elements=root->children[0]->children[1]->children[0]->children[1];
-					while(elements->children.size()>2){
-						string val_from_end=elements->children[1]->lex_val;
-						//cout<<val_from_end<<endl;
-						text.push_back("mov rax , "+elements->children[1]->lex_val);
-						text.push_back("mov [rcx] , rax");
-						text.push_back("add rcx , 8");
-						elements=elements->children[0];
-					}
-					string val_from_end=elements->children[0]->lex_val;
-					//cout<<val_from_end<<endl;
-					text.push_back("mov rax , "+elements->children[0]->lex_val);
-					text.push_back("mov [rcx] , rax");
+					//
 				}
 			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
-				
+			else{
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
+				//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
+				TreeNode* elements=root->children[0]->children[1]->children[0]->children[1];
+				while(elements->children.size()>2){
+					string val_from_end=elements->children[1]->lex_val;
+					//cout<<val_from_end<<endl;
+					text.push_back("mov rax , "+elements->children[1]->lex_val);
+					text.push_back("mov [rcx] , rax");
+					text.push_back("add rcx , 8");
+					elements=elements->children[0];
+				}
+				string val_from_end=elements->children[0]->lex_val;
+				//cout<<val_from_end<<endl;
+				text.push_back("mov rax , "+elements->children[0]->lex_val);
+				text.push_back("mov [rcx] , rax");
 			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_S"){
-				
-			}
-			else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
+		}
+		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
+			//
+		}
+		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_S"){
+			//
+		}
+		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
+			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
+			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
+			if(node_type2=="INTEGER_NT" || node_type=="INT"){
 				CodeGenerator(root->children[0]->children[1]);
-                text.push_back("mov rcx , rbp");
+				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				text.push_back("mov [rcx] , rax");
-            }
+			}
+			else if(node_type=="LIST"){
+				CodeGenerator(root->children[0]->children[1]);
+				int top_of_stack=Num_variables;
+				top_of_stack++;
+				top_of_stack*=-8;
+				TreeNode* left_list=root->children[0]->children[0];
+				int left_list_size=list_size[left_list->lex_val];
+				int left_list_loc=symbol_table[{left_list->lex_val,"LIST"}];
+				int number_of_times=left_list_size;
+				text.push_back("mov rdx , rbp");
+				text.push_back("add rdx , "+to_string(left_list_loc));
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(top_of_stack));
+				while(number_of_times>0){
+					text.push_back("mov rax , [rcx]");
+					text.push_back("mov [rdx] , rax");
+					text.push_back("add rdx , 8");
+					text.push_back("add rcx , -8");
+					number_of_times--;
+				}
+			}
 		}
 	}
 	else if(root->NodeName=="INCDEC_STATEMENT"){
@@ -861,62 +891,92 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
-			if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rax , [rcx]");
-			}
-			else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-				text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
-				text.push_back("mov rax , rcx");
-			}
-			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rbx , [rcx]");
-			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
-				text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
-				text.push_back("mov rbx , rcx");
-			}
+		string node_type=variable_types[root->children[0]->children[0]->lex_val];
+		if(node_type=="LIST"){
 			string typ=root->children[0]->NodeName;
-			if(typ=="PLUS"){
-				text.push_back("add rax , rbx");
-			}
-			else if(typ=="MINUS"){
-				text.push_back("sub rax , rbx");
-			}
-			else if(typ=="MULTIPLY"){
-				text.push_back("mul rbx");
-			}
-			else if(typ=="BAND"){
-				text.push_back("and rax , rbx");
-			}
-			else if(typ=="BOR"){
-				text.push_back("or rax , rbx");
-			}
-			else if(typ=="BXOR"){
-				text.push_back("xor rax , rbx");
-			}
-			else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
-				text.push_back("cmp rax , rbx");
+			TreeNode* rightlist=root->children[0]->children[1];
+			TreeNode* left_list=root->children[0]->children[0];
+			if(rightlist->children[0]->NodeName=="PEXPRESSION_L" && left_list->children[0]->NodeName=="PEXPRESSION_L"){
+				if(typ=="PLUS"){
+					TreeNode* right_list=right_list->children[0];
+					TreeNode* left_list=left_list->children[0];				
+					int top_of_stack=Num_variables;
+					top_of_stack++;
+					top_of_stack*=-8;
+					int left_list_loc=symbol_table[{left_list->lex_val,"LIST"}];
+					int right_list_loc=symbol_table[{rightlist->lex_val,"LIST"}];
+					int left_list_size=list_size[left_list->lex_val];
+					int right_list_size=list_size[right_list->lex_val];
+					if(left_list_size==right_list_size){
+						int number_of_times=left_list_size;
+						int top_expanding=top_of_stack;
+						while(number_of_times>0){
+							text.push_back("mov rdx , rbp");
+							text.push_back("add rdx , "+to_string(left_list_loc));
+							text.push_back("mov rcx , [rdx]");
+							text.push_back("mov rdx , rbp");
+							text.push_back("add rdx , "+to_string(right_list_loc));
+							text.push_back("mov rbx , [rdx]");
+							text.push_back("mov rax , rbp");
+							text.push_back("add rax , "+to_string(top_expanding));
+							text.push_back("add rcx , rbx");
+							text.push_back("mov [rax] , rcx");
+							left_list_loc+=8;
+							right_list_loc+=8;
+							top_expanding-=8;
+							number_of_times--;
+						}
+					}
+					else{
+						// error
+					}
+				}
 			}
 		}
-		else if(root->children[0]->children[0]->NodeName=="PEXPRESSION_L"){
-			TreeNode* rightlist=root->children[0]->children[1];
-			TreeNode* leftlist=root->children[0]->children[0];
-			if(rightlist->children[0]->NodeName=="PEXPRESSION_L" && leftlist->children[0]->NodeName=="PEXPRESSION_L"){
-
-			}
-			else if(rightlist->children[0]->NodeName=="PEXPRESSION_L"){
-
-			}
-			else if(leftlist->children[0]->NodeName=="PEXPRESSION_L"){
-
-			}
-			else{
-				
+		else {
+			if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
+				if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
+					text.push_back("mov rax , [rcx]");
+				}
+				else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+					cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+					text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
+					text.push_back("mov rax , rcx");
+				}
+				if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
+					text.push_back("mov rbx , [rcx]");
+				}
+				else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
+					cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+					text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
+					text.push_back("mov rbx , rcx");
+				}
+				string typ=root->children[0]->NodeName;
+				if(typ=="PLUS"){
+					text.push_back("add rax , rbx");
+				}
+				else if(typ=="MINUS"){
+					text.push_back("sub rax , rbx");
+				}
+				else if(typ=="MULTIPLY"){
+					text.push_back("mul rbx");
+				}
+				else if(typ=="BAND"){
+					text.push_back("and rax , rbx");
+				}
+				else if(typ=="BOR"){
+					text.push_back("or rax , rbx");
+				}
+				else if(typ=="BXOR"){
+					text.push_back("xor rax , rbx");
+				}
+				else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
+					text.push_back("cmp rax , rbx");
+				}
 			}
 		}
 	}
