@@ -31,11 +31,15 @@
 	vector<string> data;
 	vector<string> bss; // 
 	vector<string> printint; // To include the print subroutine
+	vector<string> printList;
+	vector<string> printNewLine;
 	void CodeGenerator(TreeNode* root);
 	void putx86inafile();
 	void set_integer_print_subroutine();
 	void set_integer_scan_subroutine();
 	void string_to_number_subroutine();
+	void set_list_print_subroutine();
+	void set_go_to_new_line_subroutine();
 	int count_loops=0;
 	int num_scans=0;
 %}
@@ -594,6 +598,8 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("push rbp");
 		text.push_back("mov rbp , rsp");
 		set_integer_print_subroutine();
+		set_list_print_subroutine();
+		set_go_to_new_line_subroutine();
 		set_integer_scan_subroutine();
 		CodeGenerator(root->children[0]);
 	}
@@ -651,8 +657,9 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov rbx , rbp");
 				text.push_back("add rbx , "+to_string(list_location));
 				text.push_back("mov rax , [rbx]");
-				text.push_back("call _printRAX");
+				text.push_back("call _printRAX_L");
 			}
+			text.push_back("call _printNewLine");
 		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
@@ -669,7 +676,7 @@ void CodeGenerator(TreeNode* root){
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
 		if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
-			cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
+			//cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
 			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
@@ -695,7 +702,7 @@ void CodeGenerator(TreeNode* root){
 						text.push_back("add rcx , "+to_string(symbol_table[{right_list->lex_val,"LIST"}]));
 						text.push_back("mov rax , rbp");
 						text.push_back("add rax , "+to_string(symbol_table[{left_list->lex_val,"LIST"}]));
-						cout<<to_string(symbol_table[{right_list->lex_val,"LIST"}])<<endl;
+						//cout<<to_string(symbol_table[{right_list->lex_val,"LIST"}])<<endl;
 						int numer_of_elements=left_list_size;
 						while(numer_of_elements>0){
 							text.push_back("mov rdx , [rcx]");
@@ -891,46 +898,51 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		string node_type=variable_types[root->children[0]->children[0]->lex_val];
+		string node_type=variable_types[root->children[0]->children[0]->children[0]->lex_val];
 		if(node_type=="LIST"){
 			string typ=root->children[0]->NodeName;
-			TreeNode* rightlist=root->children[0]->children[1];
-			TreeNode* left_list=root->children[0]->children[0];
-			if(rightlist->children[0]->NodeName=="PEXPRESSION_L" && left_list->children[0]->NodeName=="PEXPRESSION_L"){
-				if(typ=="PLUS"){
-					TreeNode* right_list=right_list->children[0];
-					TreeNode* left_list=left_list->children[0];				
-					int top_of_stack=Num_variables;
-					top_of_stack++;
-					top_of_stack*=-8;
-					int left_list_loc=symbol_table[{left_list->lex_val,"LIST"}];
-					int right_list_loc=symbol_table[{rightlist->lex_val,"LIST"}];
-					int left_list_size=list_size[left_list->lex_val];
-					int right_list_size=list_size[right_list->lex_val];
-					if(left_list_size==right_list_size){
-						int number_of_times=left_list_size;
-						int top_expanding=top_of_stack;
-						while(number_of_times>0){
-							text.push_back("mov rdx , rbp");
-							text.push_back("add rdx , "+to_string(left_list_loc));
-							text.push_back("mov rcx , [rdx]");
-							text.push_back("mov rdx , rbp");
-							text.push_back("add rdx , "+to_string(right_list_loc));
-							text.push_back("mov rbx , [rdx]");
-							text.push_back("mov rax , rbp");
-							text.push_back("add rax , "+to_string(top_expanding));
-							text.push_back("add rcx , rbx");
-							text.push_back("mov [rax] , rcx");
-							left_list_loc+=8;
-							right_list_loc+=8;
-							top_expanding-=8;
-							number_of_times--;
+			TreeNode* right_list=root->children[0]->children[1]->children[0];
+			TreeNode* left_list=root->children[0]->children[0]->children[0];
+			if(right_list->NodeName=="IDENTIFIER_NT" && left_list->NodeName=="IDENTIFIER_NT"){
+				string left_type=variable_types[left_list->lex_val];
+				string right_type=variable_types[right_list->lex_val];
+				if(left_type=="LIST" && right_type=="LIST"){
+					if(typ=="PLUS"){		
+						int top_of_stack=Num_variables;
+						top_of_stack++;
+						top_of_stack*=-8;
+						int left_list_loc=symbol_table[{left_list->lex_val,"LIST"}];
+						int right_list_loc=symbol_table[{right_list->lex_val,"LIST"}];
+						int left_list_size=list_size[left_list->lex_val];
+						int right_list_size=list_size[right_list->lex_val];
+						if(left_list_size==right_list_size){
+							int number_of_times=left_list_size;
+							int top_expanding=top_of_stack;
+							while(number_of_times>0){
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(left_list_loc));
+								text.push_back("mov rcx , [rdx]");
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(right_list_loc));
+								text.push_back("mov rbx , [rdx]");
+								text.push_back("mov rax , rbp");
+								text.push_back("add rax , "+to_string(top_expanding));
+								text.push_back("add rcx , rbx");
+								text.push_back("mov [rax] , rcx");
+								left_list_loc+=8;
+								right_list_loc+=8;
+								top_expanding-=8;
+								number_of_times--;
+							}
+						}
+						else{
+							// error
 						}
 					}
-					else{
-						// error
-					}
 				}
+			}
+			else{
+				//
 			}
 		}
 		else {
@@ -941,7 +953,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov rax , [rcx]");
 				}
 				else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-					cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+					//cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
 					text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
 					text.push_back("mov rax , rcx");
 				}
@@ -951,7 +963,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov rbx , [rcx]");
 				}
 				else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
-					cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+					//cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
 					text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
 					text.push_back("mov rbx , rcx");
 				}
@@ -983,17 +995,23 @@ void CodeGenerator(TreeNode* root){
 }
 void putx86inafile(){
 	ofstream MyFile("gen.asm");
-	for(int i=0;i<bss.size();i++){
-		MyFile<<bss[i]<<endl;
-	}
-	for(int i=0;i<data.size();i++){
-		MyFile<<data[i]<<endl;
-	}
 	for(int i=0;i<text.size();i++){
 		MyFile<<text[i]<<endl;
 	}
 	for(int i=0;i<printint.size();i++){
 		MyFile<<printint[i]<<endl;
+	}
+	for(int i=0;i<printList.size();i++){
+		MyFile<<printList[i]<<endl;
+	}
+	for(int i=0;i<printNewLine.size();i++){
+		MyFile<<printNewLine[i]<<endl;
+	}
+	for(int i=0;i<data.size();i++){
+		MyFile<<data[i]<<endl;
+	}
+	for(int i=0;i<bss.size();i++){
+		MyFile<<bss[i]<<endl;
 	}
 	MyFile.close();
 }
@@ -1003,7 +1021,54 @@ void yyerror(char* temp){
 	cout<<"Parsing Terminated...Syntax Error:("<<endl;
 	exit(0);
 }
-
+void set_go_to_new_line_subroutine(){
+	data.push_back("section .data");
+	data.push_back("newline db '' , 10 ");
+	printNewLine.push_back("_printNewLine:");
+	printNewLine.push_back("mov rax , 1");
+	printNewLine.push_back("mov rdi , 1");
+	printNewLine.push_back("mov rsi , newline");
+	printNewLine.push_back("mov rdx , 1");
+	printNewLine.push_back("syscall");
+	printNewLine.push_back("ret");
+}
+void set_list_print_subroutine(){ // // prints the string in the rax register , custom made subroutine by me but doesnt go to new line
+	printList.push_back("_printRAX_L:");
+	printList.push_back("mov rcx, digitSpace_L");
+	printList.push_back("mov rbx, 32");
+	printList.push_back("mov [rcx], rbx");
+	printList.push_back("inc rcx");
+	printList.push_back("mov [digitSpace_LPos], rcx");
+	printList.push_back("_printRAX_LLoop:");
+	printList.push_back("mov rdx, 0");
+	printList.push_back("mov rbx, 10");
+	printList.push_back("div rbx");
+	printList.push_back("push rax");
+	printList.push_back("add rdx, 48");
+	printList.push_back("mov rcx, [digitSpace_LPos]");
+	printList.push_back("mov [rcx], dl");
+	printList.push_back("inc rcx");
+	printList.push_back("mov [digitSpace_LPos], rcx");
+	printList.push_back("pop rax");
+	printList.push_back("cmp rax, 0");
+	printList.push_back("jne _printRAX_LLoop");
+	printList.push_back("_printRAX_LLoop2:");
+	printList.push_back("mov rcx, [digitSpace_LPos]");
+	printList.push_back("mov rax, 1");
+	printList.push_back("mov rdi, 1");
+	printList.push_back("mov rsi, rcx");
+	printList.push_back("mov rdx, 1");
+	printList.push_back("syscall");
+	printList.push_back("mov rcx, [digitSpace_LPos]");
+	printList.push_back("dec rcx");
+	printList.push_back("mov [digitSpace_LPos], rcx");
+	printList.push_back("cmp rcx, digitSpace_L");
+	printList.push_back("jge _printRAX_LLoop2");
+	printList.push_back("ret");
+	bss.push_back("section .bss");
+	bss.push_back("digitSpace_L resb 100");
+	bss.push_back("digitSpace_LPos resb 8");
+}
 void set_integer_print_subroutine(){ // prints the string in the rax register , custom made subroutine by me
 	printint.push_back("_printRAX:");
 	printint.push_back("mov rcx, digitSpace");

@@ -5,5 +5,12 @@ int _main(){
     a=[15;16;17;18;19;];
     b=[11;12;13;14;15;];
     c=a+b;
+    print(a);
+    print(b);
     print(c);
+    a=a+c;
+    int d;
+    d=0;
+    print(d);
+    print(a);
 }
