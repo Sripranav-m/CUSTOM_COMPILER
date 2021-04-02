@@ -668,18 +668,15 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("call printf");
 		}
 		if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
-			text.push_back("finit");
-			text.push_back("mov r12 , rsp");
-			text.push_back("mov rsp , rbp");
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"FLOAT"}]));
+			text.push_back("add rsp , -8");
 			text.push_back("fld dword[rbx]");
 			text.push_back("fstp qword[temp]");
-			text.push_back("movq xmm0 , qword[temp]");
 			text.push_back("mov rdi , fmtf");
-			text.push_back("mov rsi , strf");
+			text.push_back("movq xmm0 , qword[temp]");
+			text.push_back("mov rax , 1");
 			text.push_back("call printf");
-			text.push_back("mov rsp , r12");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
