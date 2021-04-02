@@ -28,4 +28,5 @@ int _main(){
     }
     x=456.678;
     print(x);
+    print(d);
 }
