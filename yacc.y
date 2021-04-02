@@ -814,8 +814,11 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				text.push_back("mov [rcx] , rax");
 			}
-			else{
-				//
+			else if(node_type2=="FLOAT_NT" || node_type=="FLOAT"){
+				CodeGenerator(root->children[0]->children[1]);
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov [rcx] , xmm0");
 			}
 		}
 	}
@@ -1033,6 +1036,7 @@ void CodeGenerator(TreeNode* root){
 				}
 			}
 		}
+		
 	}
 }
 void putx86inafile(){
