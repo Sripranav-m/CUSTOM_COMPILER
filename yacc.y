@@ -488,6 +488,10 @@ PEXPRESSION: INTEGER_NT {
 				$3 = new TreeNode("CSB");
 				vector<TreeNode*> v={$1,$2,$3};
 				$$=new TreeNode("PEXPRESSION",v);
+			}
+			| FLOAT_NT{
+				vector<TreeNode*> v={$1};
+				$$=new TreeNode("PEXPRESSION",v);
 			};
 
 PEXPRESSION_S : STRING_NT {
@@ -636,6 +640,17 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="LOCAL_DECLARATION"){
 		if(root->children[0]->NodeName=="VARIABLE_TYPE"){
 			text.push_back("sub rsp , 8");
+			if(root->children[0]->children[0]->NodeName=="INT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov rax , 0");
+				text.push_back("mov [rcx] , rax");
+			}
+			else if(root->children[0]->children[0]->NodeName=="FLOAT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
+				text.push_back("mov dword[rcx] , __float32__(0.0)");
+			}
 		}
 		else if(root->children[0]->NodeName=="LIST_TYPE"){
 			int x=8*stoi(root->children[3]->lex_val);
@@ -651,6 +666,20 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov rdi , intf");
 			text.push_back("mov rax , 0");
 			text.push_back("call printf");
+		}
+		if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
+			text.push_back("finit");
+			text.push_back("mov rdx , rsp");
+			text.push_back("mov rsp , rbp");
+			text.push_back("mov rbx , rbp");
+			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"FLOAT"}]));
+			text.push_back("fld dword[rbx]");
+			text.push_back("fstp qword[temp]");
+			text.push_back("movq xmm0 , qword[temp]");
+			text.push_back("mov rdi , fmtf");
+			text.push_back("mov rsi , strf");
+			text.push_back("call printf");
+			text.push_back("mov rsp , rdx");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
@@ -690,6 +719,11 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
 				text.push_back("mov [rcx] , rax");
+			}
+			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FLOAT_NT"){
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
+				text.push_back("mov dword[rcx] , __float32__("+root->children[0]->children[1]->children[0]->children[0]->lex_val+")");
 			}
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
@@ -1119,6 +1153,7 @@ void set_integer_print_subroutine(){ // prints the string in the rax register , 
 void set_scanner_integer(){
 	bss.push_back("section .bss");
 	bss.push_back("scanned resb 16");
+	bss.push_back("temp : resq 1");
 }
 
 void string_to_number_subroutine(){ // takes the string inside the scanned in bss and returns output inside rax register , custom made subroutine by me
@@ -1143,4 +1178,6 @@ void set_data_segment(){
 	data.push_back("section .data");
 	data.push_back("intf: db \"%ld\",10,0 ");
 	data.push_back("lisf: db \"%ld L\",10,0 ");
+	data.push_back("fmtf: db \"%lf\",10,0 ");
+	data.push_back("strf: db ");
 }

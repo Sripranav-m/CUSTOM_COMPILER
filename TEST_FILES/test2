@@ -1,9 +1,16 @@
 int _main(){
-    int a;   
-    a=-234;
+    int a;
+    a=25;
     print(a);
-    list p[5];
-    p=[1;2;3;4;5;];
-    print(p);
+    int b;
+    b=14;
+    int c;
+    print(b);
+    int t;
+    c=0;
+    t=67;
+    float g;
+    g=345.68;
+    print(g);
 }
 

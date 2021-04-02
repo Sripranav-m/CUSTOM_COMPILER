@@ -13,6 +13,7 @@ int _main(){
     d=0;
     print(d);
     print(a);
+    float x;
     for(d=5;d<10;d++;){
         print(d);
     }
@@ -25,4 +26,6 @@ int _main(){
     if(d==4){
         print(t);
     }
+    x=456.678;
+    print(x);
 }
