@@ -669,7 +669,7 @@ void CodeGenerator(TreeNode* root){
 		}
 		if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
 			text.push_back("finit");
-			text.push_back("mov rdx , rsp");
+			text.push_back("mov r12 , rsp");
 			text.push_back("mov rsp , rbp");
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"FLOAT"}]));
@@ -679,7 +679,7 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov rdi , fmtf");
 			text.push_back("mov rsi , strf");
 			text.push_back("call printf");
-			text.push_back("mov rsp , rdx");
+			text.push_back("mov rsp , r12");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];

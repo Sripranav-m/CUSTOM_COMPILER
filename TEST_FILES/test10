@@ -1,32 +1,11 @@
 int _main(){
-    list a[5];
-    list b[5];
-    list c[5];
-    a=[15;16;17;18;19;];
-    b=[11;12;13;14;15;];
-    c=a+b;
-    print(a);
+    int a;
+    float b;
+    list c[3];
+    c=[1;2;3;];
+     a=14;
+    b=567.789;
     print(b);
     print(c);
-    a=a+c;
-    int d;
-    d=0;
-    print(d);
     print(a);
-    float x;
-    for(d=5;d<10;d++;){
-        print(d);
-    }
-    while(d>=5){
-        print(d);
-        d--;
-    }
-    int t;
-    t=0;
-    if(d==4){
-        print(t);
-    }
-    x=456.678;
-    print(x);
-    print(d);
 }
