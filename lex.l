@@ -78,7 +78,7 @@ ic ["]
 (["]({letter}|{digit}|[" "]|{underscore})*["])  {strcpy(mytext, yytext);return STR;}
 ([']({letter}|{digit}|[" "]|{underscore})['])  {strcpy(mytext, yytext);return CHAR;}
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
-{digit}+				        {strcpy(mytext, yytext);return NUMBER;}
+([-]?{digit}+)				        {strcpy(mytext, yytext);return NUMBER;}
 ([+|-]?{digit}+[.]{digit}?{digit}?{digit}?)       {strcpy(mytext,yytext);return FLOATING;}
 
 [ \t\r\n]	                                        ;

@@ -1,12 +1,5 @@
 int _main(){
     int a;
-    a=1;
-    int b;
-    b=0;
-    b=b&a;
-    print(b);
-    b=b^a;
-    print(b);
-    b=b|a;
-    print(b);
+    a=-3;
+    print(a);
 }

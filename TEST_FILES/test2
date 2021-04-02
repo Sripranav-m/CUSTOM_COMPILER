@@ -1,10 +1,9 @@
 int _main(){
     int a;   
-    int b;
-    int c;
-    a=10;
-    b=15;
-    c=12+14;
-    print(c);
+    a=-234;
+    print(a);
+    list p[5];
+    p=[1;2;3;4;5;];
+    print(p);
 }
 

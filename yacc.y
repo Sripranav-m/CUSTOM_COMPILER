@@ -36,7 +36,8 @@
 	void CodeGenerator(TreeNode* root);
 	void putx86inafile();
 	void set_integer_print_subroutine();
-	void set_integer_scan_subroutine();
+	void set_data_segment();
+	void set_scanner_integer();
 	void string_to_number_subroutine();
 	void set_list_print_subroutine();
 	void set_go_to_new_line_subroutine();
@@ -593,14 +594,16 @@ void dotraversal(TreeNode* head){
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		text.push_back("section	.text");
-		text.push_back("global _start ");
-		text.push_back("_start:");
+		text.push_back("global main ");
+		text.push_back("main:");
 		text.push_back("push rbp");
 		text.push_back("mov rbp , rsp");
-		set_integer_print_subroutine();
-		set_list_print_subroutine();
-		set_go_to_new_line_subroutine();
-		set_integer_scan_subroutine();
+		data.push_back("extern printf , scanf");
+		set_data_segment();
+		//set_integer_print_subroutine();
+		//set_list_print_subroutine();
+		//set_go_to_new_line_subroutine();
+		set_scanner_integer();
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="DECLARATION_LIST"){
@@ -644,7 +647,10 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"INT"}]));
 			text.push_back("mov rax , [rbx]");
-			text.push_back("call _printRAX");
+			text.push_back("mov rsi , rax");
+			text.push_back("mov rdi , intf");
+			text.push_back("mov rax , 0");
+			text.push_back("call printf");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
@@ -657,9 +663,11 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov rbx , rbp");
 				text.push_back("add rbx , "+to_string(list_location));
 				text.push_back("mov rax , [rbx]");
-				text.push_back("call _printRAX_L");
+				text.push_back("mov rsi , rax");
+				text.push_back("mov rdi , lisf");
+				text.push_back("mov rax , 0");
+				text.push_back("call printf");
 			}
-			text.push_back("call _printNewLine");
 		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
@@ -748,13 +756,7 @@ void CodeGenerator(TreeNode* root){
 		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
-			if(node_type2=="INTEGER_NT" || node_type=="INT"){
-				CodeGenerator(root->children[0]->children[1]);
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov [rcx] , rax");
-			}
-			else if(node_type=="LIST"){
+			if(node_type=="LIST"){
 				CodeGenerator(root->children[0]->children[1]);
 				int top_of_stack=Num_variables;
 				top_of_stack++;
@@ -774,6 +776,15 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("add rcx , -8");
 					number_of_times--;
 				}
+			}
+			else if(node_type2=="INTEGER_NT" || node_type=="INT"){
+				CodeGenerator(root->children[0]->children[1]);
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov [rcx] , rax");
+			}
+			else{
+				//
 			}
 		}
 	}
@@ -995,24 +1006,24 @@ void CodeGenerator(TreeNode* root){
 }
 void putx86inafile(){
 	ofstream MyFile("gen.asm");
-	for(int i=0;i<text.size();i++){
-		MyFile<<text[i]<<endl;
-	}
-	for(int i=0;i<printint.size();i++){
-		MyFile<<printint[i]<<endl;
-	}
-	for(int i=0;i<printList.size();i++){
-		MyFile<<printList[i]<<endl;
-	}
-	for(int i=0;i<printNewLine.size();i++){
-		MyFile<<printNewLine[i]<<endl;
-	}
 	for(int i=0;i<data.size();i++){
 		MyFile<<data[i]<<endl;
 	}
 	for(int i=0;i<bss.size();i++){
 		MyFile<<bss[i]<<endl;
 	}
+	for(int i=0;i<text.size();i++){
+		MyFile<<text[i]<<endl;
+	}
+	/* for(int i=0;i<printint.size();i++){
+		MyFile<<printint[i]<<endl;
+	} */
+	/* for(int i=0;i<printList.size();i++){
+		MyFile<<printList[i]<<endl;
+	}
+	for(int i=0;i<printNewLine.size();i++){
+		MyFile<<printNewLine[i]<<endl;
+	} */
 	MyFile.close();
 }
 
@@ -1022,8 +1033,6 @@ void yyerror(char* temp){
 	exit(0);
 }
 void set_go_to_new_line_subroutine(){
-	data.push_back("section .data");
-	data.push_back("newline db '' , 10 ");
 	printNewLine.push_back("_printNewLine:");
 	printNewLine.push_back("mov rax , 1");
 	printNewLine.push_back("mov rdi , 1");
@@ -1107,7 +1116,8 @@ void set_integer_print_subroutine(){ // prints the string in the rax register , 
 	bss.push_back("digitSpacePos resb 8");
 }
 
-void set_integer_scan_subroutine(){
+void set_scanner_integer(){
+	bss.push_back("section .bss");
 	bss.push_back("scanned resb 16");
 }
 
@@ -1127,4 +1137,10 @@ void string_to_number_subroutine(){ // takes the string inside the scanned in bs
 	text.push_back("add rax , rcx");
 	text.push_back("jmp top"+to_string(num_scans));
 	text.push_back("done"+to_string(num_scans)+":");
+}
+
+void set_data_segment(){
+	data.push_back("section .data");
+	data.push_back("intf: db \"%ld\",10,0 ");
+	data.push_back("lisf: db \"%ld L\",10,0 ");
 }

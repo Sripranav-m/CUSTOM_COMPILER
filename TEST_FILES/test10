@@ -13,4 +13,16 @@ int _main(){
     d=0;
     print(d);
     print(a);
+    for(d=5;d<10;d++;){
+        print(d);
+    }
+    while(d>=5){
+        print(d);
+        d--;
+    }
+    int t;
+    t=0;
+    if(d==4){
+        print(t);
+    }
 }

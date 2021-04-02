@@ -2,5 +2,9 @@ int _main(){
     int a;
     scan(a);
     print(a);
+    int i;
+    for(i=15;i<=60;i++ ;){
+        print(i);
+    }
 }
 
