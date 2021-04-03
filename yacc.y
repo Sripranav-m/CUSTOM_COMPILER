@@ -27,16 +27,18 @@
 	int count_loops=0;
 	int num_scans=0;
 %}
+
 %union{
 	class TreeNode* node;
 }
-
-%token 	INT STRING CHARACTER FLOAT LIST IDENTIFIER CHAR STR FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+ 
+%token 	INT STRING CHARACTER FLOAT LIST IDENTIFIER CHAR STR FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
 %token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR OSB CSB 
 
 %left PLUS
 %left MULTIPLY
 %left MINUS
+%left DIVIDE
 %right EQUALTO
 
 %type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
@@ -44,7 +46,7 @@
 %type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F PEXPRESSION_L LIST_ELEMENT INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
-%type<node> INT STRING CHARACTER FLOAT LIST IC IDENTIFIER FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY
+%type<node> INT STRING CHARACTER FLOAT LIST IC IDENTIFIER FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
 %type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR OSB CSB LIST_TYPE
 
 %%
@@ -375,6 +377,12 @@ EXPRESSION: PEXPRESSION {
                 vector<TreeNode*> u={$2};
                 $$=new TreeNode("EXPRESSION",u);
             }
+			| PEXPRESSION DIVIDE PEXPRESSION {
+                vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("DIVIDE",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+            }
 			| PEXPRESSION BAND PEXPRESSION {
                 vector<TreeNode*> v={$1,$3};
                 $2=new TreeNode("BAND",v);
@@ -500,20 +508,20 @@ PRINT_SCAN_ITEM : IDENTIFIER_NT {
 			};
 
 
-INTEGER_NT: N_NUMBER {
-				cout<<"!\n";
-				$1 = new TreeNode("N_NUMBER");
-				vector<TreeNode*> v = {$1};
-				$$ = new TreeNode("INTEGER_NT", v);
-				$$->lex_val = mytext;
-			}
-			| NON_N_NUMBER{
+INTEGER_NT: NON_N_NUMBER{
 				cout<<"&\n";
 				$1 = new TreeNode("NON_N_NUMBER");
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("INTEGER_NT", v);
 				$$->lex_val = mytext;
-			};
+			}
+			| N_NUMBER {
+				cout<<"!\n";
+				$1 = new TreeNode("N_NUMBER");
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("INTEGER_NT", v);
+				$$->lex_val = mytext;
+			} ;
 
 STRING_NT : STR{
 				$1 = new TreeNode("STR");
@@ -573,16 +581,4 @@ int main(){
 	putx86inafile();
 	return 0;
 }
-// HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
-// Basically,this is to check whether the Abstract syntax tree is correct or not
-// Doing a traversal on the tree that we generated
-void dotraversal(TreeNode* head){
-	cout<<"NodeName: "<<head->NodeName<<"   ";
-	cout<<"Lexval: "<<head->lex_val<<endl;
-	vector<TreeNode*> children=head->children;
-	for(int i=0;i<children.size();i++){
-		dotraversal(children[i]);
-	}
-	return;
-}
-// This code generates the X86 code for our abstract syntax tree constructed.
+

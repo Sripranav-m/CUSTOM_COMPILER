@@ -1,5 +1,17 @@
 #include "main.h"
 
+// HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
+// Basically,this is to check whether the Abstract syntax tree is correct or not
+// Doing a traversal on the tree that we generated
+void dotraversal(TreeNode* head){
+	cout<<"NodeName: "<<head->NodeName<<"   ";
+	cout<<"Lexval: "<<head->lex_val<<endl;
+	vector<TreeNode*> children=head->children;
+	for(int i=0;i<children.size();i++){
+		dotraversal(children[i]);
+	}
+	return;
+}
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		text.push_back("section	.text");
@@ -43,15 +55,15 @@ void CodeGenerator(TreeNode* root){
 		if(root->children[0]->NodeName=="VARIABLE_TYPE"){
 			text.push_back("sub rsp , 8");
 			if(root->children[0]->children[0]->NodeName=="INT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rax , 0");
-				text.push_back("mov [rcx] , rax");
+				// text.push_back("mov rcx , rbp");
+				// text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				// text.push_back("mov rax , 0");
+				// text.push_back("mov [rcx] , rax");
 			}
 			else if(root->children[0]->children[0]->NodeName=="FLOAT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
-				text.push_back("mov dword[rcx] , __float32__(0.0)");
+				// text.push_back("mov rcx , rbp");
+				// text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
+				// text.push_back("mov dword[rcx] , __float32__(0.0)");
 			}
 		}
 		else if(root->children[0]->NodeName=="LIST_TYPE"){
@@ -61,6 +73,7 @@ void CodeGenerator(TreeNode* root){
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
+            text.push_back("");
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"INT"}]));
 			text.push_back("mov rax , [rbx]");
@@ -68,8 +81,10 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov rdi , intf");
 			text.push_back("mov rax , 0");
 			text.push_back("call printf");
+            text.push_back("");
 		}
 		if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
+            text.push_back("");
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"FLOAT"}]));
 			text.push_back("add rsp , -8");
@@ -79,8 +94,11 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("movq xmm0 , qword[temp]");
 			text.push_back("mov rax , 1");
 			text.push_back("call printf");
+            text.push_back("add rsp , 8");
+            text.push_back("");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
+            text.push_back("");
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
 			int number_of_times=list_size[{root->children[2]->lex_val}];
 			list_location+=8*number_of_times;
@@ -96,6 +114,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov rax , 0");
 				text.push_back("call printf");
 			}
+            text.push_back("");
 		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
@@ -122,7 +141,7 @@ void CodeGenerator(TreeNode* root){
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FLOAT_NT"){
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
-				text.push_back("mov dword[rcx] , __float32__("+root->children[0]->children[1]->children[0]->children[0]->lex_val+")");
+				text.push_back("mov qword[rcx] , __float32__("+root->children[0]->children[1]->children[0]->children[0]->lex_val+")");
 			}
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
@@ -218,9 +237,10 @@ void CodeGenerator(TreeNode* root){
 			}
 			else if(node_type2=="FLOAT_NT" || node_type=="FLOAT"){
 				CodeGenerator(root->children[0]->children[1]);
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov [rcx] , xmm0");
+				text.push_back("mov rax , rbp");
+				text.push_back("add rax , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
+				text.push_back("fstp dword[rax]");
+                text.push_back("add rsp , 16");
 			}
 		}
 	}
@@ -347,7 +367,6 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
 		string node_type=variable_types[root->children[0]->children[0]->children[0]->lex_val];
 		string node_ident=root->children[0]->children[0]->children[0]->NodeName;
-		cout<<node_type<<"&"<<node_ident<<endl;
 		if(node_type=="LIST"){
 			string typ=root->children[0]->NodeName;
 			TreeNode* right_list=root->children[0]->children[1]->children[0];
@@ -441,47 +460,71 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		else if(node_type=="FLOAT" || node_ident=="FLOAT_NT"){ // FLOAT OR FLOAT IDENTIFIER 
-			if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rax , [rcx]");
+            if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+                text.push_back("mov rbx , rbp");
+                text.push_back("add rbx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"FLOAT"}]));
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[rbx]");
+			    text.push_back("fstp dword[temp]");
+                text.push_back("add rsp ,8");
 			}
-			else if(root->children[0]->children[0]->children[0]->NodeName=="FLOAT"){
-				//cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
-				text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
-				text.push_back("mov rax , rcx");
-			}
+			else if(root->children[0]->children[0]->children[0]->NodeName=="FLOAT_NT"){
+                text.push_back("mov dword[temp] , __float32__("+root->children[0]->children[0]->children[0]->lex_val+")");
+            }
 			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rbx , [rcx]");
+				cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+                text.push_back("mov rcx , rbp");
+                text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"FLOAT"}]));
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[rcx]");
+			    text.push_back("fstp dword[temq]");
+                text.push_back("add rsp ,8");
 			}
-			else if(root->children[0]->children[1]->children[0]->NodeName=="FLOAT"){
-				//cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
-				text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
-				text.push_back("mov rbx , rcx");
-			}
+			else if(root->children[0]->children[1]->children[0]->NodeName=="FLOAT_NT"){
+                text.push_back("mov dword[temq] , __float32__("+root->children[0]->children[1]->children[0]->lex_val+")");
+                
+            }
 			string typ=root->children[0]->NodeName;
 			if(typ=="PLUS"){
-				text.push_back("add rax , rbx");
+                text.push_back("finit");
+                text.push_back("add rsp , -8");
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[temp]");
+                text.push_back("fld dword[temq]");
+                text.push_back("fadd");
 			}
 			else if(typ=="MINUS"){
-				text.push_back("sub rax , rbx");
+                text.push_back("finit");
+                text.push_back("add rsp , -8");
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[temp]");
+                text.push_back("fld dword[temq]");
+                text.push_back("fsub");
 			}
 			else if(typ=="MULTIPLY"){
-				text.push_back("mul rbx");
+                text.push_back("finit");
+                text.push_back("add rsp , -8");
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[temp]");
+                text.push_back("fld dword[temq]");
+                text.push_back("fmul");
 			}
-			else if(typ=="BAND"){
-				text.push_back("and rax , rbx");
-			}
-			else if(typ=="BOR"){
-				text.push_back("or rax , rbx");
-			}
-			else if(typ=="BXOR"){
-				text.push_back("xor rax , rbx");
-			}
+            else if(typ=="DIVIDE"){
+                text.push_back("finit");
+                text.push_back("add rsp , -8");
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[temp]");
+                text.push_back("fld dword[temq]");
+                text.push_back("fdiv");
+            }
 			else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
-				text.push_back("cmp rax , rbx");
+                text.push_back("finit");
+                text.push_back("add rsp , -8");
+                text.push_back("add rsp , -8");
+                text.push_back("fld dword[temp]");
+                text.push_back("fld dword[temq]");
+                text.push_back("fcom");
 			}
 		}
 		
@@ -606,6 +649,7 @@ void set_scanner_integer(){
 	bss.push_back("section .bss");
 	bss.push_back("scanned resb 16");
 	bss.push_back("temp : resq 1");
+    bss.push_back("temq : resq 1");
 }
 
 void string_to_number_subroutine(){ // takes the string inside the scanned in bss and returns output inside rax register , custom made subroutine by me
@@ -631,5 +675,4 @@ void set_data_segment(){
 	data.push_back("intf: db \"%ld\",10,0 ");
 	data.push_back("lisf: db \"%ld L\",10,0 ");
 	data.push_back("fmtf: db \"%lf\",10,0 ");
-	data.push_back("strf: db ");
 }

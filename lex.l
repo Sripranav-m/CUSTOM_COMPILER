@@ -71,6 +71,7 @@ ic ["]
 "+"                                     {return PLUS;}
 "-"                                     {return MINUS;}
 "*"                                     {return MULTIPLY;}
+"/"                                     {return DIVIDE;}
 "="                                     {return EQUALTO;}
 
 {ic}                                    {return IC;}
@@ -80,7 +81,7 @@ ic ["]
 {underscore}{letter}+{digit}?           {strcpy(mytext, yytext);return FUNCTION_IDENTIFIER;}
 ([-]{digit}+)				        {strcpy(mytext, yytext);return N_NUMBER;}
 ({digit}+)				        {strcpy(mytext, yytext);return NON_N_NUMBER;}
-([+|-]?{digit}+[.]{digit}?{digit}?{digit}?)       {strcpy(mytext,yytext);return FLOATING;}
+([-]?{digit}+[.]{digit}?{digit}?{digit}?)       {strcpy(mytext,yytext);return FLOATING;}
 
 [ \t\r\n]	                                        ;
 .                                                   ;
