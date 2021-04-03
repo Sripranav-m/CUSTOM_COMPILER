@@ -1,5 +1,5 @@
 a.out: y.tab.cpp lex.yy.c
-	g++ -w lex.yy.c y.tab.cpp
+	g++ -w lex.yy.c y.tab.cpp main.cpp
 	@echo "Run the Test Codes as : ./a.out < [TEST_FILES/testx]"
 	@echo "And then, to run asm code, do : make runnasm"
 
