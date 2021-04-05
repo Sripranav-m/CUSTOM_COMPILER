@@ -3,9 +3,9 @@ int _main(){
     q=[11;12;13;14;15;16;];
     print(q);
     int a;
-    a=0;
+    a=5;
+    a=@q;
     print(a);
-    list p[6];
-    p=q;
-    print(p);
+    q=q+q;
+    print(q);
 }

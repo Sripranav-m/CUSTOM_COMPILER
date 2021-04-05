@@ -129,8 +129,19 @@ void CodeGenerator(TreeNode* root){
 		text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
 		text.push_back("mov [rcx] , rax");
 	}
-	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-		if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
+	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){		
+		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
+			if(variable_types[root->children[0]->children[0]->lex_val]=="INT"){
+				CodeGenerator(root->children[0]->children[1]);
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov [rcx] , rax");
+			}
+			else{
+				//
+			}
+		}
+		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
 			//cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
 			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 				text.push_back("mov rcx , rbp");
@@ -208,6 +219,7 @@ void CodeGenerator(TreeNode* root){
 		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
+			//cout<<node_type<<"  "<<node_type2<<endl;
 			if(node_type=="LIST"){
 				CodeGenerator(root->children[0]->children[1]);
 				int top_of_stack=Num_variables;
@@ -365,6 +377,14 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
+		if(root->children[0]->NodeName=="SIZE_EXPRESSION"){
+			string ident=root->children[0]->children[0]->lex_val;
+			if(symbol_table.find({ident,"LIST"})!=symbol_table.end()){
+				int siz=list_size[ident];
+				text.push_back("mov rax , "+to_string(siz));
+				return;
+			}
+		}
 		string node_type=variable_types[root->children[0]->children[0]->children[0]->lex_val];
 		string node_ident=root->children[0]->children[0]->children[0]->NodeName;
 		if(node_type=="LIST"){
@@ -461,7 +481,7 @@ void CodeGenerator(TreeNode* root){
 		}
 		else if(node_type=="FLOAT" || node_ident=="FLOAT_NT"){ // FLOAT OR FLOAT IDENTIFIER 
             if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-				cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+				//cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
                 text.push_back("mov rbx , rbp");
                 text.push_back("add rbx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"FLOAT"}]));
                 text.push_back("add rsp , -8");
@@ -473,7 +493,7 @@ void CodeGenerator(TreeNode* root){
                 text.push_back("mov dword[temp] , __float32__("+root->children[0]->children[0]->children[0]->lex_val+")");
             }
 			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-				cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+				//cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
                 text.push_back("mov rcx , rbp");
                 text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"FLOAT"}]));
                 text.push_back("add rsp , -8");

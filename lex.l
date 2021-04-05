@@ -73,6 +73,7 @@ ic ["]
 "*"                                     {return MULTIPLY;}
 "/"                                     {return DIVIDE;}
 "="                                     {return EQUALTO;}
+"@"                                     { return ATSIZE;}
 
 {ic}                                    {return IC;}
 ({letter}+{digit}?)                     {strcpy(mytext, yytext);return IDENTIFIER;}
