@@ -447,11 +447,11 @@ EXPRESSION: PEXPRESSION {
 			}
 			| SIZE_EXPRESSION{
 				vector<TreeNode*> v = {$1};
-				$$ = new TreeNode("STATEMENT",v);
+				$$ = new TreeNode("EXPRESSION",v);
 			};
 
 
-SIZE_EXPRESSION : ATSIZE IDENTIFIER{
+SIZE_EXPRESSION : ATSIZE IDENTIFIER_NT{
 						$1=new TreeNode("ATSIZE");
 						vector<TreeNode*> v={$1,$2};
 						$$ = new TreeNode("SIZE_EXPRESSION",v);

@@ -102,6 +102,7 @@ void CodeGenerator(TreeNode* root){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
 			int number_of_times=list_size[{root->children[2]->lex_val}];
 			list_location+=8*number_of_times;
+			int ss=0;
 			//cout<<list_location<<endl<<number_of_times<<endl;
 			while(number_of_times>0){
 				list_location-=8;
@@ -110,7 +111,16 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("add rbx , "+to_string(list_location));
 				text.push_back("mov rax , [rbx]");
 				text.push_back("mov rsi , rax");
-				text.push_back("mov rdi , lisf");
+				if(ss==0){
+					text.push_back("mov rdi , lisfs");
+					ss++;
+				}
+				else if(number_of_times==0){
+					text.push_back("mov rdi , lisfe");
+				}
+				else{
+					text.push_back("mov rdi , lisf");
+				}
 				text.push_back("mov rax , 0");
 				text.push_back("call printf");
 			}
@@ -129,17 +139,18 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("call scanf");
 			text.push_back("add rsp , 8");
 		}
-		// else if(variable_types[root->children[2]->children[0]->lex_val]=="FLOAT"){
-		// 	text.push_back("mov rcx , rbp");
-		// 	text.push_back("add rsp , -8");
-		// 	text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"FLOAT"}]));
-		// 	text.push_back("mov rsi , rcx");
-		// 	text.push_back("mov rdi , floatin");
-		// 	text.push_back("xor rax , rax");
-		// 	text.push_back("call scanf");
-		// 	text.push_back("movsd xm0 , [rcx]");
-		// 	text.push_back("add rsp , 8");
-		// }
+		else if(variable_types[root->children[2]->children[0]->lex_val]=="FLOAT"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rsp , -8");
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"FLOAT"}]));
+			text.push_back("mov rsi , temp");
+			text.push_back("mov rdi , floatin");
+			text.push_back("xor rax , rax");
+			text.push_back("call scanf");
+			text.push_back("fld dword[temp]");
+			text.push_back("fstp dword[rcx]");
+			text.push_back("add rsp , 8");
+		}
 		// text.push_back("mov rax , 0");
 		// text.push_back("mov rdi , 0");
 		// text.push_back("mov rsi , scanned");
@@ -452,13 +463,14 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		if(root->children[0]->NodeName=="SIZE_EXPRESSION"){
-			string ident=root->children[0]->children[0]->lex_val;
+		cout<<root->children[0]->children[0]->NodeName;
+		if(root->children[0]->children[0]->NodeName=="ATSIZE"){
+			string ident=root->children[0]->children[1]->lex_val;
 			if(symbol_table.find({ident,"LIST"})!=symbol_table.end()){
 				int siz=list_size[ident];
 				text.push_back("mov rax , "+to_string(siz));
-				return;
 			}
+			return;
 		}
 		string node_type=variable_types[root->children[0]->children[0]->children[0]->lex_val];
 		string node_ident=root->children[0]->children[0]->children[0]->NodeName;
@@ -768,7 +780,9 @@ void string_to_number_subroutine(){ // takes the string inside the scanned in bs
 void set_data_segment(){
 	data.push_back("section .data");
 	data.push_back("intf: db \"%ld\",10,0 ");
-	data.push_back("lisf: db \"%ld L\",10,0 ");
+	data.push_back("lisfs: db \"[ %ld\",10,0 ");
+	data.push_back("lisf: db \"  %ld\",10,0 ");
+	data.push_back("lisfe: db \"  %ld ]\",10,0 ");
 	data.push_back("fmtf: db \"%lf\",10,0 ");
 	data.push_back("intin: db \"%ld\",0");
 	data.push_back("floatin: db \"%lf\",0");
