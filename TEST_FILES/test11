@@ -7,4 +7,20 @@ int _main(){
     b=234.345;
     c=a+b;
     print(c);
+    c=b-a;
+    print(c);
+    c=b*a;
+    print(c);
+    c=b/a;
+    print(c);
+    if(c>1){
+        int g;
+        g=0;
+        print(g);
+    }
+    if(c<1){
+        int k;
+        k=1;
+        print(k);
+    }
 }
