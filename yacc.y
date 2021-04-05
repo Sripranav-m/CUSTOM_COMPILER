@@ -561,7 +561,12 @@ IDENTIFIER_NT: IDENTIFIER {
                             vector<TreeNode*> v = {$1};
                             $$ = new TreeNode("IDENTIFIER_NT", v);
                             $$->lex_val = mytext;
-						};
+				}
+				|IDENTIFIER_NT OSB INTEGER_NT  CSB{
+							$2 = new TreeNode("OSB"); $4 = new TreeNode("CSB");
+							vector<TreeNode*> v={$1,$2,$3,$4};
+							$$=new TreeNode("IDENTIFIER_NT",v);
+				};
 
 
 
@@ -591,4 +596,3 @@ int main(){
 	putx86inafile();
 	return 0;
 }
-

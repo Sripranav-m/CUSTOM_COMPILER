@@ -144,11 +144,35 @@ void CodeGenerator(TreeNode* root){
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
 			//cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
 			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-				text.push_back("mov rcx , rbp");
-				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
-				text.push_back("mov [rcx] , rax");
-			}
+				if(root->children[0]->children[0]->children.size()==4){
+					TreeNode* ident=root->children[0]->children[0]->children[0];
+					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+					int siz=list_size[ident->lex_val];
+					cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+						if(req_pos>=0 && req_pos<siz){
+							req_pos=siz-req_pos-1;
+							text.push_back("mov rcx , rbp");
+							text.push_back("add rcx , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+							text.push_back("add rcx , "+to_string((req_pos)*8));
+							text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+							text.push_back("mov [rcx] , rax");
+						}
+						else{
+							//
+						}
+					}
+					else{
+						//
+					}
+				}
+				else{
+					text.push_back("mov rcx , rbp");
+					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+					text.push_back("mov rax , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+					text.push_back("mov [rcx] , rax");
+				}
+			}	
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FLOAT_NT"){
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
@@ -157,11 +181,39 @@ void CodeGenerator(TreeNode* root){
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
 				if(node_type=="INT"){
-					text.push_back("mov rcx , rbp");
-					text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov rdx , rbp");
-					text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov [rcx] , [rdx]");
+					if(root->children[0]->children[0]->children.size()==4){
+						TreeNode* ident=root->children[0]->children[0]->children[0];
+						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+						int siz=list_size[ident->lex_val];
+						cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+							if(req_pos>=0 && req_pos<siz){
+								req_pos=siz-req_pos-1;
+								text.push_back("mov rcx , rbp");
+								text.push_back("add rcx , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+								text.push_back("add rcx , "+to_string((req_pos)*8));
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
+								text.push_back("mov rax , [rdx]");
+								text.push_back("mov [rcx] , rax");
+							}
+							else{
+								//
+							}
+						}
+						else{
+							//
+						}
+					}
+					else{
+						
+						text.push_back("mov rcx , rbp");
+						text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+						text.push_back("mov rdx , rbp");
+						text.push_back("add rdx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
+						text.push_back("mov rax , [rdx]");
+						text.push_back("mov [rcx] , rax");
+					}	
 				}
 				else if(node_type=="LIST"){
 					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
