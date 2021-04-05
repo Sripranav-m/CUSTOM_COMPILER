@@ -1,10 +1,15 @@
 int _main(){
     float a;
     float b;
+    int x;
     float c;
-    
+    int y;
+    x=13;
+    y=16;
     a=123.456;
     b=234.345;
+    print(a);
+    print(b);
     c=a+b;
     print(c);
     c=b-a;
@@ -13,14 +18,11 @@ int _main(){
     print(c);
     c=b/a;
     print(c);
-    if(c>1){
-        int g;
-        g=0;
-        print(g);
-    }
-    if(c<1){
-        int k;
-        k=1;
-        print(k);
-    }
+    
+    c=a+b;
+    print(c);
+    c=b-a;
+    print(c);
+    print(x);
+    print(y);
 }

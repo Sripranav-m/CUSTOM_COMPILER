@@ -119,15 +119,38 @@ void CodeGenerator(TreeNode* root){
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
 		num_scans++;
-		text.push_back("mov rax , 0");
-		text.push_back("mov rdi , 0");
-		text.push_back("mov rsi , scanned");
-		text.push_back("mov rdx , 16");
-		text.push_back("syscall");
-		string_to_number_subroutine();
-		text.push_back("mov rcx , rbp");
-		text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
-		text.push_back("mov [rcx] , rax");
+		if(variable_types[root->children[2]->children[0]->lex_val]=="INT"){
+			text.push_back("mov rcx , rbp");
+			text.push_back("add rsp , -8");
+			text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
+			text.push_back("lea rsi , [rcx]");
+			text.push_back("mov rdi , intin");
+			text.push_back("xor rax , rax");
+			text.push_back("call scanf");
+			text.push_back("add rsp , 8");
+		}
+		// else if(variable_types[root->children[2]->children[0]->lex_val]=="FLOAT"){
+		// 	text.push_back("mov rcx , rbp");
+		// 	text.push_back("add rsp , -8");
+		// 	text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"FLOAT"}]));
+		// 	text.push_back("mov rsi , rcx");
+		// 	text.push_back("mov rdi , floatin");
+		// 	text.push_back("xor rax , rax");
+		// 	text.push_back("call scanf");
+		// 	text.push_back("movsd xm0 , [rcx]");
+		// 	text.push_back("add rsp , 8");
+		// }
+		// text.push_back("mov rax , 0");
+		// text.push_back("mov rdi , 0");
+		// text.push_back("mov rsi , scanned");
+		// text.push_back("mov rdx , 16");
+		// text.push_back("syscall");
+		// string_to_number_subroutine();
+		// text.push_back("mov rcx , rbp");
+		// text.push_back("add rcx , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
+		// text.push_back("mov [rcx] , rax");
+	// 	data.push_back("intin: db \"%ld\",0");
+	// data.push_back("integer:times 4 db 0");
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){		
 		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
@@ -590,14 +613,14 @@ void CodeGenerator(TreeNode* root){
                 text.push_back("fld dword[temq]");
                 text.push_back("fdiv");
             }
-			else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
-                text.push_back("finit");
-                text.push_back("add rsp , -8");
-                text.push_back("add rsp , -8");
-                text.push_back("fld dword[temp]");
-                text.push_back("fld dword[temq]");
-                text.push_back("fcom");
-			}
+			// else if(typ=="GE" || typ=="LE" || typ=="GT" || typ=="LT" || typ=="EE" || typ=="NEQ"){
+            //     text.push_back("finit");
+            //     text.push_back("add rsp , -8");
+            //     text.push_back("add rsp , -8");
+            //     text.push_back("fld dword[temp]");
+            //     text.push_back("fld dword[temq]");
+            //     text.push_back("fcom");
+			// }
 		}
 		
 	}
@@ -747,4 +770,7 @@ void set_data_segment(){
 	data.push_back("intf: db \"%ld\",10,0 ");
 	data.push_back("lisf: db \"%ld L\",10,0 ");
 	data.push_back("fmtf: db \"%lf\",10,0 ");
+	data.push_back("intin: db \"%ld\",0");
+	data.push_back("floatin: db \"%lf\",0");
+	data.push_back("integer:times 4 db 0");
 }
