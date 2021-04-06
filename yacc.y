@@ -496,6 +496,18 @@ EXPRESSION: PEXPRESSION {
 			| SIZE_EXPRESSION{
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("EXPRESSION",v);
+			}
+			| EXPRESSION AND EXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("AND",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
+			}
+			| EXPRESSION OR EXPRESSION{
+				vector<TreeNode*> v={$1,$3};
+                $2=new TreeNode("OR",v);
+                vector<TreeNode*> u={$2};
+                $$=new TreeNode("EXPRESSION",u);
 			};
 
 

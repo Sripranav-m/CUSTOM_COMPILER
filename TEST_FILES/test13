@@ -1,0 +1,21 @@
+int _main(){
+    float a;
+    a=1.23;
+    print(a);
+    float b;
+    b=45.67;
+    int g;
+    print(b);
+    float c;
+    c=45.6;
+    print(c);
+    float d;
+    d=45.6;
+    print(d);
+
+    list l[4];
+    l=[1;2;3;4;];
+    int x;
+    x=@l;
+
+}

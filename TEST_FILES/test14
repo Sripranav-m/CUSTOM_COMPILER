@@ -1,0 +1,12 @@
+int _main(){
+    int a;
+    a=10;
+    int b;
+    b=20;
+    while(a<20 && b>15){
+        a++;
+        b--;
+        print(b);
+        print(a);
+    }
+}
