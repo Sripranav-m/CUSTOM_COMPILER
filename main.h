@@ -21,6 +21,7 @@ class TreeNode {
 
 extern TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 extern int Num_variables;
+extern map<string,pair<int,int>> matrix;
 extern map<pair<string,string>, int> symbol_table;
 extern map<string,int> list_size;
 extern map<string,string> variable_types; 

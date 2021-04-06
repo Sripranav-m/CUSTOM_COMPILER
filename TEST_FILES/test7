@@ -8,5 +8,10 @@ int _main(){
     print(x);
     print(a);
     print(y);
+    matrix m[2,3];
+    m=[1,2,3;3,4,5;];
+    int d;
+    d=15;
+    print(d);
 }
 

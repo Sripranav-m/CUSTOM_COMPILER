@@ -8,6 +8,7 @@
 	int Num_variables=0;
 	map<pair<string,string>, int> symbol_table;
 	map<string,int> list_size;
+	map<string,pair<int,int>> matrix;
 	map<string,string> variable_types; 
 	void dotraversal(TreeNode* head);
 	vector<string> text;
@@ -26,13 +27,14 @@
 	void set_go_to_new_line_subroutine();
 	int count_loops=0;
 	int num_scans=0;
+	int matrix_size=0;
 %}
 
 %union{
 	class TreeNode* node;
 }
  
-%token 	INT STRING CHARACTER FLOAT LIST IDENTIFIER CHAR STR FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
+%token 	INT STRING CHARACTER FLOAT LIST MATRIX IDENTIFIER CHAR STR FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
 %token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR OSB CSB ATSIZE
 
 %left PLUS
@@ -41,13 +43,13 @@
 %left DIVIDE
 %right EQUALTO
 
-%type<node> PROGRAM DECLARATION_LIST DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
+%type<node> PROGRAM DECLARATION_LIST MATRIX DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
-%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F PEXPRESSION_L LIST_ELEMENT INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
+%type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F PEXPRESSION_L LIST_ELEMENT MATRIX_ELEMENT MATVAR_NT INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
 %type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
 %type<node> INT STRING CHARACTER FLOAT LIST IC IDENTIFIER FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
-%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR OSB CSB LIST_TYPE ATSIZE SIZE_EXPRESSION
+%type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR OSB CSB LIST_TYPE MATRIX_TYPE ATSIZE SIZE_EXPRESSION
 
 %%
 
@@ -110,7 +112,27 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 								// error
 							}
 						}
-						
+						| MATRIX_TYPE IDENTIFIER_NT OSB INTEGER_NT COMMA INTEGER_NT CSB SEMICOLON{
+							$3=new TreeNode("OSB");
+							$5=new TreeNode("COMMA");
+							$7=new TreeNode("CSB");
+							$8=new TreeNode("SEMICOLON");
+							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6,$7,$8};
+							$$ = new TreeNode("VARIABLE_DECLARATION", v);
+							matrix_size=stoi($4->lex_val)*stoi($6->lex_val);
+							Num_variables+=matrix_size;
+							
+							matrix[$2->lex_val]={stoi($4->lex_val),stoi($6->lex_val)};
+
+							if(variable_types.find($2->lex_val)==variable_types.end()){
+								string var_type=$1->children[0]->NodeName;
+								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								variable_types[$2->lex_val]=var_type;
+							}
+							else{
+								// error
+							}
+						}
 						;
 
 LIST_TYPE : LIST {
@@ -119,6 +141,12 @@ LIST_TYPE : LIST {
 				$$ = new TreeNode("LIST_TYPE",v);
 				};
 					
+
+MATRIX_TYPE : MATRIX {
+				$1 = new TreeNode("MATRIX");
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("MATRIX_TYPE",v);
+			}					
 
 
 FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOUND_STATEMENT {
@@ -341,6 +369,26 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
 								variable_types[$2->lex_val]=var_type;
 							}
+						}
+						| MATRIX_TYPE IDENTIFIER_NT OSB INTEGER_NT COMMA INTEGER_NT CSB SEMICOLON{
+							$3=new TreeNode("OSB");
+							$5=new TreeNode("COMMA");
+							$7=new TreeNode("CSB");
+							$8=new TreeNode("SEMICOLON");
+							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6,$7,$8};
+							$$ = new TreeNode("VARIABLE_DECLARATION", v);
+							matrix_size=stoi($4->lex_val)*stoi($6->lex_val);
+							Num_variables+=matrix_size;
+							
+							matrix[$2->lex_val]={stoi($4->lex_val),stoi($6->lex_val)};
+							if(variable_types.find($2->lex_val)==variable_types.end()){
+								string var_type=$1->children[0]->NodeName;
+								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								variable_types[$2->lex_val]=var_type;
+							}
+							else{
+								// error
+							}
 						} ;
 
 
@@ -470,6 +518,30 @@ LIST_ELEMENT : LIST_ELEMENT INTEGER_NT SEMICOLON {
 				};
 
 
+MATRIX_ELEMENT : MATRIX_ELEMENT MATVAR_NT SEMICOLON{
+					$3=new TreeNode("SEMICOLON");
+					vector<TreeNode*> v={$1,$2,$3};
+					$$=new TreeNode("MATRIX_ELEMENT",v);
+				}
+				| MATVAR_NT SEMICOLON{
+					$2=new TreeNode("SEMICOLON");
+					vector<TreeNode*> v={$1,$2};
+					$$=new TreeNode("MATRIX_ELEMENT",v);
+				};
+
+
+
+MATVAR_NT : MATVAR_NT COMMA INTEGER_NT{
+				$2=new TreeNode("COMMA");
+				vector<TreeNode*> v={$1,$2,$3};
+				$$=new TreeNode("MATVAR_NT",v);	
+				}
+				| INTEGER_NT{
+					vector<TreeNode*> v={$1};
+					$$=new TreeNode("MATVAR_NT",v);
+				};
+
+
 PEXPRESSION: INTEGER_NT {	
 					vector<TreeNode*> v={$1};
 					$$=new TreeNode("PEXPRESSION",v);
@@ -492,6 +564,12 @@ PEXPRESSION: INTEGER_NT {
 			}
 			| FLOAT_NT{
 				vector<TreeNode*> v={$1};
+				$$=new TreeNode("PEXPRESSION",v);
+			}
+			| OSB MATRIX_ELEMENT CSB{
+				$1 = new TreeNode("OSB");
+				$3 = new TreeNode("CSB");
+				vector<TreeNode*> v={$1,$2,$3};
 				$$=new TreeNode("PEXPRESSION",v);
 			};
 

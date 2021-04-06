@@ -70,6 +70,11 @@ void CodeGenerator(TreeNode* root){
 			int x=8*stoi(root->children[3]->lex_val);
 			text.push_back("sub rsp , "+to_string(x));
 		}
+		else if(root->children[0]->NodeName=="MATRIX_TYPE"){
+			int x=stoi(root->children[3]->lex_val)*stoi(root->children[5]->lex_val);
+			x*=8;
+			text.push_back("sub rsp , "+to_string(x));
+		}
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
@@ -277,7 +282,7 @@ void CodeGenerator(TreeNode* root){
 					//
 				}
 			}
-			else{
+			else if(variable_types[root->children[0]->children[0]->lex_val]=="LIST"){
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
 				//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
@@ -294,6 +299,41 @@ void CodeGenerator(TreeNode* root){
 				//cout<<val_from_end<<endl;
 				text.push_back("mov rax , "+elements->children[0]->lex_val);
 				text.push_back("mov [rcx] , rax");
+			}
+			else if(variable_types[root->children[0]->children[0]->lex_val]=="MATRIX"){
+				cout<<"MATRIX TYPE\n";
+				int x=matrix[root->children[0]->children[0]->lex_val].first;
+				int y=matrix[root->children[0]->children[0]->lex_val].second;
+				cout<<x<<" "<<y<<endl;
+				TreeNode* level1=root->children[0]->children[1]->children[0]->children[1];
+				TreeNode* level2;
+				while(level1->children.size()>2){
+					level2=level1->children[1];
+					while(level2->children.size()>2){
+						//cout<<level2->children[2]->lex_val<<" ";
+						text.push_back("mov rax , "+level2->children[2]->lex_val);
+						text.push_back("mov [rcx] , rax");
+						text.push_back("add rcx , 8");
+						level2=level2->children[0];
+					}
+					//cout<<level2->children[0]->lex_val<<" ";
+					text.push_back("mov rax , "+level2->children[0]->lex_val);
+					text.push_back("mov [rcx] , rax");
+					level1=level1->children[0];
+				}
+				level2=level1->children[0];
+				while(level2->children.size()>2){
+					//cout<<level2->children[2]->lex_val<<" ";
+					text.push_back("mov rax , "+level2->children[2]->lex_val);
+					text.push_back("mov [rcx] , rax");
+					text.push_back("add rcx , 8");
+					level2=level2->children[0];
+				}
+				//cout<<level2->children[0]->lex_val<<" ";
+				text.push_back("mov rax , "+level2->children[0]->lex_val);
+				text.push_back("mov [rcx] , rax");
+				level1=level1->children[0];
+
 			}
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
