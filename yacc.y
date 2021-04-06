@@ -231,7 +231,7 @@ SCAN_STATEMENT : SCAN ONB PRINT_SCAN_ITEM CNB SEMICOLON {
 												$5=new TreeNode("SEMICOLON");
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("SCAN_STATEMENT",v);
-											} ;
+				} ;
 
 
 

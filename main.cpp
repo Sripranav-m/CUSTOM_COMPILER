@@ -102,7 +102,7 @@ void CodeGenerator(TreeNode* root){
 			int list_location=symbol_table[{root->children[2]->lex_val,"LIST"}];
 			int number_of_times=list_size[{root->children[2]->lex_val}];
 			list_location+=8*number_of_times;
-			int ss=0;
+			int s=0;
 			//cout<<list_location<<endl<<number_of_times<<endl;
 			while(number_of_times>0){
 				list_location-=8;
@@ -111,9 +111,9 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("add rbx , "+to_string(list_location));
 				text.push_back("mov rax , [rbx]");
 				text.push_back("mov rsi , rax");
-				if(ss==0){
+				if(s==0){
 					text.push_back("mov rdi , lisfs");
-					ss++;
+					s++;
 				}
 				else if(number_of_times==0){
 					text.push_back("mov rdi , lisfe");
@@ -463,7 +463,7 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		cout<<root->children[0]->children[0]->NodeName;
+		//cout<<root->children[0]->children[0]->NodeName;
 		if(root->children[0]->children[0]->NodeName=="ATSIZE"){
 			string ident=root->children[0]->children[1]->lex_val;
 			if(symbol_table.find({ident,"LIST"})!=symbol_table.end()){
@@ -780,9 +780,9 @@ void string_to_number_subroutine(){ // takes the string inside the scanned in bs
 void set_data_segment(){
 	data.push_back("section .data");
 	data.push_back("intf: db \"%ld\",10,0 ");
-	data.push_back("lisfs: db \"[ %ld\",10,0 ");
-	data.push_back("lisf: db \"  %ld\",10,0 ");
-	data.push_back("lisfe: db \"  %ld ]\",10,0 ");
+	data.push_back("lisfs: dq \"[%ld \",32,0 ");
+	data.push_back("lisf: dq \"%ld \",32,0 ");
+	data.push_back("lisfe: db \"%ld]\",10,0 ");
 	data.push_back("fmtf: db \"%lf\",10,0 ");
 	data.push_back("intin: db \"%ld\",0");
 	data.push_back("floatin: db \"%lf\",0");

@@ -3,7 +3,10 @@ int _main(){
     a=[1;2;3;4;5;6;7;];
     int x;
     x=@a;
+    float y;
+    y=1.2345;
     print(x);
-
+    print(a);
+    print(y);
 }
 
