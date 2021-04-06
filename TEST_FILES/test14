@@ -3,7 +3,7 @@ int _main(){
     a=10;
     int b;
     b=20;
-    while(a<20 && b>15){
+    while(a<15 || b>15){
         a++;
         b--;
         print(b);

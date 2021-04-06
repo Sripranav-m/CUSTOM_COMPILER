@@ -508,6 +508,12 @@ EXPRESSION: PEXPRESSION {
                 $2=new TreeNode("OR",v);
                 vector<TreeNode*> u={$2};
                 $$=new TreeNode("EXPRESSION",u);
+			}
+			| NOT EXPRESSION{
+				vector<TreeNode*> v={$2};
+                $2=new TreeNode("OR",v);
+                vector<TreeNode*> u={$1};
+                $$=new TreeNode("EXPRESSION",u);
 			};
 
 

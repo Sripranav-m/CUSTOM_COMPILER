@@ -406,59 +406,65 @@ void CodeGenerator(TreeNode* root){
 		string EndIf="EndIf"+to_string(count_loops);
 		string NextSkip="NextSkip"+to_string(count_loops);
 		text.push_back(LabelIf+":");
+		TreeNode* left_expr=root->children[2]->children[0]->children[0];
+		string x,y,xx;
+		string a,b;
+		a=left_expr->children[0]->NodeName;
+		if(a=="NEQ"){
+			x="je";
+			xx="jne";
+		}
+		if(a=="GE"){
+			x="jl";
+			xx="jge";
+		}
+		if(a=="LE"){
+			x="jg";
+			xx="jle";
+		}
+		if(a=="GT"){
+			x="jle";
+			xx="jg";
+		}
+		if(a=="LT"){
+			x="jge";
+			xx="jl";
+		}
+		if(a=="EE"){
+			x="jne";
+			xx="je";
+		}
+		if(root->children[2]->children[0]->NodeName=="NOT"){
+			CodeGenerator(root->children[2]);
+			text.push_back(xx+" "+EndIf);
+			CodeGenerator(root->children[4]);
+			/* text.push_back("jmp "+LabelIf); */
+			text.push_back(EndIf+":");
+			return;
+		}
+		TreeNode* right_expr=root->children[2]->children[0]->children[1];
+		b=right_expr->children[0]->NodeName;
+		if(b=="NEQ"){
+			y="je";
+		}
+		if(b=="GE"){
+			y="jl";
+		}
+		if(b=="LE"){
+			y="jg";
+		}
+		if(b=="GT"){
+			y="jle";
+		}
+		if(b=="LT"){
+			y="jge";
+		}
+		if(b=="EE"){
+			y="jne";
+		}
 		if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
 			string typ=root->children[2]->children[0]->NodeName;
-			TreeNode* left_expr=root->children[2]->children[0]->children[0];
-			TreeNode* right_expr=root->children[2]->children[0]->children[1];
-			string x,y,xx;
-			string a,b;
-			a=left_expr->children[0]->NodeName;
-			b=right_expr->children[0]->NodeName;
-
-			if(a=="NEQ"){
-				x="je";
-				xx="jne";
-			}
-			if(a=="GE"){
-				x="jl";
-				xx="jge";
-			}
-			if(a=="LE"){
-				x="jg";
-				xx="jle";
-			}
-			if(a=="GT"){
-				x="jle";
-				xx="jg";
-			}
-			if(a=="LT"){
-				x="jge";
-				xx="jl";
-			}
-			if(a=="EE"){
-				x="jne";
-				xx="je";
-			}
-
-			if(b=="NEQ"){
-				y="je";
-			}
-			if(b=="GE"){
-				y="jl";
-			}
-			if(b=="LE"){
-				y="jg";
-			}
-			if(b=="GT"){
-				y="jle";
-			}
-			if(b=="LT"){
-				y="jge";
-			}
-			if(b=="EE"){
-				y="jne";
-			}
-
+			
 			if(typ=="AND"){
 				CodeGenerator(left_expr);
 				text.push_back(x+" "+EndIf);
@@ -475,6 +481,10 @@ void CodeGenerator(TreeNode* root){
 			else{
 				//
 			}
+			CodeGenerator(root->children[4]);
+			/* text.push_back("jmp "+LabelIf); */
+			text.push_back(EndIf+":");
+			return;
 		}
 		else{
 			if(root->children[2]->children[0]->NodeName=="GE"){
@@ -513,58 +523,66 @@ void CodeGenerator(TreeNode* root){
 		string EndFor="EndFor"+to_string(count_loops);
 		string NextSkip="NextSkip"+to_string(count_loops);
 		text.push_back(LabelFor+":");
+		TreeNode* left_expr=root->children[2]->children[0]->children[0];
+		string x,y,xx;
+		string a,b;
+		a=left_expr->children[0]->NodeName;
+		if(a=="NEQ"){
+			x="je";
+			xx="jne";
+		}
+		if(a=="GE"){
+			x="jl";
+			xx="jge";
+		}
+		if(a=="LE"){
+			x="jg";
+			xx="jle";
+		}
+		if(a=="GT"){
+			x="jle";
+			xx="jg";
+		}
+		if(a=="LT"){
+			x="jge";
+			xx="jl";
+		}
+		if(a=="EE"){
+			x="jne";
+			xx="je";
+		}
+		if(root->children[2]->children[0]->NodeName=="NOT"){
+			CodeGenerator(root->children[2]);
+			text.push_back(xx+" "+EndFor);
+			CodeGenerator(root->children[7]);
+			CodeGenerator(root->children[5]);
+			text.push_back("jmp "+LabelFor);
+			text.push_back(EndFor+":");
+			return ;
+		}
+
+		TreeNode* right_expr=root->children[2]->children[0]->children[1];
+		b=right_expr->children[0]->NodeName;
+		if(b=="NEQ"){
+			y="je";
+		}
+		if(b=="GE"){
+			y="jl";
+		}
+		if(b=="LE"){
+			y="jg";
+		}
+		if(b=="GT"){
+			y="jle";
+		}
+		if(b=="LT"){
+			y="jge";
+		}
+		if(b=="EE"){
+			y="jne";
+		}
 		if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
 			string typ=root->children[2]->children[0]->NodeName;
-			TreeNode* left_expr=root->children[2]->children[0]->children[0];
-			TreeNode* right_expr=root->children[2]->children[0]->children[1];
-			string x,y,xx;
-			string a,b;
-			a=left_expr->children[0]->NodeName;
-			b=right_expr->children[0]->NodeName;
-
-			if(a=="NEQ"){
-				x="je";
-				xx="jne";
-			}
-			if(a=="GE"){
-				x="jl";
-				xx="jge";
-			}
-			if(a=="LE"){
-				x="jg";
-				xx="jle";
-			}
-			if(a=="GT"){
-				x="jle";
-				xx="jg";
-			}
-			if(a=="LT"){
-				x="jge";
-				xx="jl";
-			}
-			if(a=="EE"){
-				x="jne";
-				xx="je";
-			}
-
-			if(b=="NEQ"){
-				y="je";
-			}
-			if(b=="GE"){
-				y="jl";
-			}
-			if(b=="LE"){
-				y="jg";
-			}
-			if(b=="GT"){
-				y="jle";
-			}
-			if(b=="LT"){
-				y="jge";
-			}
-			if(b=="EE"){
-				y="jne";
-			}
 
 			if(typ=="AND"){
 				CodeGenerator(left_expr);
@@ -582,6 +600,11 @@ void CodeGenerator(TreeNode* root){
 			else{
 				//
 			}
+			CodeGenerator(root->children[7]);
+			CodeGenerator(root->children[5]);
+			text.push_back("jmp "+LabelFor);
+			text.push_back(EndFor+":");
+			return ;
 		}
 		else{
 			if(root->children[3]->children[0]->NodeName=="NEQ"){
@@ -622,59 +645,67 @@ void CodeGenerator(TreeNode* root){
 		string EndWhile="EndWhile"+to_string(count_loops);
 		string NextSkip="NextSkip"+to_string(count_loops);
 		text.push_back(LabelWhile+":");
+		TreeNode* left_expr=root->children[2]->children[0]->children[0];
+		string x,y,xx;
+		string a,b;
+		a=left_expr->children[0]->NodeName;
+		if(a=="NEQ"){
+			x="je";
+			xx="jne";
+		}
+		if(a=="GE"){
+			x="jl";
+			xx="jge";
+		}
+		if(a=="LE"){
+			x="jg";
+			xx="jle";
+		}
+		if(a=="GT"){
+			x="jle";
+			xx="jg";
+		}
+		if(a=="LT"){
+			x="jge";
+			xx="jl";
+		}
+		if(a=="EE"){
+			x="jne";
+			xx="je";
+		}
+		// NOT
+		if(root->children[2]->children[0]->NodeName=="NOT"){
+			CodeGenerator(root->children[2]);
+			text.push_back(xx+" "+EndWhile);
+			CodeGenerator(root->children[4]);
+			text.push_back("jmp "+LabelWhile);
+			text.push_back(EndWhile+":");
+			return;
+		}
+
+		TreeNode* right_expr=root->children[2]->children[0]->children[1];
+		b=right_expr->children[0]->NodeName;
+		if(b=="NEQ"){
+			y="je";
+		}
+		if(b=="GE"){
+			y="jl";
+		}
+		if(b=="LE"){
+			y="jg";
+		}
+		if(b=="GT"){
+			y="jle";
+		}
+		if(b=="LT"){
+			y="jge";
+		}
+		if(b=="EE"){
+			y="jne";
+		}
+		// AND OR
 		if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
 			string typ=root->children[2]->children[0]->NodeName;
-			TreeNode* left_expr=root->children[2]->children[0]->children[0];
-			TreeNode* right_expr=root->children[2]->children[0]->children[1];
-			string x,y,xx;
-			string a,b;
-			a=left_expr->children[0]->NodeName;
-			b=right_expr->children[0]->NodeName;
-
-			if(a=="NEQ"){
-				x="je";
-				xx="jne";
-			}
-			if(a=="GE"){
-				x="jl";
-				xx="jge";
-			}
-			if(a=="LE"){
-				x="jg";
-				xx="jle";
-			}
-			if(a=="GT"){
-				x="jle";
-				xx="jg";
-			}
-			if(a=="LT"){
-				x="jge";
-				xx="jl";
-			}
-			if(a=="EE"){
-				x="jne";
-				xx="je";
-			}
-
-			if(b=="NEQ"){
-				y="je";
-			}
-			if(b=="GE"){
-				y="jl";
-			}
-			if(b=="LE"){
-				y="jg";
-			}
-			if(b=="GT"){
-				y="jle";
-			}
-			if(b=="LT"){
-				y="jge";
-			}
-			if(b=="EE"){
-				y="jne";
-			}
-
 			if(typ=="AND"){
 				CodeGenerator(left_expr);
 				text.push_back(x+" "+EndWhile);
@@ -691,6 +722,10 @@ void CodeGenerator(TreeNode* root){
 			else{
 				//
 			}
+			CodeGenerator(root->children[4]);
+			text.push_back("jmp "+LabelWhile);
+			text.push_back(EndWhile+":");
+			return;
 		}
 		else{
 			if(root->children[2]->children[0]->NodeName=="NEQ"){
