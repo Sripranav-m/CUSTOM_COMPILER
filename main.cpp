@@ -1,5 +1,5 @@
 #include "main.h"
-int cc=0;
+
 // HEAD -> (N CHILDREN) -> EACH CHILDREN = N CHLDREN ->RECURSIVE
 // Basically,this is to check whether the Abstract syntax tree is correct or not
 // Doing a traversal on the tree that we generated
@@ -12,6 +12,7 @@ void dotraversal(TreeNode* head){
 	}
 	return;
 }
+int x,y;
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		text.push_back("section	.text");
@@ -52,6 +53,7 @@ void CodeGenerator(TreeNode* root){
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="LOCAL_DECLARATION"){
+		//cout<<root->children[0]->NodeName<<"***************\n";
 		if(root->children[0]->NodeName=="VARIABLE_TYPE"){
 			text.push_back("sub rsp , 8");
 			if(root->children[0]->children[0]->NodeName=="INT"){
@@ -88,8 +90,7 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("call printf");
             text.push_back("");
 		}
-		if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
-			cc=1;
+		else if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
             text.push_back("");
 			text.push_back("mov rbx , rbp");
 			text.push_back("add rbx , "+to_string(symbol_table[{root->children[2]->lex_val,"FLOAT"}]));
@@ -110,7 +111,7 @@ void CodeGenerator(TreeNode* root){
 			int number_of_times=list_size[{root->children[2]->lex_val}];
 			list_location+=8*number_of_times;
 			int s=0;
-			//cout<<list_location<<endl<<number_of_times<<endl;
+			////cout<<list_location<<endl<<number_of_times<<endl;
 			while(number_of_times>0){
 				list_location-=8;
 				number_of_times-=1;
@@ -132,6 +133,45 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("call printf");
 			}
             text.push_back("");
+		}
+		else if(symbol_table.find({root->children[2]->lex_val,"MATRIX"})!=symbol_table.end()){
+			text.push_back("");
+			int mat_location=symbol_table[{root->children[2]->lex_val,"MATRIX"}];
+			int x=matrix[root->children[2]->lex_val].first;
+			int y=matrix[root->children[2]->lex_val].second;
+			mat_location+=8*(x*y);
+			//cout<< x<<" "<<y<<" "<<mat_location<<endl;
+			int t=y;
+			int f=0;
+			while(x>0){
+				while(t>0){
+					mat_location-=8;
+					t--;
+					text.push_back("mov rbx , rbp");
+					//cout<<mat_location<<"<";
+					text.push_back("add rbx , "+to_string(mat_location));
+					text.push_back("mov rax , [rbx]");
+					text.push_back("mov rsi , rax");
+					if(t==y-1 && f==0){
+						f=1;
+						text.push_back("mov rdi , lisfs");
+					}
+					else if(t==0 && x==1){
+						text.push_back("mov rdi , lisfe");
+					}
+					else if(t==0){
+						text.push_back("mov rdi , intf");
+					}
+					else{
+						text.push_back("mov rdi , lisf");
+					}
+					text.push_back("mov rax , 0");
+					text.push_back("call printf");
+				}
+				t=y;
+				x--;
+			}
+			text.push_back("");
 		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
@@ -183,13 +223,13 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
-			//cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
+			////cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
 			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 				if(root->children[0]->children[0]->children.size()==4){
 					TreeNode* ident=root->children[0]->children[0]->children[0];
 					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
 					int siz=list_size[ident->lex_val];
-					cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
 					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
 						if(req_pos>=0 && req_pos<siz){
 							req_pos=siz-req_pos-1;
@@ -226,7 +266,7 @@ void CodeGenerator(TreeNode* root){
 						TreeNode* ident=root->children[0]->children[0]->children[0];
 						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
 						int siz=list_size[ident->lex_val];
-						cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+						//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
 						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
 							if(req_pos>=0 && req_pos<siz){
 								req_pos=siz-req_pos-1;
@@ -266,7 +306,7 @@ void CodeGenerator(TreeNode* root){
 						text.push_back("add rcx , "+to_string(symbol_table[{right_list->lex_val,"LIST"}]));
 						text.push_back("mov rax , rbp");
 						text.push_back("add rax , "+to_string(symbol_table[{left_list->lex_val,"LIST"}]));
-						//cout<<to_string(symbol_table[{right_list->lex_val,"LIST"}])<<endl;
+						////cout<<to_string(symbol_table[{right_list->lex_val,"LIST"}])<<endl;
 						int numer_of_elements=left_list_size;
 						while(numer_of_elements>0){
 							text.push_back("mov rdx , [rcx]");
@@ -288,10 +328,11 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
 				//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
+
 				TreeNode* elements=root->children[0]->children[1]->children[0]->children[1];
 				while(elements->children.size()>2){
 					string val_from_end=elements->children[1]->lex_val;
-					//cout<<val_from_end<<endl;
+					//cout<<val_from_end<<endl;	
 					text.push_back("mov rax , "+elements->children[1]->lex_val);
 					text.push_back("mov [rcx] , rax");
 					text.push_back("add rcx , 8");
@@ -303,12 +344,17 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov [rcx] , rax");
 			}
 			else if(variable_types[root->children[0]->children[0]->lex_val]=="MATRIX"){
-				cout<<"MATRIX TYPE\n";
+				//cout<<"MATRIX TYPE\n";
 				int x=matrix[root->children[0]->children[0]->lex_val].first;
 				int y=matrix[root->children[0]->children[0]->lex_val].second;
-				cout<<x<<" "<<y<<endl;
+				//cout<<x<<" "<<y<<endl;
 				TreeNode* level1=root->children[0]->children[1]->children[0]->children[1];
 				TreeNode* level2;
+				int startloc=symbol_table[{root->children[0]->children[0]->lex_val,"MATRIX"}];
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(startloc));
+				//cout<<to_string(symbol_table[{root->children[0]->children[0]->lex_val,"MATRIX"}])<<endl;
+
 				while(level1->children.size()>2){
 					level2=level1->children[1];
 					while(level2->children.size()>2){
@@ -316,11 +362,14 @@ void CodeGenerator(TreeNode* root){
 						text.push_back("mov rax , "+level2->children[2]->lex_val);
 						text.push_back("mov [rcx] , rax");
 						text.push_back("add rcx , 8");
+						//cout<<"x\n";
 						level2=level2->children[0];
 					}
 					//cout<<level2->children[0]->lex_val<<" ";
 					text.push_back("mov rax , "+level2->children[0]->lex_val);
 					text.push_back("mov [rcx] , rax");
+					text.push_back("add rcx , 8");
+					//cout<<"x\n";
 					level1=level1->children[0];
 				}
 				level2=level1->children[0];
@@ -329,11 +378,14 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov rax , "+level2->children[2]->lex_val);
 					text.push_back("mov [rcx] , rax");
 					text.push_back("add rcx , 8");
+					//cout<<"x\n";
 					level2=level2->children[0];
 				}
-				//cout<<level2->children[0]->lex_val<<" ";
+				//cout<<level2->children[0]->lex_val<<"\n";
 				text.push_back("mov rax , "+level2->children[0]->lex_val);
 				text.push_back("mov [rcx] , rax");
+				text.push_back("add rcx , 8");
+				//cout<<"x\n";
 				level1=level1->children[0];
 
 			}
@@ -347,7 +399,7 @@ void CodeGenerator(TreeNode* root){
 		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
-			//cout<<node_type<<"  "<<node_type2<<endl;
+			////cout<<node_type<<"  "<<node_type2<<endl;
 			if(node_type=="LIST"){
 				CodeGenerator(root->children[0]->children[1]);
 				int top_of_stack=Num_variables;
@@ -359,6 +411,28 @@ void CodeGenerator(TreeNode* root){
 				int number_of_times=left_list_size;
 				text.push_back("mov rdx , rbp");
 				text.push_back("add rdx , "+to_string(left_list_loc));
+				text.push_back("mov rcx , rbp");
+				text.push_back("add rcx , "+to_string(top_of_stack));
+				while(number_of_times>0){
+					text.push_back("mov rax , [rcx]");
+					text.push_back("mov [rdx] , rax");
+					text.push_back("add rdx , 8");
+					text.push_back("add rcx , -8");
+					number_of_times--;
+				}
+			}
+			else if(node_type=="MATRIX"){
+				CodeGenerator(root->children[0]->children[1]);
+				int top_of_stack=Num_variables;
+				top_of_stack++;
+				top_of_stack*=-8;
+				TreeNode* left_matrix=root->children[0]->children[0];
+				int left_matrix_size_x=matrix[left_matrix->lex_val].first;
+				int left_matrix_size_y=matrix[left_matrix->lex_val].second;
+				int left_matrix_loc=symbol_table[{left_matrix->lex_val,"MATRIX"}];
+				int number_of_times=left_matrix_size_x*left_matrix_size_y;
+				text.push_back("mov rdx , rbp");
+				text.push_back("add rdx , "+to_string(left_matrix_loc));
 				text.push_back("mov rcx , rbp");
 				text.push_back("add rcx , "+to_string(top_of_stack));
 				while(number_of_times>0){
@@ -760,7 +834,7 @@ void CodeGenerator(TreeNode* root){
 	}
 	// Only Addition and Subtraction on Lists
 	else if(root->NodeName=="EXPRESSION"){ // EXPRESSION CODE GEN  // storing everythin in rax
-		//cout<<root->children[0]->children[0]->NodeName;
+		////cout<<root->children[0]->children[0]->NodeName;
 		if(root->children[0]->children[0]->NodeName=="EXPRESSION"){
 			// string typ=root->children[0]->NodeName;
 			// if(typ=="AND"){
@@ -821,10 +895,120 @@ void CodeGenerator(TreeNode* root){
 							// error
 						}
 					}
+					if(typ=="MINUS"){		
+						int top_of_stack=Num_variables;
+						top_of_stack++;
+						top_of_stack*=-8;
+						int left_list_loc=symbol_table[{left_list->lex_val,"LIST"}];
+						int right_list_loc=symbol_table[{right_list->lex_val,"LIST"}];
+						int left_list_size=list_size[left_list->lex_val];
+						int right_list_size=list_size[right_list->lex_val];
+						if(left_list_size==right_list_size){
+							int number_of_times=left_list_size;
+							int top_expanding=top_of_stack;
+							while(number_of_times>0){
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(left_list_loc));
+								text.push_back("mov rcx , [rdx]");
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(right_list_loc));
+								text.push_back("mov rbx , [rdx]");
+								text.push_back("mov rax , rbp");
+								text.push_back("add rax , "+to_string(top_expanding));
+								text.push_back("sub rcx , rbx");
+								text.push_back("mov [rax] , rcx");
+								left_list_loc+=8;
+								right_list_loc+=8;
+								top_expanding-=8;
+								number_of_times--;
+							}
+						}
+						else{
+							// error
+						}
+					}
 				}
+				
 			}
 			else{
 				//
+			}
+		}
+		else if(node_type=="MATRIX"){
+			string typ=root->children[0]->NodeName;
+			TreeNode* right_matrix=root->children[0]->children[1]->children[0];
+			TreeNode* left_matrix=root->children[0]->children[0]->children[0];
+			if(right_matrix->NodeName=="IDENTIFIER_NT" && left_matrix->NodeName=="IDENTIFIER_NT"){
+				string left_type=variable_types[left_matrix->lex_val];
+				string right_type=variable_types[right_matrix->lex_val];
+				if(left_type=="MATRIX" && right_type=="MATRIX"){
+					if(typ=="PLUS"){		
+						int top_of_stack=Num_variables;
+						top_of_stack++;
+						top_of_stack*=-8;
+						int left_matrix_loc=symbol_table[{left_matrix->lex_val,"MATRIX"}];
+						int right_matrix_loc=symbol_table[{right_matrix->lex_val,"MATRIX"}];
+						int left_matrix_size_x=matrix[left_matrix->lex_val].first;
+						int left_matrix_size_y=matrix[left_matrix->lex_val].second;
+						int right_matrix_size_x=matrix[right_matrix->lex_val].first;
+						int right_matrix_size_y=matrix[right_matrix->lex_val].second;
+						if(left_matrix_size_x==right_matrix_size_x && left_matrix_size_y==right_matrix_size_y ){
+							x=left_matrix_size_x;
+							y=left_matrix_size_y;
+							int number_of_times=left_matrix_size_x*left_matrix_size_y;
+							int top_expanding=top_of_stack;
+							while(number_of_times>0){
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(left_matrix_loc));
+								text.push_back("mov rcx , [rdx]");
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(right_matrix_loc));
+								text.push_back("mov rbx , [rdx]");
+								text.push_back("mov rax , rbp");
+								text.push_back("add rax , "+to_string(top_expanding));
+								text.push_back("add rcx , rbx");
+								text.push_back("mov [rax] , rcx");
+								left_matrix_loc+=8;
+								right_matrix_loc+=8;
+								top_expanding-=8;
+								number_of_times--;
+							}
+						}
+					}
+					else if(typ=="MINUS"){		
+						int top_of_stack=Num_variables;
+						top_of_stack++;
+						top_of_stack*=-8;
+						int left_matrix_loc=symbol_table[{left_matrix->lex_val,"MATRIX"}];
+						int right_matrix_loc=symbol_table[{right_matrix->lex_val,"MATRIX"}];
+						int left_matrix_size_x=matrix[left_matrix->lex_val].first;
+						int left_matrix_size_y=matrix[left_matrix->lex_val].second;
+						int right_matrix_size_x=matrix[right_matrix->lex_val].first;
+						int right_matrix_size_y=matrix[right_matrix->lex_val].second;
+						if(left_matrix_size_x==right_matrix_size_x && left_matrix_size_y==right_matrix_size_y ){
+							x=left_matrix_size_x;
+							y=left_matrix_size_y;
+							int number_of_times=left_matrix_size_x*left_matrix_size_y;
+							int top_expanding=top_of_stack;
+							while(number_of_times>0){
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(left_matrix_loc));
+								text.push_back("mov rcx , [rdx]");
+								text.push_back("mov rdx , rbp");
+								text.push_back("add rdx , "+to_string(right_matrix_loc));
+								text.push_back("mov rbx , [rdx]");
+								text.push_back("mov rax , rbp");
+								text.push_back("add rax , "+to_string(top_expanding));
+								text.push_back("sub rcx , rbx");
+								text.push_back("mov [rax] , rcx");
+								left_matrix_loc+=8;
+								right_matrix_loc+=8;
+								top_expanding-=8;
+								number_of_times--;
+							}
+						}
+					}
+				}
 			}
 		}
 		else if(node_type=="INT" || node_ident=="INTEGER_NT"){  // NUMBER OR INT IDENTIFIER
@@ -835,7 +1019,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov rax , [rcx]");
 				}
 				else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-					//cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+					////cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
 					text.push_back("mov rcx , "+root->children[0]->children[0]->children[0]->lex_val);
 					text.push_back("mov rax , rcx");
 				}
@@ -845,7 +1029,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov rbx , [rcx]");
 				}
 				else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
-					//cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+					////cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
 					text.push_back("mov rcx , "+root->children[0]->children[1]->children[0]->lex_val);
 					text.push_back("mov rbx , rcx");
 				}
@@ -875,7 +1059,7 @@ void CodeGenerator(TreeNode* root){
 		}
 		else if(node_type=="FLOAT" || node_ident=="FLOAT_NT"){ // FLOAT OR FLOAT IDENTIFIER 
             if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-				//cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
+				////cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
                 text.push_back("mov rbx , rbp");
                 text.push_back("add rbx , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"FLOAT"}]));
                 text.push_back("add rsp , -8");
@@ -887,7 +1071,7 @@ void CodeGenerator(TreeNode* root){
                 text.push_back("mov dword[temp] , __float32__("+root->children[0]->children[0]->children[0]->lex_val+")");
             }
 			if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-				//cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
+				////cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
                 text.push_back("mov rcx , rbp");
                 text.push_back("add rcx , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"FLOAT"}]));
                 text.push_back("add rsp , -8");
@@ -944,6 +1128,7 @@ void CodeGenerator(TreeNode* root){
 		
 	}
 }
+
 void putx86inafile(){
 	ofstream MyFile("gen.asm");
 	for(int i=0;i<text.size();i++){
@@ -972,7 +1157,7 @@ void putx86inafile(){
 
 
 void yyerror(char* temp){
-	cout<<"Parsing Terminated...Syntax Error:("<<endl;
+	//cout<<"Parsing Terminated...Syntax Error:("<<endl;
 	exit(0);
 }
 void set_go_to_new_line_subroutine(){

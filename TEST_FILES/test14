@@ -1,12 +1,25 @@
 int _main(){
     int a;
-    a=10;
-    int b;
-    b=20;
-    while(a<15 || b>15){
-        a++;
-        b--;
-        print(b);
-        print(a);
-    }
+    a=15;
+    matrix m[2,3];
+    m=[1,2,3;4,5,6;];
+    int y;
+    y=10;
+    print(a);
+    print(m);
+    list q[3];
+    q=[6;7;8;];
+    list r[3];
+    r=[4;5;6;];
+    list t[3];
+    t=r-q;
+    print(q);
+    print(r);
+    print(t);
+    matrix n[2,3];
+    n=[11,12,13;14,15,16;];
+    matrix o[2,3];
+    o=m-n;
+    print(n);
+    print(o);
 }

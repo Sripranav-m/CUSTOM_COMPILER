@@ -376,7 +376,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							$7=new TreeNode("CSB");
 							$8=new TreeNode("SEMICOLON");
 							vector<TreeNode*> v = {$1, $2, $3,$4,$5,$6,$7,$8};
-							$$ = new TreeNode("VARIABLE_DECLARATION", v);
+							$$ = new TreeNode("LOCAL_DECLARATION", v);
 							matrix_size=stoi($4->lex_val)*stoi($6->lex_val);
 							Num_variables+=matrix_size;
 							
