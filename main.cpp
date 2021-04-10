@@ -851,6 +851,24 @@ void CodeGenerator(TreeNode* root){
 				int siz=list_size[ident];
 				text.push_back("mov rax , "+to_string(siz));
 			}
+			else if(symbol_table.find({ident,"MATRIX"})!=symbol_table.end()){
+				int siz=matrix[ident].first;
+				text.push_back("mov rax , "+to_string(siz));
+			}
+			else{
+				// 
+			}
+			return;
+		}
+		else if(root->children[0]->children[0]->NodeName=="AATSIZE"){
+			string ident=root->children[0]->children[1]->lex_val;
+			if(symbol_table.find({ident,"MATRIX"})!=symbol_table.end()){
+				int siz=matrix[ident].second;
+				text.push_back("mov rax , "+to_string(siz));
+			}
+			else{
+				//
+			}
 			return;
 		}
 		string node_type=variable_types[root->children[0]->children[0]->children[0]->lex_val];

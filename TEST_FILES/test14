@@ -22,4 +22,9 @@ int _main(){
     o=m-n;
     print(n);
     print(o);
+    int kk;
+    kk=@m;
+    print(kk);
+    kk=@@ m;
+    print(kk);
 }
