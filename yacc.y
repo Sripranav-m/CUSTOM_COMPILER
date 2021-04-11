@@ -25,6 +25,8 @@
 	void string_to_number_subroutine();
 	void set_list_print_subroutine();
 	void set_go_to_new_line_subroutine();
+	int load_into_register(string);
+	void makenulls();
 	int count_loops=0;
 	int num_scans=0;
 	int matrix_size=0;

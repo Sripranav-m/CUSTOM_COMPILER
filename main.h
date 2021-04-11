@@ -44,3 +44,5 @@ void set_integer_print_subroutine();
 void set_scanner_integer();
 void string_to_number_subroutine();
 void set_data_segment();
+int load_into_register(string);
+void makenulls();
