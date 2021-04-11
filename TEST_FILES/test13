@@ -1,33 +1,18 @@
 int _main(){
     float a;
     a=1.23;
-    int h;
-    int k;
     print(a);
     float b;
     b=45.67;
-    int h;
-    int k;
-    int h;
-    int k;
+    
     print(b);
     float c;
     c=45.6;
-    int h;
-    int k;
-    int h;
-    int k;
-    int h;
-    int k;
+    
     print(c);
     float d;
     d=45.6;
-    int h;
-    int k;
-    int h;
-    int k;
-    int h;
-    int k;
+    
     print(d);
 
     list l[4];

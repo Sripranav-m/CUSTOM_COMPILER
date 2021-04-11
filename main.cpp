@@ -21,6 +21,7 @@ int u1=0;
 int u2=0;
 int u3=0;
 int time_lru=0;
+int check=0;
 vector<string> regs_replacement;
 
 void CodeGenerator(TreeNode* root){
@@ -152,9 +153,9 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("movq xmm0 , qword[temp]");
 			text.push_back("mov "+registers[0]+" , 1");
 			text.push_back("call printf");
-            text.push_back("add rsp , 8");
-			
+			text.push_back("add rsp , 8");
             text.push_back("");
+			
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"LIST"})!=symbol_table.end()){
             text.push_back("");
