@@ -249,8 +249,10 @@ PRINT_STATEMENT : PRINT ONB PRINT_SCAN_ITEM CNB SEMICOLON {
 												$2 = new TreeNode("ONB");
 												$4 = new TreeNode("CNB");
 												$5=new TreeNode("SEMICOLON");
+												//Num_variables++;
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("PRINT_STATEMENT",v);
+												
 											} ;
 
 

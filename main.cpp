@@ -36,9 +36,6 @@ void CodeGenerator(TreeNode* root){
 		regs_replacement.push_back("");
 		text.push_back("section	.text");
 		text.push_back("global main ");
-		text.push_back("main:");
-		text.push_back("push rbp");
-		text.push_back("mov rbp , rsp");
 		data.push_back("extern printf , scanf");
 		set_data_segment();
 		set_scanner_integer();
@@ -57,7 +54,24 @@ void CodeGenerator(TreeNode* root){
 		return;
 	}
 	else if(root->NodeName=="FUNCTION_DECLARATION"){
-		CodeGenerator(root->children[5]);
+		string fun_name=root->children[1]->lex_val;
+		fun_name=fun_name.substr(1,fun_name.length());
+		if(fun_name=="main"){
+			text.push_back("main:");
+			text.push_back("push rbp");
+			text.push_back("mov rbp , rsp");
+			CodeGenerator(root->children[5]);
+			text.push_back("mov  rsp, rbp");
+			text.push_back("pop  rbp");
+		}
+		else{
+			text.push_back(""+fun_name+":");
+			text.push_back("push rbp");
+			text.push_back("mov rbp , rsp");
+			CodeGenerator(root->children[5]);
+			text.push_back("mov  rsp, rbp");
+			text.push_back("pop  rbp");
+		}
 	}
 	else if(root->NodeName=="COMPOUND_STATEMENT"){
 		CodeGenerator(root->children[1]);
