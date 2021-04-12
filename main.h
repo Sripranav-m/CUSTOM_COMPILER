@@ -35,6 +35,26 @@ extern vector<string> printNewLine;
 extern int count_loops;
 extern int num_scans;
 
+extern vector<string> registers;
+extern int u0;
+extern int u1;
+extern int u2;
+extern int u3;
+
+extern int u4;
+extern int u5;
+extern int u6;
+extern int u7;
+extern int u8;
+extern int u9;
+extern int u10;
+extern int u11;
+extern int check_reg;
+extern int time_lru;
+extern int check;
+extern vector<string> regs_replacement;
+
+
 
 void CodeGenerator(TreeNode* root);
 void yyerror(char* temp);
@@ -46,3 +66,5 @@ void string_to_number_subroutine();
 void set_data_segment();
 int load_into_register(string);
 void makenulls();
+int least_recently_used();
+

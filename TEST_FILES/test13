@@ -8,12 +8,14 @@ int _main(){
     print(b);
     float c;
     c=45.6;
-    
+    int k;
     print(c);
     float d;
     d=45.6;
     
     print(d);
+    print(a);
+    print(b);
 
     list l[4];
     l=[1;2;3;4;];

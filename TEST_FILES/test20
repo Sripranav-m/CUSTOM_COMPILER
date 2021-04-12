@@ -1,0 +1,40 @@
+int _main(){
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    a=5;
+    b=a+1; #b=6
+    c=a+b; #c=11
+    d=c+b; #d=17
+    e=d+c; #e=28
+    f=e+d; #f=45
+    g=f+e; #g=73
+    h=g+f; #h=118
+
+
+    b=a+b;
+    c=a+b;
+    d=c+b;
+    e=d+c;
+    f=e+d;
+    g=f+e;
+    h=g+f;
+
+    b=a+21; #b=26
+    c=a+b; #c=31
+    d=c+b; #d=57
+    e=d+c; #e=88
+    f=e+d; #f=145
+    g=f+e; #g=233
+    h=g+f; #h=3788
+
+    print(h);
+}
+
+
+

@@ -14,23 +14,30 @@ void dotraversal(TreeNode* head){
 }
 
 int x,y;
-vector<string> registers;
 int check_reg=0;
-int u0=0;
-int u1=0;
-int u2=0;
-int u3=0;
-int time_lru=0;
-int check=0;
-vector<string> regs_replacement;
 
 void CodeGenerator(TreeNode* root){
-	check_reg=0;
 	if(root->NodeName=="PROGRAM"){
 		registers.push_back("rax");
 		registers.push_back("rbx");
 		registers.push_back("rcx");
 		registers.push_back("rdx");
+		registers.push_back("r8");
+		registers.push_back("r9");
+		registers.push_back("r10");
+		registers.push_back("r11");
+		registers.push_back("r12");
+		registers.push_back("r13");
+		registers.push_back("r14");
+		registers.push_back("r15");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
+		regs_replacement.push_back("");
 		regs_replacement.push_back("");
 		regs_replacement.push_back("");
 		regs_replacement.push_back("");
@@ -113,31 +120,15 @@ void CodeGenerator(TreeNode* root){
 		}
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
+		check_reg=-1;
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
-			check_reg=1;
-			string ident=to_string(symbol_table[{root->children[2]->lex_val,"INT"}]);
-			int loaded_into=0;
-			int not_loaded=0;
-			loaded_into=load_into_register(ident);
-			if(loaded_into==0){
-				not_loaded=1;
-			}
-			if(not_loaded==0){
-				u0=0;
-				regs_replacement[0]="";
-			}
-			else if(not_loaded==1){
-				u1=0;
-				regs_replacement[1]="";
-			}
             text.push_back("");
-			text.push_back("mov "+registers[loaded_into]+" , rbp");
-			text.push_back("add "+registers[loaded_into]+" , "+ident);
-			text.push_back("mov "+registers[not_loaded]+" , ["+registers[loaded_into]+"]");
-			text.push_back("mov rsi , "+registers[not_loaded]+"");
+			string ident=to_string(symbol_table[{root->children[2]->lex_val,"INT"}]);
+			text.push_back("mov "+registers[1]+" , rbp");
+			text.push_back("add "+registers[1]+" , "+ident);
+			text.push_back("mov "+registers[1]+" , ["+registers[1]+"]");
+			text.push_back("mov rsi , "+registers[1]+"");
 			text.push_back("mov rdi , intf");
-			u0=0;
-			regs_replacement[0]="";
 			text.push_back("mov "+registers[0]+" , 0");
 			text.push_back("call printf");
             text.push_back("");
@@ -227,6 +218,7 @@ void CodeGenerator(TreeNode* root){
 		}
 	}
 	else if(root->NodeName=="SCAN_STATEMENT"){
+		check_reg=-1;
 		num_scans++;
 		if(variable_types[root->children[2]->children[0]->lex_val]=="INT"){
 			text.push_back("mov "+registers[2]+" , rbp");
@@ -314,39 +306,15 @@ void CodeGenerator(TreeNode* root){
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
 				if(node_type=="INT"){
-					if(root->children[0]->children[0]->children.size()==4){
-						TreeNode* ident=root->children[0]->children[0]->children[0];
-						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
-						int siz=list_size[ident->lex_val];
-						//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
-						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
-							if(req_pos>=0 && req_pos<siz){
-								req_pos=siz-req_pos-1;
-								text.push_back("mov "+registers[2]+" , rbp");
-								text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
-								text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
-								text.push_back("mov "+registers[3]+" , rbp");
-								text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
-								text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
-								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-							}
-							else{
-								//
-							}
-						}
-						else{
-							//
-						}
-					}
-					else{
-						
-						text.push_back("mov "+registers[2]+" , rbp");
-						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-						text.push_back("mov "+registers[3]+" , rbp");
-						text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
-						text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
-						text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-					}	
+					text.push_back("mov "+registers[2]+" , rbp");
+					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+					// text.push_back("mov "+registers[3]+" , rbp");
+					// text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
+					// text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
+					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]);
+					int loaded_into=load_into_register(ident);
+					text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
+					text.push_back("mov ["+registers[2]+"] , "+registers[1]+" ");
 				}
 				else if(node_type=="LIST"){
 					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
@@ -1084,9 +1052,13 @@ void CodeGenerator(TreeNode* root){
 		else if(node_type=="INT" || node_ident=="INTEGER_NT"){  // NUMBER OR INT IDENTIFIER
 			if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
 				if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-					text.push_back("mov "+registers[2]+" , rbp");
-					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+					// text.push_back("mov "+registers[2]+" , rbp");
+					// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
+					// text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+
+					string ident =to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]);
+					int loaded_into=load_into_register(ident);
+					text.push_back("mov "+registers[0]+" , ["+registers[loaded_into]+"]");
 				}
 				else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 					////cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
@@ -1094,9 +1066,13 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov "+registers[0]+" , "+registers[2]+"");
 				}
 				if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-					text.push_back("mov "+registers[2]+" , rbp");
-					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov "+registers[1]+" , ["+registers[2]+"]");
+					// text.push_back("mov "+registers[2]+" , rbp");
+					// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
+					// text.push_back("mov "+registers[1]+" , ["+registers[2]+"]");
+
+					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]);
+					int loaded_into=load_into_register(ident);
+					text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
 				}
 				else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
 					////cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
@@ -1197,95 +1173,19 @@ void CodeGenerator(TreeNode* root){
 		}
 		
 	}
-	if(check_reg==0){
-		u0=0;
-		regs_replacement[0]="";
-		u1=0;
-		regs_replacement[1]="";
-		u2=0;
-		regs_replacement[2]="";
-		u3=0;
-		regs_replacement[3]="";
+	if(check_reg==-1){
+		for(int i=0;i<=11;i++){
+			regs_replacement[i]="";
+			u0=0;u1=0;
+			u2=0;u3=0;
+			u4=0;u5=0;
+			u6=0;u7=0;
+			u8=0;u9=0;
+			u10=0;u11=0;
+		}
 	}
 }
-int load_into_register(string ident){ // load into register. If it is already there , then directly return , if full , replace with lru;
-	time_lru++;
-	// cout<<u0<<" "<<u1<<" "<<u2<<" "<<u3<<" "<<ident<<endl;
-	if(regs_replacement[0]==ident){
-		u0=time_lru;
-		return 0;
-	}
-	else if(regs_replacement[1]==ident){
-		u1=time_lru;
-		return 1;
-	}
-	else if(regs_replacement[2]==ident){
-		u2=time_lru;
-		return 2;
-	}
-	else if(regs_replacement[3]==ident){
-		u3=time_lru;
-		return 3;
-	}
-	else if(u0==0){
-		u0=time_lru;
-		text.push_back("mov "+registers[0]+" , rbp");
-		text.push_back("add "+registers[0]+" , "+ident);
-		regs_replacement[0]=ident;
-		return 0;
-	}
-	else if(u1==0){
-		u1=time_lru;
-		text.push_back("mov "+registers[1]+" , rbp");
-		text.push_back("add "+registers[1]+" , "+ident);
-		regs_replacement[1]=ident;
-		return 1;
-	}
-	else if(u2==0){
-		u2=time_lru;
-		text.push_back("mov "+registers[2]+" , rbp");
-		text.push_back("add "+registers[2]+" , "+ident);
-		regs_replacement[2]=ident;
-		return 2;
-	}
-	else if(u3==0){
-		u3=time_lru;
-		text.push_back("mov "+registers[3]+" , rbp");
-		text.push_back("add "+registers[3]+" , "+ident);
-		regs_replacement[3]=ident;
-		return 3;
-	}
-	else{
-		if(u0<=u1 && u0<=u2 && u0<=u3){
-			u0=time_lru;
-			text.push_back("mov "+registers[0]+" , rbp");
-			text.push_back("add "+registers[0]+" , "+ident);
-			regs_replacement[0]=ident;
-			return 0;
-		}	
-		else if(u1<=u0 && u1<=u2 && u1<=u3){
-			u1=time_lru;
-			text.push_back("mov "+registers[1]+" , rbp");
-			text.push_back("add "+registers[1]+" , "+ident);
-			regs_replacement[1]=ident;
-			return 1;
-		}	
-		else if(u2<=u1 && u2<=u0 && u2<=u3){
-			u2=time_lru;
-			text.push_back("mov "+registers[2]+" , rbp");
-			text.push_back("add "+registers[2]+" , "+ident);
-			regs_replacement[2]=ident;
-			return 2;
-		}	
-		else{
-			u3=time_lru;
-			text.push_back("mov "+registers[3]+" , rbp");
-			text.push_back("add "+registers[3]+" , "+ident);
-			regs_replacement[3]=ident;
-			return 3;
-		}	
-	}
-}
+
 void putx86inafile(){
 	ofstream MyFile("gen.asm");
 	for(int i=0;i<text.size();i++){

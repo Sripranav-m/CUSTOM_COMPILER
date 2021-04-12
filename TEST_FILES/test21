@@ -1,0 +1,12 @@
+int _main(){
+    int a;
+    a=15;
+    int b;
+    b=a;
+    int c;
+    c=a;
+    print(c);
+}
+
+
+

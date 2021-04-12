@@ -30,6 +30,7 @@
 	int count_loops=0;
 	int num_scans=0;
 	int matrix_size=0;
+	
 %}
 
 %union{
