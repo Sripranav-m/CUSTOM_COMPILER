@@ -67,117 +67,108 @@ int load_into_register(string ident){ // load into register. If it is already th
 		}
 	}
 	if(u4==0 || u5==0 || u6==0 || u7==0 || u8==0 || u9==0 || u10==0 || u11==0){
+		text.push_back("mov "+registers[3]+" , rbp");
+		text.push_back("add "+registers[3]+" , "+ident);
 		if(u4==0){
 			u4=time_lru;
-			text.push_back("mov "+registers[4]+" , rbp");
-			text.push_back("add "+registers[4]+" , "+ident);
+			text.push_back("mov "+registers[4]+", ["+registers[3]+"]");
 			regs_replacement[4]=ident;
 			return 4;
 		}
 		else if(u5==0){
 			u5=time_lru;
-			text.push_back("mov "+registers[5]+" , rbp");
-			text.push_back("add "+registers[5]+" , "+ident);
+			text.push_back("mov "+registers[5]+", ["+registers[3]+"]");
 			regs_replacement[5]=ident;
 			return 5;
 		}
 		else if(u6==0){
 			u6=time_lru;
-			text.push_back("mov "+registers[6]+" , rbp");
-			text.push_back("add "+registers[6]+" , "+ident);
+			text.push_back("mov "+registers[6]+", ["+registers[3]+"]");
 			regs_replacement[6]=ident;
 			return 6;
 		}
 		else if(u7==0){
 			u7=time_lru;
-			text.push_back("mov "+registers[7]+" , rbp");
-			text.push_back("add "+registers[7]+" , "+ident);
+			text.push_back("mov "+registers[7]+", ["+registers[3]+"]");
 			regs_replacement[7]=ident;
 			return 7;
 		}
 		else if(u8==0){
 			u8=time_lru;
-			text.push_back("mov "+registers[8]+" , rbp");
-			text.push_back("add "+registers[8]+" , "+ident);
+			text.push_back("mov "+registers[8]+", ["+registers[3]+"]");
 			regs_replacement[8]=ident;
 			return 8;
 		}
 		else if(u9==0){
 			u9=time_lru;
-			text.push_back("mov "+registers[9]+" , rbp");
-			text.push_back("add "+registers[9]+" , "+ident);
+			text.push_back("mov "+registers[9]+", ["+registers[3]+"]");
 			regs_replacement[9]=ident;
 			return 9;
 		}
 		else if(u10==0){
 			u10=time_lru;
-			text.push_back("mov "+registers[10]+" , rbp");
-			text.push_back("add "+registers[10]+" , "+ident);
+			text.push_back("mov "+registers[10]+", ["+registers[3]+"]");
 			regs_replacement[10]=ident;
 			return 10;
 		}
 		else if(u11==0){
 			u11=time_lru;
-			text.push_back("mov "+registers[11]+" , rbp");
-			text.push_back("add "+registers[11]+" , "+ident);
+			text.push_back("mov "+registers[11]+", ["+registers[3]+"]");
 			regs_replacement[11]=ident;
 			return 11;
 		}
+		else{
+			//
+		}
 	}
-	else{	
+	else{
+		text.push_back("mov "+registers[2]+" , rbp");
+		text.push_back("add "+registers[2]+" , "+ident);
         if(u4==least_recently_used()){
 			u4=time_lru;
-			text.push_back("mov "+registers[4]+" , rbp");
-			text.push_back("add "+registers[4]+" , "+ident);
+			text.push_back("mov "+registers[4]+", ["+registers[2]+"]");
 			regs_replacement[4]=ident;
 			return 4;
 		}
         else if(u5==least_recently_used()){
 			u5=time_lru;
-			text.push_back("mov "+registers[5]+" , rbp");
-			text.push_back("add "+registers[5]+" , "+ident);
+			text.push_back("mov "+registers[5]+", ["+registers[3]+"]");
 			regs_replacement[5]=ident;
 			return 5;
 		}	
         else if(u6==least_recently_used()){
 			u6=time_lru;
-			text.push_back("mov "+registers[6]+" , rbp");
-			text.push_back("add "+registers[6]+" , "+ident);
+			text.push_back("mov "+registers[6]+", ["+registers[3]+"]");
 			regs_replacement[6]=ident;
 			return 6;
 		}
         else if(u7==least_recently_used()){
 			u7=time_lru;
-			text.push_back("mov "+registers[7]+" , rbp");
-			text.push_back("add "+registers[7]+" , "+ident);
+			text.push_back("mov "+registers[7]+", ["+registers[3]+"]");
 			regs_replacement[7]=ident;
 			return 7;
 		}
         else if(u8==least_recently_used()){
 			u8=time_lru;
-			text.push_back("mov "+registers[8]+" , rbp");
-			text.push_back("add "+registers[8]+" , "+ident);
+			text.push_back("mov "+registers[8]+", ["+registers[3]+"]");
 			regs_replacement[8]=ident;
 			return 8;
 		}
         else if(u9==least_recently_used()){
 			u9=time_lru;
-			text.push_back("mov "+registers[9]+" , rbp");
-			text.push_back("add "+registers[9]+" , "+ident);
+			text.push_back("mov "+registers[9]+", ["+registers[3]+"]");
 			regs_replacement[9]=ident;
 			return 9;
 		}
         else if(u10==least_recently_used()){
 			u10=time_lru;
-			text.push_back("mov "+registers[10]+" , rbp");
-			text.push_back("add "+registers[10]+" , "+ident);
+			text.push_back("mov "+registers[10]+", ["+registers[3]+"]");
 			regs_replacement[10]=ident;
 			return 10;
 		}
         else{
 			u11=time_lru;
-			text.push_back("mov "+registers[11]+" , rbp");
-			text.push_back("add "+registers[11]+" , "+ident);
+			text.push_back("mov "+registers[11]+", ["+registers[3]+"]");
 			regs_replacement[11]=ident;
 			return 11;
 		}

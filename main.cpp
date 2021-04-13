@@ -313,8 +313,8 @@ void CodeGenerator(TreeNode* root){
 					// text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
 					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
-					text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
-					text.push_back("mov ["+registers[2]+"] , "+registers[1]+" ");
+					// text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
+					text.push_back("mov ["+registers[2]+"] , "+registers[loaded_into]+" ");
 				}
 				else if(node_type=="LIST"){
 					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
@@ -1058,7 +1058,7 @@ void CodeGenerator(TreeNode* root){
 
 					string ident =to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
-					text.push_back("mov "+registers[0]+" , ["+registers[loaded_into]+"]");
+					text.push_back("mov "+registers[0]+" ,"+registers[loaded_into]);
 				}
 				else if(root->children[0]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 					////cout<<root->children[0]->children[0]->children[0]->lex_val<<endl;
@@ -1072,7 +1072,7 @@ void CodeGenerator(TreeNode* root){
 
 					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
-					text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
+					text.push_back("mov "+registers[1]+" ,"+registers[loaded_into]);
 				}
 				else if(root->children[0]->children[1]->children[0]->NodeName=="INTEGER_NT"){
 					////cout<<root->children[0]->children[1]->children[0]->lex_val<<endl;
