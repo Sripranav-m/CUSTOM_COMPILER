@@ -1,0 +1,11 @@
+int _main(){
+    int a;
+    a=15;
+    k=_addtwo();
+    print(a);
+}
+int _addtwo(){
+    int g;
+    g=68;
+    print(g);
+}

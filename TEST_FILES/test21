@@ -5,6 +5,8 @@ int _main(){
     b=a;
     int c;
     c=a;
+    int d;
+    d=a+5;
     print(c);
 }
 

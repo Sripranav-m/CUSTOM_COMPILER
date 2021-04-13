@@ -71,14 +71,19 @@ void CodeGenerator(TreeNode* root){
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
+			text.push_back("mov rax , 60");
+			text.push_back("mov rdi , 0");
+			text.push_back("syscall");
 		}
 		else{
+			fun_name="_"+fun_name;
 			text.push_back(""+fun_name+":");
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
+			text.push_back("ret");
 		}
 	}
 	else if(root->NodeName=="COMPOUND_STATEMENT"){
@@ -254,7 +259,8 @@ void CodeGenerator(TreeNode* root){
 	// 	data.push_back("intin: db \"%ld\",0");
 	// data.push_back("integer:times 4 db 0");
 	}
-	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){		
+	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
+				
 		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
 			if(variable_types[root->children[0]->children[0]->lex_val]=="INT"){
 				CodeGenerator(root->children[0]->children[1]);
@@ -269,51 +275,26 @@ void CodeGenerator(TreeNode* root){
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
 			////cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
 			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-				if(root->children[0]->children[0]->children.size()==4){
-					TreeNode* ident=root->children[0]->children[0]->children[0];
-					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
-					int siz=list_size[ident->lex_val];
-					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
-					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
-						if(req_pos>=0 && req_pos<siz){
-							req_pos=siz-req_pos-1;
-							text.push_back("mov "+registers[2]+" , rbp");
-							text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
-							text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
-							text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
-							text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-						}
-						else{
-							//
-						}
-					}
-					else{
-						//
-					}
-				}
-				else{
-					text.push_back("mov "+registers[2]+" , rbp");
-					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
-					text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-				}
+				//cout<<"INTEGER_NT\n";
+				text.push_back("mov "+registers[2]+" , rbp");
+				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+				text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 			}	
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FLOAT_NT"){
+				//cout<<"FLOAT_NT\n";
 				text.push_back("mov "+registers[2]+" , rbp");
 				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"FLOAT"}]));
 				text.push_back("mov qword["+registers[2]+"] , __float32__("+root->children[0]->children[1]->children[0]->children[0]->lex_val+")");
 			}
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				//cout<<"IDENTIFIER_NT\n";
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
 				if(node_type=="INT"){
 					text.push_back("mov "+registers[2]+" , rbp");
 					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					// text.push_back("mov "+registers[3]+" , rbp");
-					// text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
-					// text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
 					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
-					// text.push_back("mov "+registers[1]+" , ["+registers[loaded_into]+"]");
 					text.push_back("mov ["+registers[2]+"] , "+registers[loaded_into]+" ");
 				}
 				else if(node_type=="LIST"){
@@ -345,6 +326,7 @@ void CodeGenerator(TreeNode* root){
 				}
 			}
 			else if(variable_types[root->children[0]->children[0]->lex_val]=="LIST"){
+				//cout<<"LIST\n";
 				text.push_back("mov "+registers[2]+" , rbp");
 				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]));
 				//cout<<symbol_table[{root->children[0]->children[0]->lex_val,"LIST"}]<<endl;
@@ -364,7 +346,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 			}
 			else if(variable_types[root->children[0]->children[0]->lex_val]=="MATRIX"){
-				//cout<<"MATRIX TYPE\n";
+				//cout<<"MATRIX\n";
 				int x=matrix[root->children[0]->children[0]->lex_val].first;
 				int y=matrix[root->children[0]->children[0]->lex_val].second;
 				//cout<<x<<" "<<y<<endl;
@@ -409,13 +391,48 @@ void CodeGenerator(TreeNode* root){
 				level1=level1->children[0];
 
 			}
+			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FUNCTION_IDENTIFIER_NT"){
+				text.push_back("mov "+registers[2]+" , rbp");
+				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+				TreeNode* pexp=root->children[0]->children[1]->children[0];
+				if(function_args.find(pexp->children[0]->lex_val)!=function_args.end()){
+
+					int ch=0;
+					TreeNode* params=pexp->children[2];
+
+					if(params->children.size()!=0){
+						TreeNode* paramsnt=params->children[0];
+
+						while(paramsnt->children.size()>1){
+							ch++;
+							paramsnt=paramsnt->children[0];
+						}
+						ch++;
+
+					}
+
+					if(ch==function_args[pexp->children[0]->lex_val]){
+						text.push_back("call "+pexp->children[0]->lex_val);
+					}
+
+					else{
+						string err="Incorrect number of arguments passed to the function...";
+						yyerror(err);
+					}
+				}
+				else{
+					string err="Function Doesn't Exist...";
+					yyerror(err);
+				}
+				// text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+				// text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+			}
+			else{
+				string err="Error Occured...";
+				yyerror(err);
+			}
 		}
-		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_F"){
-			//
-		}
-		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION_S"){
-			//
-		}
+		// FUNCTION
 		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
@@ -1052,9 +1069,7 @@ void CodeGenerator(TreeNode* root){
 		else if(node_type=="INT" || node_ident=="INTEGER_NT"){  // NUMBER OR INT IDENTIFIER
 			if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
 				if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-					// text.push_back("mov "+registers[2]+" , rbp");
-					// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]));
-					// text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+					
 
 					string ident =to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
@@ -1066,9 +1081,7 @@ void CodeGenerator(TreeNode* root){
 					text.push_back("mov "+registers[0]+" , "+registers[2]+"");
 				}
 				if(root->children[0]->children[1]->children[0]->NodeName=="IDENTIFIER_NT"){
-					// text.push_back("mov "+registers[2]+" , rbp");
-					// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]));
-					// text.push_back("mov "+registers[1]+" , ["+registers[2]+"]");
+					
 
 					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
@@ -1176,13 +1189,14 @@ void CodeGenerator(TreeNode* root){
 	if(check_reg==-1){
 		for(int i=0;i<=11;i++){
 			regs_replacement[i]="";
-			u0=0;u1=0;
-			u2=0;u3=0;
-			u4=0;u5=0;
-			u6=0;u7=0;
-			u8=0;u9=0;
-			u10=0;u11=0;
 		}
+		u0=0;u1=0;
+		u2=0;u3=0;
+		u4=0;u5=0;
+		u6=0;u7=0;
+		u8=0;u9=0;
+		u10=0;u11=0;
+		check_reg=0;
 	}
 }
 
@@ -1213,8 +1227,9 @@ void putx86inafile(){
 }
 
 
-void yyerror(char* temp){
-	//cout<<"Parsing Terminated...Syntax Error:("<<endl;
+void yyerror(string temp){
+	cout<<endl<<temp<<endl;
+	cout<<"Parsing Terminated...Syntax Error:("<<endl;
 	exit(0);
 }
 void set_go_to_new_line_subroutine(){

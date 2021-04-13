@@ -53,11 +53,12 @@ extern int check_reg;
 extern int time_lru;
 extern int check;
 extern vector<string> regs_replacement;
+extern map<string,int> function_args; 
 
 
 
 void CodeGenerator(TreeNode* root);
-void yyerror(char* temp);
+void yyerror(string temp);
 void set_go_to_new_line_subroutine();
 void set_list_print_subroutine();
 void set_integer_print_subroutine();

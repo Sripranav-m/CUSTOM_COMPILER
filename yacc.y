@@ -1,7 +1,7 @@
 %{
 	#include "main.h"
 	int yylex();
-	void yyerror(char *);
+	void yyerror(string);
 	char mytext[10000]; // get from lex file.
 
 	TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
@@ -10,6 +10,7 @@
 	map<string,int> list_size;
 	map<string,pair<int,int>> matrix;
 	map<string,string> variable_types; 
+	map<string,int> function_args; 
 	void dotraversal(TreeNode* head);
 	vector<string> text;
 	vector<string> data;
@@ -157,6 +158,22 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								$5 = new TreeNode("CNB");
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
+																								function_args[$2->lex_val]=0;
+																				
+																								TreeNode* params=$4;
+																								if(params->children.size()!=0){
+																									TreeNode* paramsnt=params->children[0];
+																									int ch=0;
+
+																									while(paramsnt->children.size()>1){
+																										ch++;
+																										paramsnt=paramsnt->children[0];
+																									}
+																									ch++;
+
+
+																									function_args[$2->lex_val]=ch;
+																								}
 																							};
 
 
@@ -188,7 +205,11 @@ PARAM_LIST_NT: PARAM_LIST_NT COMMA PARAM {
 PARAM: VARIABLE_TYPE IDENTIFIER_NT{
 									vector<TreeNode*> v = {$1,$2};
 									$$ = new TreeNode("PARAM",v);
-								};
+								}
+		| IDENTIFIER_NT{
+			vector<TreeNode*> v = {$1};
+			$$ = new TreeNode("PARAM",v);
+		};
 
 
 
@@ -571,7 +592,14 @@ MATVAR_NT : MATVAR_NT COMMA INTEGER_NT{
 				};
 
 
-PEXPRESSION: INTEGER_NT {	
+PEXPRESSION: FUNCTION_IDENTIFIER_NT ONB PARAMS CNB{
+				cout<<"YYYYYY\n";
+				$2 = new TreeNode("ONB");
+				$4 = new TreeNode("CNB");
+				vector<TreeNode*> v={$1,$2,$3,$4};
+				$$=new TreeNode("PEXPRESSION",v);
+			}
+			| INTEGER_NT {	
 					vector<TreeNode*> v={$1};
 					$$=new TreeNode("PEXPRESSION",v);
 					}
@@ -601,6 +629,12 @@ PEXPRESSION: INTEGER_NT {
 				vector<TreeNode*> v={$1,$2,$3};
 				$$=new TreeNode("PEXPRESSION",v);
 			};
+
+
+
+
+
+
 
 PEXPRESSION_S : STRING_NT {
 				vector<TreeNode*> v={$1};
@@ -697,9 +731,6 @@ int main(){
 	yyparse();
 	//dotraversal(Abstract_Syntax_Tree);
 	CodeGenerator(Abstract_Syntax_Tree);
-	text.push_back("mov rax , 60");
-	text.push_back("mov rdi , 0");
-	text.push_back("syscall");
 	putx86inafile();
 	return 0;
 }
