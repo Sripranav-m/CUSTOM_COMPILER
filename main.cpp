@@ -129,9 +129,6 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("sub rsp , "+to_string(x));
 		}
 	}
-	else if(root->NodeName=="RETURN_STATEMENT"){
-		//
-	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		check_reg=-1;
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
@@ -267,6 +264,27 @@ void CodeGenerator(TreeNode* root){
 	// 	data.push_back("intin: db \"%ld\",0");
 	// data.push_back("integer:times 4 db 0");
 	}
+	else if(root->NodeName=="RETURN_STATEMENT"){
+		if(root->children[1]->NodeName=="IDENTIFIER_NT"){
+			if(variable_types[root->children[1]->lex_val]=="INT"){
+				text.push_back("mov "+registers[1]+" , rbp");
+				text.push_back("add "+registers[1]+" , "+to_string(symbol_table[{root->children[1]->lex_val,"INT"}]));
+				text.push_back("mov rax , ["+registers[1]+"]");
+			}
+			else{
+				string err="Incorect return type...";
+				yyerror(err);
+			}
+		}
+		else if(root->children[1]->NodeName=="INTEGER_NT"){
+			text.push_back("mov rax , "+root->children[1]->lex_val);
+		}
+		else{
+			string err="Error at function return statement";
+			yyerror(err);
+		}
+
+	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
 				
 		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
@@ -399,12 +417,12 @@ void CodeGenerator(TreeNode* root){
 				level1=level1->children[0];
 
 			}
+			// FUNCTION CALLING
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FUNCTION_IDENTIFIER_NT"){
 				text.push_back("mov "+registers[2]+" , rbp");
 				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				TreeNode* pexp=root->children[0]->children[1]->children[0];
 				if(function_args.find(pexp->children[0]->lex_val)!=function_args.end()){
-
 					int ch=0;
 					TreeNode* params=pexp->children[2];
 					if(params->children[0]->NodeName=="EPSILON"){
@@ -416,6 +434,7 @@ void CodeGenerator(TreeNode* root){
 						while(paramsnt->children.size()>1){
 							ch++;
 							text.push_back("add rsp , -8");
+							string ident_name=paramsnt->children[2]->children[0]->lex_val;
 							string ident =to_string(symbol_table[{paramsnt->children[2]->children[0]->lex_val,"INT"}]);
 							cout<<ident<<" ";
 							int loaded_into=load_into_register(ident);
@@ -424,10 +443,12 @@ void CodeGenerator(TreeNode* root){
 
 						}
 						text.push_back("add rsp , -8");
+						string ident_name=paramsnt->children[0]->children[0]->lex_val;
 						string ident =to_string(symbol_table[{paramsnt->children[0]->children[0]->lex_val,"INT"}]);
 						cout<<ident<<" ";
 						int loaded_into=load_into_register(ident);
 						text.push_back("mov [rsp],"+registers[loaded_into]);
+
 						ch++;
 
 					}
@@ -435,6 +456,7 @@ void CodeGenerator(TreeNode* root){
 						text.push_back("mov "+registers[0]+" , "+to_string(ch));
 						map<pair<string,string>, int> symbol_table_T=symbol_table;
 						symbol_table=all_scopes_symbol_tables[function_scope_definer[pexp->children[0]->lex_val]];
+						check_reg=-1;
 						text.push_back("call "+pexp->children[0]->lex_val);
 						symbol_table=symbol_table_T;
 						text.push_back("add rsp ,"+to_string(8*ch));
@@ -457,7 +479,7 @@ void CodeGenerator(TreeNode* root){
 				yyerror(err);
 			}
 		}
-		// FUNCTION
+		
 		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;

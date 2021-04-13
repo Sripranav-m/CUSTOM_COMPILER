@@ -176,7 +176,7 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								scope=$2->lex_val;
 																								all_scopes_symbol_tables.push_back(symbol_table);
 																								symbol_table.clear();
-
+																								
 																								TreeNode* params=$4;
 																								if(params->children.size()!=0){
 																									TreeNode* paramsnt=params->children[0];
@@ -220,6 +220,12 @@ PARAM_LIST_NT: PARAM_LIST_NT COMMA PARAM {
 
 
 PARAM: VARIABLE_TYPE IDENTIFIER_NT{
+									Num_variables++;
+									string var_type=$1->children[0]->NodeName;
+									if(var_type!="INT"){
+										yyerror("You can pass only Integer arguments...");
+									}
+									symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
 									vector<TreeNode*> v = {$1,$2};
 									$$ = new TreeNode("PARAM",v);
 								}
