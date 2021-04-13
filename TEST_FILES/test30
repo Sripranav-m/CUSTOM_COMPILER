@@ -1,11 +1,14 @@
 int _main(){
     int a;
     a=15;
-    k=_addtwo();
+    int aa;
+    int bb;
+    int cc;
+    k=_addtwo(aa,bb,cc);
     print(a);
 }
-int _addtwo(){
-    int g;
-    g=68;
-    print(g);
+int _addtwo(int aa,int bb,int cc){
+    int a;
+    a=68;
+    print(a);
 }

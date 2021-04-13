@@ -9,7 +9,13 @@
 	map<pair<string,string>, int> symbol_table;
 	map<string,int> list_size;
 	map<string,pair<int,int>> matrix;
-	map<string,string> variable_types; 
+	map<string,string> variable_types;
+
+
+	vector<map<pair<string,string>, int>> all_scopes_symbol_tables;
+
+	map<string,int> function_scope_definer;
+
 	map<string,int> function_args; 
 	void dotraversal(TreeNode* head);
 	vector<string> text;
@@ -31,6 +37,8 @@
 	int count_loops=0;
 	int num_scans=0;
 	int matrix_size=0;
+
+	string scope="";
 	
 %}
 
@@ -39,7 +47,7 @@
 }
  
 %token 	INT STRING CHARACTER FLOAT LIST MATRIX IDENTIFIER CHAR STR FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
-%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR OSB CSB ATSIZE AATSIZE
+%token  IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC IC BAND BOR BXOR OSB CSB ATSIZE AATSIZE RETURN
 
 %left PLUS
 %left MULTIPLY
@@ -50,7 +58,7 @@
 %type<node> PROGRAM DECLARATION_LIST MATRIX DECLARATION VARIABLE_DECLARATION VARIABLE_TYPE 
 %type<node> STATEMENT_LIST STATEMENT ASSIGNMENT_STATEMENT IDENTIFIER_NT FUNCTION_IDENTIFIER_NT 
 %type<node> EXPRESSION PEXPRESSION PEXPRESSION_S PEXPRESSION_F PEXPRESSION_L LIST_ELEMENT MATRIX_ELEMENT MATVAR_NT INTEGER_NT STRING_NT CHARACTER_NT FLOAT_NT FUNCTION_DECLARATION COMPOUND_STATEMENT 
-%type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM
+%type<node> LOCAL_DECLARATION_LIST LOCAL_DECLARATION PRINT_STATEMENT SCAN_STATEMENT PRINT_SCAN_ITEM RETURN_STATEMENT RETURN
 %type<node> IF_STATEMENT WHILE_STATEMENT FOR_STATEMENT INCDEC_STATEMENT PARAM PARAMS PARAM_LIST_NT
 %type<node> INT STRING CHARACTER FLOAT LIST IC IDENTIFIER FUNCTION_IDENTIFIER N_NUMBER NON_N_NUMBER STR CHAR FLOATING COMMA SEMICOLON OFB CFB ONB CNB PLUS MINUS MULTIPLY DIVIDE
 %type<node> IF ELSE ELIF WHILE FOR PRINT SCAN OR AND NOT EQUALTO LT GT LE GE EE NEQ INC DEC BAND BOR BXOR OSB CSB LIST_TYPE MATRIX_TYPE ATSIZE AATSIZE SIZE_EXPRESSION
@@ -93,6 +101,7 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															if(variable_types.find($2->lex_val)==variable_types.end()){
 																string var_type=$1->children[0]->NodeName;
 																symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+																
 																variable_types[$2->lex_val]=var_type;
 															}
 															else{
@@ -110,6 +119,7 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							if(variable_types.find($2->lex_val)==variable_types.end()){
 								string var_type=$1->children[0]->NodeName;
 								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								
 								variable_types[$2->lex_val]=var_type;
 							}
 							else{
@@ -131,6 +141,7 @@ VARIABLE_DECLARATION:  VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							if(variable_types.find($2->lex_val)==variable_types.end()){
 								string var_type=$1->children[0]->NodeName;
 								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								
 								variable_types[$2->lex_val]=var_type;
 							}
 							else{
@@ -159,7 +170,13 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								vector<TreeNode*> v = {$1, $2, $3, $4, $5, $6};
 																								$$ = new TreeNode("FUNCTION_DECLARATION", v);
 																								function_args[$2->lex_val]=0;
-																				
+
+																								int tot_num_fun=function_scope_definer.size();
+																								function_scope_definer[$2->lex_val]=tot_num_fun;
+																								scope=$2->lex_val;
+																								all_scopes_symbol_tables.push_back(symbol_table);
+																								symbol_table.clear();
+
 																								TreeNode* params=$4;
 																								if(params->children.size()!=0){
 																									TreeNode* paramsnt=params->children[0];
@@ -262,8 +279,22 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 			| SCAN_STATEMENT{
 				vector<TreeNode*> v = {$1};
 				$$ = new TreeNode("STATEMENT",v);
+			}
+			| RETURN_STATEMENT{
+				vector<TreeNode*> v = {$1};
+				$$ = new TreeNode("STATEMENT",v);
 			};
 
+RETURN_STATEMENT : RETURN IDENTIFIER_NT{
+						$1=new TreeNode("RETURN");
+						vector<TreeNode*> v = {$1,$2};
+						$$ = new TreeNode("RETURN_STATEMENT",v);
+					}
+					| RETURN INTEGER_NT{
+						$1=new TreeNode("RETURN");
+						vector<TreeNode*> v = {$1,$2};
+						$$ = new TreeNode("RETURN_STATEMENT",v);
+					}
 
 
 PRINT_STATEMENT : PRINT ONB PRINT_SCAN_ITEM CNB SEMICOLON {
@@ -379,6 +410,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															if(variable_types.find($2->lex_val)==variable_types.end()){
 																string var_type=$1->children[0]->NodeName;
 																symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+												
 																variable_types[$2->lex_val]=var_type;
 															}
 					}
@@ -393,6 +425,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							if(variable_types.find($2->lex_val)==variable_types.end()){
 								string var_type=$1->children[0]->NodeName;
 								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+								
 								variable_types[$2->lex_val]=var_type;
 							}
 						}
@@ -410,6 +443,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 							if(variable_types.find($2->lex_val)==variable_types.end()){
 								string var_type=$1->children[0]->NodeName;
 								symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
+
 								variable_types[$2->lex_val]=var_type;
 							}
 							else{

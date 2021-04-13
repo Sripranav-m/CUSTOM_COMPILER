@@ -13,6 +13,8 @@ void dotraversal(TreeNode* head){
 	return;
 }
 
+string function_scope="";
+
 int x,y;
 int check_reg=0;
 
@@ -68,6 +70,8 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("main:");
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
+			function_scope="_main";
+			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -80,6 +84,7 @@ void CodeGenerator(TreeNode* root){
 			text.push_back(""+fun_name+":");
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
+			function_scope=fun_name;
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -123,6 +128,9 @@ void CodeGenerator(TreeNode* root){
 			x*=8;
 			text.push_back("sub rsp , "+to_string(x));
 		}
+	}
+	else if(root->NodeName=="RETURN_STATEMENT"){
+		//
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
 		check_reg=-1;
@@ -399,20 +407,37 @@ void CodeGenerator(TreeNode* root){
 
 					int ch=0;
 					TreeNode* params=pexp->children[2];
-
-					if(params->children.size()!=0){
+					if(params->children[0]->NodeName=="EPSILON"){
+						ch=0;
+					}
+					else{
 						TreeNode* paramsnt=params->children[0];
 
 						while(paramsnt->children.size()>1){
 							ch++;
+							text.push_back("add rsp , -8");
+							string ident =to_string(symbol_table[{paramsnt->children[2]->children[0]->lex_val,"INT"}]);
+							cout<<ident<<" ";
+							int loaded_into=load_into_register(ident);
+							text.push_back("mov [rsp],"+registers[loaded_into]);
 							paramsnt=paramsnt->children[0];
+
 						}
+						text.push_back("add rsp , -8");
+						string ident =to_string(symbol_table[{paramsnt->children[0]->children[0]->lex_val,"INT"}]);
+						cout<<ident<<" ";
+						int loaded_into=load_into_register(ident);
+						text.push_back("mov [rsp],"+registers[loaded_into]);
 						ch++;
 
 					}
-
 					if(ch==function_args[pexp->children[0]->lex_val]){
+						text.push_back("mov "+registers[0]+" , "+to_string(ch));
+						map<pair<string,string>, int> symbol_table_T=symbol_table;
+						symbol_table=all_scopes_symbol_tables[function_scope_definer[pexp->children[0]->lex_val]];
 						text.push_back("call "+pexp->children[0]->lex_val);
+						symbol_table=symbol_table_T;
+						text.push_back("add rsp ,"+to_string(8*ch));
 					}
 
 					else{

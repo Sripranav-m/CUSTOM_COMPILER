@@ -19,6 +19,10 @@ class TreeNode {
             }
 };
 
+extern vector<map<pair<string,string>, int>> all_scopes_symbol_tables;
+extern map<string,int> function_scope_definer;
+
+
 extern TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 extern int Num_variables;
 extern map<string,pair<int,int>> matrix;
@@ -34,6 +38,8 @@ extern vector<string> printList;
 extern vector<string> printNewLine;
 extern int count_loops;
 extern int num_scans;
+
+
 
 extern vector<string> registers;
 extern int u0;

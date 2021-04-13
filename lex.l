@@ -25,6 +25,7 @@ ic ["]
 "scan"                                    {return SCAN;}
 "list"                                    {return LIST;}
 "matrix"                                    {return MATRIX;}
+"return"                                    {return RETURN;}
 
 "=="|"<="|">="|">"|"<"|"!=" {
     if(strcmp(yytext, "==") == 0) {
