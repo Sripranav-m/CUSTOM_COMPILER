@@ -71,6 +71,7 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
 			function_scope="_main";
+			Num_variables=Num_variablesF["_main"];
 			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
@@ -82,9 +83,36 @@ void CodeGenerator(TreeNode* root){
 		else{
 			fun_name="_"+fun_name;
 			text.push_back(""+fun_name+":");
+
+			function_scope=fun_name;
+
+			int top=Num_variables;
+			
+			Num_variables=Num_variablesF[fun_name];
+			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
+
+
+			vector<string> arguments;
+
+			arguments=function_arguments[fun_name];
+			int num_arg=arguments.size();
+
+
+			text.push_back("mov "+registers[3]+" , rbp");
+			text.push_back("add "+registers[3]+" , "+to_string(-8*(top+num_arg+1)) );
+			//text.push_back("add "+registers[3]+" , -8");
+
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
-			function_scope=fun_name;
+			for(int i=0;i<arguments.size();i++){
+				cout<<arguments[i]<<"=\n";
+				text.push_back("mov "+registers[2]+" , rbp");
+				text.push_back("add "+registers[2]+" , "+arguments[i]);
+				text.push_back("add "+registers[3]+" , 8");
+				text.push_back("mov "+registers[1]+" , ["+registers[3]+"]");
+				text.push_back("mov ["+registers[2]+"] , "+registers[1]+"");
+			}
+
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -103,6 +131,7 @@ void CodeGenerator(TreeNode* root){
 	else if(root->NodeName=="STATEMENT"){
 		CodeGenerator(root->children[0]);
 	}
+	
 	else if(root->NodeName=="LOCAL_DECLARATION"){
 		//cout<<root->children[0]->NodeName<<"***************\n";
 		if(root->children[0]->NodeName=="VARIABLE_TYPE"){
@@ -134,11 +163,14 @@ void CodeGenerator(TreeNode* root){
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
             text.push_back("");
 			string ident=to_string(symbol_table[{root->children[2]->lex_val,"INT"}]);
+			//cout<<ident<<"==\n";
 			text.push_back("mov "+registers[1]+" , rbp");
 			text.push_back("add "+registers[1]+" , "+ident);
 			text.push_back("mov "+registers[1]+" , ["+registers[1]+"]");
 			text.push_back("mov rsi , "+registers[1]+"");
 			text.push_back("mov rdi , intf");
+			text.push_back("push "+registers[1]+"");
+			text.push_back("push intf");
 			text.push_back("mov "+registers[0]+" , 0");
 			text.push_back("call printf");
             text.push_back("");
@@ -436,7 +468,7 @@ void CodeGenerator(TreeNode* root){
 							text.push_back("add rsp , -8");
 							string ident_name=paramsnt->children[2]->children[0]->lex_val;
 							string ident =to_string(symbol_table[{paramsnt->children[2]->children[0]->lex_val,"INT"}]);
-							cout<<ident<<" ";
+							//cout<<ident<<" ";
 							int loaded_into=load_into_register(ident);
 							text.push_back("mov [rsp],"+registers[loaded_into]);
 							paramsnt=paramsnt->children[0];
@@ -445,7 +477,7 @@ void CodeGenerator(TreeNode* root){
 						text.push_back("add rsp , -8");
 						string ident_name=paramsnt->children[0]->children[0]->lex_val;
 						string ident =to_string(symbol_table[{paramsnt->children[0]->children[0]->lex_val,"INT"}]);
-						cout<<ident<<" ";
+						//cout<<ident<<" ";
 						int loaded_into=load_into_register(ident);
 						text.push_back("mov [rsp],"+registers[loaded_into]);
 
@@ -457,8 +489,11 @@ void CodeGenerator(TreeNode* root){
 						map<pair<string,string>, int> symbol_table_T=symbol_table;
 						symbol_table=all_scopes_symbol_tables[function_scope_definer[pexp->children[0]->lex_val]];
 						check_reg=-1;
+						int current_Num_variables=Num_variables;
+						Num_variables=Num_variablesF[pexp->children[0]->lex_val];
 						text.push_back("call "+pexp->children[0]->lex_val);
 						symbol_table=symbol_table_T;
+						Num_variables=current_Num_variables;
 						text.push_back("add rsp ,"+to_string(8*ch));
 					}
 

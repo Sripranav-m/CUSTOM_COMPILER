@@ -2,7 +2,7 @@ int _main(){
     int a;
     a=15;
     int b;
-    b=23-12;
+    b=23- 12;
     print(b);
     b=11+12;
     print(b);

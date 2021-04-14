@@ -4,11 +4,17 @@ int _main(){
     int aa;
     int bb;
     int cc;
+    aa=123;
+    bb=456;
+    cc=789;
+    int k;
     k=_addtwo(aa,bb,cc);
     print(a);
 }
 int _addtwo(int aa,int bb,int cc){
-    int a;
-    a=68;
-    print(a);
+    int f;
+    f=1+cc;
+    f=f+bb;
+    f=f+aa;
+    print(f);
 }

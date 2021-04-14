@@ -24,6 +24,8 @@
 	vector<string> printint; // To include the print subroutine
 	vector<string> printList;
 	vector<string> printNewLine;
+	map<string,vector<string>> function_arguments;
+	map<string,int> Num_variablesF;
 	void CodeGenerator(TreeNode* root);
 	void putx86inafile();
 	void set_integer_print_subroutine();
@@ -175,22 +177,32 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								function_scope_definer[$2->lex_val]=tot_num_fun;
 																								scope=$2->lex_val;
 																								all_scopes_symbol_tables.push_back(symbol_table);
-																								symbol_table.clear();
+																								
+																								vector<string> arguments;
 																								
 																								TreeNode* params=$4;
-																								if(params->children.size()!=0){
+																								if(params->children.size()!=0 && params->children[0]->NodeName!="EPSILON"){
 																									TreeNode* paramsnt=params->children[0];
 																									int ch=0;
 
-																									while(paramsnt->children.size()>1){
+																									while(paramsnt->children.size()>2){
+																										//cout<<paramsnt->NodeName<<endl;
+																										//cout<<symbol_table[{paramsnt->children[2]->children[1]->lex_val,"INT"}]<<endl;
+																										arguments.push_back(to_string(symbol_table[{paramsnt->children[2]->children[1]->lex_val,"INT"}]));
 																										ch++;
 																										paramsnt=paramsnt->children[0];
 																									}
 																									ch++;
-
-
+																									//cout<<paramsnt->NodeName<<"=="<<endl;
+																									//cout<<symbol_table[{paramsnt->children[0]->children[1]->lex_val,"INT"}]<<endl;
+																									arguments.push_back(to_string(symbol_table[{paramsnt->children[0]->children[1]->lex_val,"INT"}]));
 																									function_args[$2->lex_val]=ch;
 																								}
+																								Num_variablesF[$2->lex_val]=Num_variables;
+																								Num_variables=0;
+																								reverse(arguments.begin(),arguments.end());
+																								function_arguments[$2->lex_val]=arguments;
+																								symbol_table.clear();
 																							};
 
 
@@ -633,7 +645,7 @@ MATVAR_NT : MATVAR_NT COMMA INTEGER_NT{
 
 
 PEXPRESSION: FUNCTION_IDENTIFIER_NT ONB PARAMS CNB{
-				cout<<"YYYYYY\n";
+				//cout<<"YYYYYY\n";
 				$2 = new TreeNode("ONB");
 				$4 = new TreeNode("CNB");
 				vector<TreeNode*> v={$1,$2,$3,$4};
