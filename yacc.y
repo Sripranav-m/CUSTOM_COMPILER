@@ -303,14 +303,16 @@ STATEMENT: ASSIGNMENT_STATEMENT {
 				$$ = new TreeNode("STATEMENT",v);
 			};
 
-RETURN_STATEMENT : RETURN IDENTIFIER_NT{
+RETURN_STATEMENT : RETURN IDENTIFIER_NT SEMICOLON{
 						$1=new TreeNode("RETURN");
-						vector<TreeNode*> v = {$1,$2};
+						$3=new TreeNode("SEMICOLON");
+						vector<TreeNode*> v = {$1,$2,$3};
 						$$ = new TreeNode("RETURN_STATEMENT",v);
 					}
-					| RETURN INTEGER_NT{
+					| RETURN INTEGER_NT SEMICOLON{
 						$1=new TreeNode("RETURN");
-						vector<TreeNode*> v = {$1,$2};
+						$3=new TreeNode("SEMICOLON");
+						vector<TreeNode*> v = {$1,$2,$3};
 						$$ = new TreeNode("RETURN_STATEMENT",v);
 					}
 

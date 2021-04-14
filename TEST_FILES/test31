@@ -5,8 +5,15 @@ int _main(){
     bb=20;
     int k;
     k=_addtwo(aa,bb);
+    print(k);
+    k=_gethundred();
+    print(k);
 }
 int _addtwo(int aa,int bb){
-    aa=aa+bb;
-    print(aa);
+    int cc;
+    cc=aa+bb;
+    return cc;
+}
+int _gethundred(){
+    return 100;
 }

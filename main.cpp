@@ -169,8 +169,11 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov "+registers[1]+" , ["+registers[1]+"]");
 			text.push_back("mov rsi , "+registers[1]+"");
 			text.push_back("mov rdi , intf");
-			text.push_back("push "+registers[1]+"");
-			text.push_back("push intf");
+			// if( function_scope!="_main"){
+			// 	text.push_back("mov "+registers[0]+","+registers[1]);
+			// 	printinrax();
+			// 	return;
+			// }
 			text.push_back("mov "+registers[0]+" , 0");
 			text.push_back("call printf");
             text.push_back("");
@@ -495,6 +498,9 @@ void CodeGenerator(TreeNode* root){
 						symbol_table=symbol_table_T;
 						Num_variables=current_Num_variables;
 						text.push_back("add rsp ,"+to_string(8*ch));
+						text.push_back("mov "+registers[2]+" , rbp");
+						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+						text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 					}
 
 					else{
