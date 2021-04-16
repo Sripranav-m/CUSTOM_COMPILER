@@ -600,120 +600,246 @@ void CodeGenerator(TreeNode* root){
 		}
 	}
 	else if(root->NodeName=="IF_STATEMENT"){
-		count_loops++;
-		string LabelIf="LabelIf"+to_string(count_loops);
-		string EndIf="EndIf"+to_string(count_loops);
-		string NextSkip="NextSkip"+to_string(count_loops);
-		text.push_back(LabelIf+":");
-		TreeNode* left_expr=root->children[2]->children[0]->children[0];
-		string x,y,xx;
-		string a,b;
-		a=left_expr->children[0]->NodeName;
-		if(a=="NEQ"){
-			x="je";
-			xx="jne";
-		}
-		if(a=="GE"){
-			x="jl";
-			xx="jge";
-		}
-		if(a=="LE"){
-			x="jg";
-			xx="jle";
-		}
-		if(a=="GT"){
-			x="jle";
-			xx="jg";
-		}
-		if(a=="LT"){
-			x="jge";
-			xx="jl";
-		}
-		if(a=="EE"){
-			x="jne";
-			xx="je";
-		}
-		if(root->children[2]->children[0]->NodeName=="NOT"){
-			CodeGenerator(root->children[2]);
-			text.push_back(xx+" "+EndIf);
-			CodeGenerator(root->children[4]);
-			/* text.push_back("jmp "+LabelIf); */
-			text.push_back(EndIf+":");
-			return;
-		}
-		TreeNode* right_expr=root->children[2]->children[0]->children[1];
-		b=right_expr->children[0]->NodeName;
-		if(b=="NEQ"){
-			y="je";
-		}
-		if(b=="GE"){
-			y="jl";
-		}
-		if(b=="LE"){
-			y="jg";
-		}
-		if(b=="GT"){
-			y="jle";
-		}
-		if(b=="LT"){
-			y="jge";
-		}
-		if(b=="EE"){
-			y="jne";
-		}
-		if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
-			string typ=root->children[2]->children[0]->NodeName;
-			
-			if(typ=="AND"){
-				CodeGenerator(left_expr);
-				text.push_back(x+" "+EndIf);
-				CodeGenerator(right_expr);
-				text.push_back(y+" "+EndIf);
+		if(root->children.size()==5){
+			count_loops++;
+			string LabelIf="LabelIf"+to_string(count_loops);
+			string EndIf="EndIf"+to_string(count_loops);
+			string NextSkip="NextSkip"+to_string(count_loops);
+			text.push_back(LabelIf+":");
+			TreeNode* left_expr=root->children[2]->children[0]->children[0];
+			string x,y,xx;
+			string a,b;
+			a=left_expr->children[0]->NodeName;
+			if(a=="NEQ"){
+				x="je";
+				xx="jne";
 			}
-			else if(typ=="OR"){
-				CodeGenerator(left_expr);
-				text.push_back(xx+" "+NextSkip);
-				CodeGenerator(right_expr);
-				text.push_back(y+" "+EndIf);
-				text.push_back(NextSkip+":");
+			if(a=="GE"){
+				x="jl";
+				xx="jge";
+			}
+			if(a=="LE"){
+				x="jg";
+				xx="jle";
+			}
+			if(a=="GT"){
+				x="jle";
+				xx="jg";
+			}
+			if(a=="LT"){
+				x="jge";
+				xx="jl";
+			}
+			if(a=="EE"){
+				x="jne";
+				xx="je";
+			}
+			if(root->children[2]->children[0]->NodeName=="NOT"){
+				CodeGenerator(root->children[2]);
+				text.push_back(xx+" "+EndIf);
+				CodeGenerator(root->children[4]);
+				/* text.push_back("jmp "+LabelIf); */
+				text.push_back(EndIf+":");
+				return;
+			}
+			TreeNode* right_expr=root->children[2]->children[0]->children[1];
+			b=right_expr->children[0]->NodeName;
+			if(b=="NEQ"){
+				y="je";
+			}
+			if(b=="GE"){
+				y="jl";
+			}
+			if(b=="LE"){
+				y="jg";
+			}
+			if(b=="GT"){
+				y="jle";
+			}
+			if(b=="LT"){
+				y="jge";
+			}
+			if(b=="EE"){
+				y="jne";
+			}
+			if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
+				string typ=root->children[2]->children[0]->NodeName;
+				
+				if(typ=="AND"){
+					CodeGenerator(left_expr);
+					text.push_back(x+" "+EndIf);
+					CodeGenerator(right_expr);
+					text.push_back(y+" "+EndIf);
+				}
+				else if(typ=="OR"){
+					CodeGenerator(left_expr);
+					text.push_back(xx+" "+NextSkip);
+					CodeGenerator(right_expr);
+					text.push_back(y+" "+EndIf);
+					text.push_back(NextSkip+":");
+				}
+				else{
+					//
+				}
+				CodeGenerator(root->children[4]);
+				/* text.push_back("jmp "+LabelIf); */
+				text.push_back(EndIf+":");
+				return;
 			}
 			else{
-				//
+				if(root->children[2]->children[0]->NodeName=="GE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jl "+EndIf);
+				}
+				if(root->children[2]->children[0]->NodeName=="LE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jg "+EndIf);
+				}
+				if(root->children[2]->children[0]->NodeName=="GT"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jle "+EndIf);
+				}
+				if(root->children[2]->children[0]->NodeName=="LT"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jge "+EndIf);
+				}
+				if(root->children[2]->children[0]->NodeName=="EE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jne "+EndIf);
+				}
+				if(root->children[2]->children[0]->NodeName=="NEQ"){
+					CodeGenerator(root->children[2]);
+					text.push_back("je "+EndIf);
+				}
 			}
 			CodeGenerator(root->children[4]);
 			/* text.push_back("jmp "+LabelIf); */
 			text.push_back(EndIf+":");
-			return;
 		}
-		else{
-			if(root->children[2]->children[0]->NodeName=="GE"){
-				CodeGenerator(root->children[2]);
-				text.push_back("jl "+EndIf);
+		else if(root->children.size()==7){
+			count_loops++;
+			string LabelIf="LabelIf"+to_string(count_loops);
+			string LabelElse="LabelElse"+to_string(count_loops);
+			string EndIf="EndIf"+to_string(count_loops);
+			string EndElse="EndElse"+to_string(count_loops);
+			string NextSkip="NextSkip"+to_string(count_loops);
+			text.push_back(LabelIf+":");
+			TreeNode* left_expr=root->children[2]->children[0]->children[0];
+			string x,y,xx;
+			string a,b;
+			a=left_expr->children[0]->NodeName;
+			if(a=="NEQ"){
+				x="je";
+				xx="jne";
 			}
-			if(root->children[2]->children[0]->NodeName=="LE"){
-				CodeGenerator(root->children[2]);
-				text.push_back("jg "+EndIf);
+			if(a=="GE"){
+				x="jl";
+				xx="jge";
 			}
-			if(root->children[2]->children[0]->NodeName=="GT"){
-				CodeGenerator(root->children[2]);
-				text.push_back("jle "+EndIf);
+			if(a=="LE"){
+				x="jg";
+				xx="jle";
 			}
-			if(root->children[2]->children[0]->NodeName=="LT"){
-				CodeGenerator(root->children[2]);
-				text.push_back("jge "+EndIf);
+			if(a=="GT"){
+				x="jle";
+				xx="jg";
 			}
-			if(root->children[2]->children[0]->NodeName=="EE"){
-				CodeGenerator(root->children[2]);
-				text.push_back("jne "+EndIf);
+			if(a=="LT"){
+				x="jge";
+				xx="jl";
 			}
-			if(root->children[2]->children[0]->NodeName=="NEQ"){
-				CodeGenerator(root->children[2]);
-				text.push_back("je "+EndIf);
+			if(a=="EE"){
+				x="jne";
+				xx="je";
 			}
+			if(root->children[2]->children[0]->NodeName=="NOT"){
+				CodeGenerator(root->children[2]);
+				text.push_back(xx+" "+EndIf);
+				CodeGenerator(root->children[4]);
+				/* text.push_back("jmp "+LabelIf); */
+				text.push_back(EndIf+":");
+				return;
+			}
+			TreeNode* right_expr=root->children[2]->children[0]->children[1];
+			b=right_expr->children[0]->NodeName;
+			if(b=="NEQ"){
+				y="je";
+			}
+			if(b=="GE"){
+				y="jl";
+			}
+			if(b=="LE"){
+				y="jg";
+			}
+			if(b=="GT"){
+				y="jle";
+			}
+			if(b=="LT"){
+				y="jge";
+			}
+			if(b=="EE"){
+				y="jne";
+			}
+			if(root->children[2]->children[0]->NodeName=="AND" ||root->children[2]->children[0]->NodeName=="OR"){
+				string typ=root->children[2]->children[0]->NodeName;
+				
+				if(typ=="AND"){
+					CodeGenerator(left_expr);
+					text.push_back(x+" "+LabelElse);
+					CodeGenerator(right_expr);
+					text.push_back(y+" "+LabelElse);
+				}
+				else if(typ=="OR"){
+					CodeGenerator(left_expr);
+					text.push_back(xx+" "+NextSkip);
+					CodeGenerator(right_expr);
+					text.push_back(y+" "+LabelElse);
+					text.push_back(NextSkip+":");
+				}
+				else{
+					//
+				}
+				CodeGenerator(root->children[4]);
+				/* text.push_back("jmp "+LabelIf); */
+				text.push_back("jmp "+EndElse);
+				text.push_back(LabelElse+":");
+				CodeGenerator(root->children[6]);
+				text.push_back(EndElse+":");
+				return;
+			}
+			else{
+				if(root->children[2]->children[0]->NodeName=="GE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jl "+LabelElse);
+				}
+				if(root->children[2]->children[0]->NodeName=="LE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jg "+LabelElse);
+				}
+				if(root->children[2]->children[0]->NodeName=="GT"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jle "+LabelElse);
+				}
+				if(root->children[2]->children[0]->NodeName=="LT"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jge "+LabelElse);
+				}
+				if(root->children[2]->children[0]->NodeName=="EE"){
+					CodeGenerator(root->children[2]);
+					text.push_back("jne "+LabelElse);
+				}
+				if(root->children[2]->children[0]->NodeName=="NEQ"){
+					CodeGenerator(root->children[2]);
+					text.push_back("je "+LabelElse);
+				}
+			}
+			CodeGenerator(root->children[4]);
+			/* text.push_back("jmp "+LabelIf); */
+			text.push_back("jmp "+EndElse);
+			text.push_back(LabelElse+":");
+			CodeGenerator(root->children[6]);
+			text.push_back(EndElse+":");
 		}
-		CodeGenerator(root->children[4]);
-		/* text.push_back("jmp "+LabelIf); */
-		text.push_back(EndIf+":");
 	}
 	else if(root->NodeName=="FOR_STATEMENT"){
 		count_loops++;

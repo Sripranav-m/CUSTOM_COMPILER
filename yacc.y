@@ -354,7 +354,15 @@ IF_STATEMENT: IF ONB EXPRESSION CNB STATEMENT {
 												$4 = new TreeNode("CNB");
 												vector<TreeNode*> v = {$1,$2,$3,$4,$5};
 												$$ = new TreeNode("IF_STATEMENT",v);
-											};
+											}
+				| IF ONB EXPRESSION CNB STATEMENT ELSE STATEMENT{
+					$1 = new TreeNode("IF");
+					$2 = new TreeNode("ONB");
+					$4 = new TreeNode("CNB");
+					$6 = new TreeNode("STATEMENT");
+					vector<TreeNode*> v = {$1,$2,$3,$4,$5,$6,$7};
+					$$ = new TreeNode("IF_STATEMENT",v);
+				};
 
 
 
