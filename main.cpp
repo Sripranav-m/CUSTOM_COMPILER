@@ -49,6 +49,7 @@ void CodeGenerator(TreeNode* root){
 		data.push_back("extern printf , scanf");
 		set_data_segment();
 		set_scanner_integer();
+		set_integer_print_subroutine();
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="DECLARATION_LIST"){
@@ -72,7 +73,12 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("mov rbp , rsp");
 			function_scope="_main";
 			Num_variables=Num_variablesF["_main"];
+			variable_types=all_scopes_variable_types[function_scope_definer[function_scope]];
 			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
+			for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
+				cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
+			}
+			cout<<"==================================\n";
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -82,38 +88,40 @@ void CodeGenerator(TreeNode* root){
 		}
 		else{
 			fun_name="_"+fun_name;
-			text.push_back(""+fun_name+":");
-
 			function_scope=fun_name;
+			text.push_back(""+fun_name+":");
 
 			int top=Num_variables;
 			
 			Num_variables=Num_variablesF[fun_name];
 			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
-
+			variable_types=all_scopes_variable_types[function_scope_definer[function_scope]];
+			for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
+				cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
+			}
+			cout<<"==================================\n";
 
 			vector<string> arguments;
 
 			arguments=function_arguments[fun_name];
 			int num_arg=arguments.size();
 
-
-			text.push_back("mov "+registers[3]+" , rbp");
-			text.push_back("add "+registers[3]+" , "+to_string(-8*(top+num_arg+1)) );
-			//text.push_back("add "+registers[3]+" , -8");
-
 			text.push_back("push rbp");
 			text.push_back("mov rbp , rsp");
+			text.push_back("add rsp , "+to_string(-8*num_arg));
+			text.push_back("mov "+registers[2]+" , rbp");
+			text.push_back("add "+registers[2]+" , -8");
+			text.push_back("mov "+registers[1]+" , rbp");
+			text.push_back("add "+registers[1]+" , 16");
 			for(int i=0;i<arguments.size();i++){
-				cout<<arguments[i]<<"=\n";
-				text.push_back("mov "+registers[2]+" , rbp");
-				text.push_back("add "+registers[2]+" , "+arguments[i]);
-				text.push_back("add "+registers[3]+" , 8");
-				text.push_back("mov "+registers[1]+" , ["+registers[3]+"]");
-				text.push_back("mov ["+registers[2]+"] , "+registers[1]+"");
+				text.push_back("mov "+registers[0]+", ["+registers[1]+"]");
+				text.push_back("mov ["+registers[2]+"] , "+registers[0]);
+				text.push_back("add "+registers[2]+" , -8");
+				text.push_back("add "+registers[1]+" , 8");
 			}
 
 			CodeGenerator(root->children[5]);
+
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
 			text.push_back("ret");
@@ -164,18 +172,30 @@ void CodeGenerator(TreeNode* root){
             text.push_back("");
 			string ident=to_string(symbol_table[{root->children[2]->lex_val,"INT"}]);
 			//cout<<ident<<"==\n";
+
 			text.push_back("mov "+registers[1]+" , rbp");
 			text.push_back("add "+registers[1]+" , "+ident);
-			text.push_back("mov "+registers[1]+" , ["+registers[1]+"]");
-			text.push_back("mov rsi , "+registers[1]+"");
-			text.push_back("mov rdi , intf");
-			// if( function_scope!="_main"){
-			// 	text.push_back("mov "+registers[0]+","+registers[1]);
-			// 	printinrax();
-			// 	return;
-			// }
-			text.push_back("mov "+registers[0]+" , 0");
-			text.push_back("call printf");
+			text.push_back("mov "+registers[2]+" , ["+registers[1]+"]");
+
+			if( function_scope=="_main"){
+				text.push_back("mov rsi , "+registers[2]+"");
+				text.push_back("mov rdi , intf");
+				
+				text.push_back("mov "+registers[0]+" , 0");
+				text.push_back("call printf");
+			}
+			else{
+				text.push_back("mov rsi , "+registers[2]+"");
+				text.push_back("mov rdi , intf");
+				
+				text.push_back("mov "+registers[0]+" , 0");
+				text.push_back("call printf");
+
+				// text.push_back("mov "+registers[0]+","+registers[1]);
+				// text.push_back("call _print_R_A_X");
+				// return;
+			}
+			
             text.push_back("");
 		}
 		else if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
@@ -305,6 +325,7 @@ void CodeGenerator(TreeNode* root){
 		if(root->children[1]->NodeName=="IDENTIFIER_NT"){
 			if(variable_types[root->children[1]->lex_val]=="INT"){
 				text.push_back("mov "+registers[1]+" , rbp");
+				//cout<<to_string(symbol_table[{root->children[1]->lex_val,"INT"}])<<" "<<root->children[1]->lex_val<<" "<<function_scope;
 				text.push_back("add "+registers[1]+" , "+to_string(symbol_table[{root->children[1]->lex_val,"INT"}]));
 				text.push_back("mov rax , ["+registers[1]+"]");
 			}
@@ -335,47 +356,99 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
-
-
+			
 			//IF WE ARE ASSIGNING TO LIST ELEMENT
 			if(root->children[0]->children[1]->children[0]->children.size()==4 && root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
 				// LIST ELEMENT EQUALS  LIST ELEMENT
 				TreeNode* identt=root->children[0]->children[1]->children[0]->children[0];
 				int sizz=list_size[identt->lex_val];
-				int reqq_poss=stoi(root->children[0]->children[1]->children[0]->children[2]->lex_val);
-				//cout<<identt->lex_val<<" "<<sizz<<" "<<reqq_poss<<endl;
-				if(reqq_poss>=0 && reqq_poss<sizz){
-					reqq_poss=sizz-reqq_poss-1;
-					//cout<<reqq_poss;
+				//cout<<"HERE\n";
+				if(root->children[0]->children[1]->children[0]->children[2]->NodeName=="IDENTIFIER_NT"){
+
+					string req=root->children[0]->children[1]->children[0]->children[2]->lex_val;
+					req=to_string(symbol_table[{req,"INT"}]);
+
+					text.push_back("mov "+registers[0]+" , rbp");
+					text.push_back("add "+registers[0]+" , "+req);
+
+					text.push_back("mov "+registers[1]+" , "+to_string(sizz));
+
+					text.push_back("mov "+registers[2]+" , ["+registers[0]+"]");
+					text.push_back("sub "+registers[1]+" , "+registers[2]);
+
+					text.push_back("sub  "+registers[1]+" , 1");
+					text.push_back("mov rax , 8");
+					text.push_back("mul "+registers[1]);
+					text.push_back("mov "+registers[1]+" , rax");
+
+
 					text.push_back("mov "+registers[2]+" , rbp");
 					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{identt->lex_val,"LIST"}]));
-					text.push_back("add "+registers[2]+" , "+to_string((reqq_poss)*8));
+					text.push_back("add "+registers[2]+" , "+registers[1]);
 					text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+
 				}
-				else{
-					yyerror("Accessing Incorrect List Index...");
+				else if(root->children[0]->children[1]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+					int reqq_poss=stoi(root->children[0]->children[1]->children[0]->children[2]->lex_val);
+					//cout<<identt->lex_val<<" "<<sizz<<" "<<reqq_poss<<endl;
+					if(reqq_poss>=0 && reqq_poss<sizz){
+						reqq_poss=sizz-reqq_poss-1;
+						//cout<<reqq_poss;
+						text.push_back("mov "+registers[2]+" , rbp");
+						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{identt->lex_val,"LIST"}]));
+						text.push_back("add "+registers[2]+" , "+to_string((reqq_poss)*8));
+						text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+					}
+					else{
+						yyerror("Accessing Incorrect List Index...");
+					}
 				}
 				
 				if(root->children[0]->children[0]->children.size()==4){
 					TreeNode* ident=root->children[0]->children[0]->children[0];
-					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
 					int siz=list_size[ident->lex_val];
-					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
-					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
-						if(req_pos>=0 && req_pos<siz){
-							req_pos=siz-req_pos-1;
-							text.push_back("mov "+registers[2]+" , rbp");
-							text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
-							text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
-							text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+					if(root->children[0]->children[0]->children[2]->NodeName=="IDENTIFIER_NT"){
+						string req=root->children[0]->children[0]->children[2]->lex_val;
+						req=to_string(symbol_table[{req,"INT"}]);
+
+						text.push_back("mov "+registers[0]+" , rbp");
+						text.push_back("add "+registers[0]+" , "+req);
+						text.push_back("mov "+registers[1]+" , "+to_string(siz));
+
+						text.push_back("mov "+registers[2]+" , ["+registers[0]+"]");
+						text.push_back("sub "+registers[1]+" , "+registers[2]);
+						text.push_back("sub  "+registers[1]+" , 1");
+						text.push_back("mov rax , 8");
+						text.push_back("mul "+registers[1]);
+						text.push_back("mov "+registers[1]+" , rax");
+
+						text.push_back("mov "+registers[2]+" , rbp");
+						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+						text.push_back("add "+registers[2]+" , "+registers[1]);
+						text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+					}
+					else{
+						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+						//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+							if(req_pos>=0 && req_pos<siz){
+								req_pos=siz-req_pos-1;
+								text.push_back("mov "+registers[2]+" , rbp");
+								text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+								text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
+								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+							}
+							else{
+								//
+							}
 						}
 						else{
 							//
 						}
 					}
-					else{
-						//
-					}
+
+					
+					
 				}
 				// LIST ELEMENT EQUALS  IDENTIFIER
 				else{
@@ -389,12 +462,16 @@ void CodeGenerator(TreeNode* root){
 
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 				// IF WE are accessing a particular element from list
+
+
 				if(root->children[0]->children[0]->children.size()==4){
+
 					TreeNode* ident=root->children[0]->children[0]->children[0];
-					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
 					int siz=list_size[ident->lex_val];
-					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+;
 					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+						//cout<<"HERE\n";
 						if(req_pos>=0 && req_pos<siz){
 							req_pos=siz-req_pos-1;
 							text.push_back("mov "+registers[2]+" , rbp");
@@ -407,8 +484,27 @@ void CodeGenerator(TreeNode* root){
 							//
 						}
 					}
-					else{
-						//
+					else if(root->children[0]->children[0]->children[2]->NodeName=="IDENTIFIER_NT"){
+						//cout<<"uuu\n";
+						string req=root->children[0]->children[0]->children[2]->lex_val;
+						req=to_string(symbol_table[{req,"INT"}]);
+
+						text.push_back("mov "+registers[0]+" , rbp");
+						text.push_back("add "+registers[0]+" , "+req);
+						text.push_back("mov "+registers[1]+" , "+to_string(siz));
+						text.push_back("mov "+registers[2]+" , ["+registers[0]+"]");
+						text.push_back("sub "+registers[1]+" , "+registers[2]);
+						text.push_back("sub "+registers[1]+" , 1");
+						text.push_back("mov rax , 8");
+						text.push_back("mul "+registers[1]);
+						text.push_back("mov "+registers[1]+" , rax");
+
+						text.push_back("mov "+registers[2]+" , rbp");
+						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+						text.push_back("add "+registers[2]+" , "+registers[1]);
+						text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+						text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+
 					}
 				}
 				else{
@@ -431,10 +527,32 @@ void CodeGenerator(TreeNode* root){
 					// IF WE are accessing a particular element from list
 					if(root->children[0]->children[0]->children.size()==4){
 						TreeNode* ident=root->children[0]->children[0]->children[0];
-						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
 						int siz=list_size[ident->lex_val];
-						cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
-						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+						if(root->children[0]->children[0]->children[2]->NodeName=="IDENTIFIER_NT"){
+							string req=root->children[0]->children[0]->children[2]->lex_val;
+							req=to_string(symbol_table[{req,"INT"}]);
+							text.push_back("mov "+registers[0]+" , rbp");
+							text.push_back("add "+registers[0]+" , "+req);
+							text.push_back("mov "+registers[1]+" , "+to_string(siz));
+							text.push_back("mov "+registers[2]+" , ["+registers[0]+"]");
+							text.push_back("sub "+registers[1]+" , "+registers[2]);
+							text.push_back("sub "+registers[1]+" , 1");
+							text.push_back("mov rax , 8");
+							text.push_back("mul "+registers[1]);
+							text.push_back("mov "+registers[1]+" , rax");
+
+							text.push_back("mov "+registers[2]+" , rbp");
+								text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+								text.push_back("add "+registers[2]+" , "+registers[1]);
+								text.push_back("mov "+registers[3]+" , rbp");
+								text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
+								text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
+								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+
+						}
+						else{
+							int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+							//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
 							if(req_pos>=0 && req_pos<siz){
 								req_pos=siz-req_pos-1;
 								text.push_back("mov "+registers[2]+" , rbp");
@@ -449,9 +567,7 @@ void CodeGenerator(TreeNode* root){
 								//
 							}
 						}
-						else{
-							//
-						}
+						
 					}
 					else{
 						text.push_back("mov "+registers[2]+" , rbp");
@@ -586,27 +702,30 @@ void CodeGenerator(TreeNode* root){
 						//cout<<ident<<" ";
 						int loaded_into=load_into_register(ident);
 						text.push_back("mov [rsp],"+registers[loaded_into]);
-
 						ch++;
-
 					}
 					if(ch==function_args[pexp->children[0]->lex_val]){
 						text.push_back("mov "+registers[0]+" , "+to_string(ch));
-						map<pair<string,string>, int> symbol_table_T=symbol_table;
-						symbol_table=all_scopes_symbol_tables[function_scope_definer[pexp->children[0]->lex_val]];
+
+						// map<pair<string,string>, int> symbol_table_T=symbol_table;
+
+						// symbol_table=all_scopes_symbol_tables[function_scope_definer[pexp->children[0]->lex_val]];
 						check_reg=-1;
-						int current_Num_variables=Num_variables;
-						Num_variables=Num_variablesF[pexp->children[0]->lex_val];
+						// int current_Num_variables=Num_variables;
+						// Num_variables=Num_variablesF[pexp->children[0]->lex_val];
+
 						text.push_back("call "+pexp->children[0]->lex_val);
-						symbol_table=symbol_table_T;
-						Num_variables=current_Num_variables;
-						text.push_back("add rsp ,"+to_string(8*ch));
+						//symbol_table=symbol_table_T;
+						// Num_variables=current_Num_variables;
+
 						text.push_back("mov "+registers[2]+" , rbp");
 						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 						text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+						text.push_back("add rsp ,"+to_string(8*ch));
 					}
 
 					else{
+						text.push_back("add rsp ,"+to_string(8*ch));
 						string err="Incorrect number of arguments passed to the function...";
 						yyerror(err);
 					}
@@ -1526,6 +1645,10 @@ void putx86inafile(){
 		MyFile<<text[i]<<endl;
 	}
 	MyFile<<endl<<endl;
+	 for(int i=0;i<printint.size();i++){
+		MyFile<<printint[i]<<endl;
+	} 
+	MyFile<<endl<<endl;
 	for(int i=0;i<data.size();i++){
 		MyFile<<data[i]<<endl;
 	}
@@ -1534,9 +1657,6 @@ void putx86inafile(){
 		MyFile<<bss[i]<<endl;
 	}
 	MyFile<<endl;
-	/* for(int i=0;i<printint.size();i++){
-		MyFile<<printint[i]<<endl;
-	} */
 	/* for(int i=0;i<printList.size();i++){
 		MyFile<<printList[i]<<endl;
 	}
@@ -1599,41 +1719,38 @@ void set_list_print_subroutine(){ // // prints the string in the "+registers[0]+
 	bss.push_back("digitSpace_LPos resb 8");
 }
 void set_integer_print_subroutine(){ // prints the string in the "+registers[0]+" register , custom made subroutine by me
-	printint.push_back("_print_R_A_X:");
-	printint.push_back("mov "+registers[2]+", digitSpace");
-	printint.push_back("mov "+registers[1]+", 10");
-	printint.push_back("mov ["+registers[2]+"], "+registers[1]+"");
-	printint.push_back("inc "+registers[2]+"");
-	printint.push_back("mov [digitSpacePos], "+registers[2]+"");
-	printint.push_back("_print_R_A_XLoop:");
-	printint.push_back("mov "+registers[3]+", 0");
-	printint.push_back("mov "+registers[1]+", 10");
-	printint.push_back("div "+registers[1]+"");
-	printint.push_back("push "+registers[0]+"");
-	printint.push_back("add "+registers[3]+", 48");
-	printint.push_back("mov "+registers[2]+", [digitSpacePos]");
-	printint.push_back("mov ["+registers[2]+"], dl");
-	printint.push_back("inc "+registers[2]+"");
-	printint.push_back("mov [digitSpacePos], "+registers[2]+"");
-	printint.push_back("pop "+registers[0]+"");
-	printint.push_back("cmp "+registers[0]+", 0");
-	printint.push_back("jne _print_R_A_XLoop");
-	printint.push_back("_print_R_A_XLoop2:");
-	printint.push_back("mov "+registers[2]+", [digitSpacePos]");
-	printint.push_back("mov "+registers[0]+", 1");
-	printint.push_back("mov rdi, 1");
-	printint.push_back("mov rsi, "+registers[2]+"");
-	printint.push_back("mov "+registers[3]+", 1");
-	printint.push_back("syscall");
-	printint.push_back("mov "+registers[2]+", [digitSpacePos]");
-	printint.push_back("dec "+registers[2]+"");
-	printint.push_back("mov [digitSpacePos], "+registers[2]+"");
-	printint.push_back("cmp "+registers[2]+", digitSpace");
-	printint.push_back("jge _print_R_A_XLoop2");
-	printint.push_back("ret");
-	bss.push_back("section .bss");
-	bss.push_back("digitSpace resb 100");
-	bss.push_back("digitSpacePos resb 8");
+	// printint.push_back("_print_R_A_X:");
+	// printint.push_back("mov "+registers[2]+", digitSpace");
+	// printint.push_back("mov "+registers[1]+", 10");
+	// printint.push_back("mov ["+registers[2]+"], "+registers[1]+"");
+	// printint.push_back("inc "+registers[2]+"");
+	// printint.push_back("mov [digitSpacePos], "+registers[2]+"");
+	// printint.push_back("_print_R_A_XLoop:");
+	// printint.push_back("mov "+registers[3]+", 0");
+	// printint.push_back("mov "+registers[1]+", 10");
+	// printint.push_back("div "+registers[1]+"");
+	// printint.push_back("push "+registers[0]+"");
+	// printint.push_back("add "+registers[3]+", 48");
+	// printint.push_back("mov "+registers[2]+", [digitSpacePos]");
+	// printint.push_back("mov ["+registers[2]+"], dl");
+	// printint.push_back("inc "+registers[2]+"");
+	// printint.push_back("mov [digitSpacePos], "+registers[2]+"");
+	// printint.push_back("pop "+registers[0]+"");
+	// printint.push_back("cmp "+registers[0]+", 0");
+	// printint.push_back("jne _print_R_A_XLoop");
+	// printint.push_back("_print_R_A_XLoop2:");
+	// printint.push_back("mov "+registers[2]+", [digitSpacePos]");
+	// printint.push_back("mov "+registers[0]+", 1");
+	// printint.push_back("mov rdi, 1");
+	// printint.push_back("mov rsi, "+registers[2]+"");
+	// printint.push_back("mov "+registers[3]+", 1");
+	// printint.push_back("syscall");
+	// printint.push_back("mov "+registers[2]+", [digitSpacePos]");
+	// printint.push_back("dec "+registers[2]+"");
+	// printint.push_back("mov [digitSpacePos], "+registers[2]+"");
+	// printint.push_back("cmp "+registers[2]+", digitSpace");
+	// printint.push_back("jge _print_R_A_XLoop2");
+	// printint.push_back("ret");
 }
 
 void set_scanner_integer(){
@@ -1641,6 +1758,8 @@ void set_scanner_integer(){
 	bss.push_back("scanned resb 16");
 	bss.push_back("temp : resq 1");
     bss.push_back("temq : resq 1");
+	bss.push_back("digitSpace resb 100");
+	bss.push_back("digitSpacePos resb 8");
 }
 
 void string_to_number_subroutine(){ // takes the string inside the scanned in bss and returns output inside "+registers[0]+" register , custom made subroutine by me

@@ -1,0 +1,11 @@
+# Matrix ( 2D Arrays of Integers)
+
+int _main(){
+    matrix m[2,3];
+
+    m=[11,12,13;17,18,19;];
+
+    print(m);       #   [11 12 13
+                    #   17 18 19]
+
+}

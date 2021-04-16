@@ -1,0 +1,14 @@
+int _main(){
+    int aa;
+    int bb;
+    aa=10;
+    bb=20;
+    int k;
+    k=_addtwo(aa,bb);
+    print(k);
+}
+int _addtwo(int a,int b){
+    int cc;
+    cc=a+b;
+    return cc;
+}

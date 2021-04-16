@@ -9,8 +9,8 @@
 	map<pair<string,string>, int> symbol_table;
 	map<string,int> list_size;
 	map<string,pair<int,int>> matrix;
+	vector<map<string,string>> all_scopes_variable_types;
 	map<string,string> variable_types;
-
 
 	vector<map<pair<string,string>, int>> all_scopes_symbol_tables;
 
@@ -177,6 +177,7 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								function_scope_definer[$2->lex_val]=tot_num_fun;
 																								scope=$2->lex_val;
 																								all_scopes_symbol_tables.push_back(symbol_table);
+																								all_scopes_variable_types.push_back(variable_types);
 																								
 																								vector<string> arguments;
 																								
@@ -203,6 +204,7 @@ FUNCTION_DECLARATION: VARIABLE_TYPE FUNCTION_IDENTIFIER_NT ONB PARAMS CNB COMPOU
 																								reverse(arguments.begin(),arguments.end());
 																								function_arguments[$2->lex_val]=arguments;
 																								symbol_table.clear();
+																								variable_types.clear();
 																							};
 
 
@@ -238,6 +240,7 @@ PARAM: VARIABLE_TYPE IDENTIFIER_NT{
 										yyerror("You can pass only Integer arguments...");
 									}
 									symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;
+									variable_types[$2->lex_val]=var_type;
 									vector<TreeNode*> v = {$1,$2};
 									$$ = new TreeNode("PARAM",v);
 								}
@@ -435,6 +438,7 @@ LOCAL_DECLARATION: VARIABLE_TYPE IDENTIFIER_NT SEMICOLON {
 															vector<TreeNode*> v = {$1, $2, $3};
                                         					$$ = new TreeNode("LOCAL_DECLARATION", v);
 															Num_variables++;
+															
 															if(variable_types.find($2->lex_val)==variable_types.end()){
 																string var_type=$1->children[0]->NodeName;
 																symbol_table[{$2->lex_val,var_type}]=Num_variables*-8;  // Store the variables in a Map.Key is the name of variable.Value is the address in stack.
@@ -674,6 +678,11 @@ PEXPRESSION: FUNCTION_IDENTIFIER_NT ONB PARAMS CNB{
 				vector<TreeNode*> v={$1,$2,$3,$4};
 				$$=new TreeNode("PEXPRESSION",v);
 			}
+			|IDENTIFIER_NT OSB IDENTIFIER_NT  CSB{
+				$2 = new TreeNode("OSB"); $4 = new TreeNode("CSB");
+				vector<TreeNode*> v={$1,$2,$3,$4};
+				$$=new TreeNode("PEXPRESSION",v);
+			}
 			| ONB EXPRESSION CNB {
 				$1 = new TreeNode("ONB"); $3 = new TreeNode("CNB");
                 vector<TreeNode*> v = {$1, $2, $3};
@@ -771,6 +780,11 @@ IDENTIFIER_NT: IDENTIFIER {
                             $$->lex_val = mytext;
 				}
 				|IDENTIFIER_NT OSB INTEGER_NT  CSB{
+							$2 = new TreeNode("OSB"); $4 = new TreeNode("CSB");
+							vector<TreeNode*> v={$1,$2,$3,$4};
+							$$=new TreeNode("IDENTIFIER_NT",v);
+				}
+				|IDENTIFIER_NT OSB IDENTIFIER_NT  CSB{
 							$2 = new TreeNode("OSB"); $4 = new TreeNode("CSB");
 							vector<TreeNode*> v={$1,$2,$3,$4};
 							$$=new TreeNode("IDENTIFIER_NT",v);

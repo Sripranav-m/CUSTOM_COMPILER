@@ -23,7 +23,7 @@ extern vector<map<pair<string,string>, int>> all_scopes_symbol_tables;
 extern map<string,int> function_scope_definer;
 extern map<string,vector<string>> function_arguments;
 extern map<string,int> Num_variablesF;
-
+extern vector<map<string,string>> all_scopes_variable_types;
 extern TreeNode* Abstract_Syntax_Tree;  // Pointer to the Absract Syntax Tree
 extern int Num_variables;
 extern map<string,pair<int,int>> matrix;

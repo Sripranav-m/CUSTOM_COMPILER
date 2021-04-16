@@ -1,0 +1,16 @@
+#  Subtracting Two lists 
+
+int _main(){
+    list p[5];              
+    p=[1;2;3;4;5;];
+
+    list q[5];              
+    q=[7;6;5;4;3;];
+
+    list r[5];
+
+    r=q-p;
+
+    print(r);           #   [6 4 2 0 -2]
+
+}

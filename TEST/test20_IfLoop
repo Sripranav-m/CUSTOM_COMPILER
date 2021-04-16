@@ -1,0 +1,17 @@
+# If loop
+
+int _main(){
+    int a;
+    a=20;
+    int b;
+    b=30;
+
+
+    if(a<b){
+        b=b+a;      # b=b+a=50;
+    }
+
+    print(b);   
+
+
+}

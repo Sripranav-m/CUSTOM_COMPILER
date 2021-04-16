@@ -1,0 +1,16 @@
+#  Adding Two lists 
+
+int _main(){
+    list p[5];              
+    p=[25;26;27;28;29;];
+
+    list q[5];              
+    q=[56;57;58;59;60;];
+
+    list r[5];
+
+    r=p+q;
+
+    print(r);           #   [81 83 85 87 89]
+
+}

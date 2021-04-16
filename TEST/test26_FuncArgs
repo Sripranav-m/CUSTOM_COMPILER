@@ -1,0 +1,22 @@
+int _main(){
+    int a;
+    int b;
+    a=17;
+    b=15;
+    int k;
+    k=_AddSubTwoTwo(a,a,b,b);
+    print(k);
+}
+int _AddSubTwoTwo(int m,int n,int o,int p){
+    print(m);
+    print(n);
+    print(o);
+    print(p);
+    int a;
+    a=m+n;
+    int b;
+    b=o+p;
+    a=a+b;
+    print(a);
+    return a;
+}

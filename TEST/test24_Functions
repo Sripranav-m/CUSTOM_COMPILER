@@ -1,0 +1,27 @@
+# Lists - Changing an element of particular index ( 1D Arrays of Integers)
+
+int _main(){
+    int i;
+    i=15;
+
+    print(i);
+
+    int j;
+
+    j=_myfun();
+
+    print(j);
+
+    int k;
+    k=25;
+
+    print(k);
+}
+int _myfun(){
+    int jj;
+    jj=20;
+
+    print(jj);
+
+    return jj;
+}

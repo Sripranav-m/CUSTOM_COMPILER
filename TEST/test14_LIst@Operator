@@ -1,0 +1,12 @@
+#  @ Operator list 
+
+int _main(){
+    list p[5];              
+    p=[1;2;3;4;5;];
+
+    int x;
+    x=@p;
+
+    print(x);
+
+}

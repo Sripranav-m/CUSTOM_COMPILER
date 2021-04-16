@@ -1,0 +1,17 @@
+# Subtract two Matrixes ( 2D Arrays of Integers)
+
+int _main(){
+    matrix m[2,3];
+    m=[11,12,13;17,18,19;];
+
+    matrix n[2,3];
+    n=[29,21,24;28,22,24;];
+
+    matrix p[2,3];
+
+    p=n-m;
+
+    print(p);       #   [18 9 11
+                    #   11 4 5]
+
+}
