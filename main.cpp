@@ -198,6 +198,22 @@ void CodeGenerator(TreeNode* root){
 			
             text.push_back("");
 		}
+		if(symbol_table.find({root->children[2]->lex_val,"CHARACTER"})!=symbol_table.end()){
+            text.push_back("");
+			string ident=to_string(symbol_table[{root->children[2]->lex_val,"CHARACTER"}]);
+			//cout<<ident<<"==\n";
+
+			text.push_back("mov "+registers[1]+" , rbp");
+			text.push_back("add "+registers[1]+" , "+ident);
+			
+				text.push_back("mov rsi , "+registers[1]+"");
+				text.push_back("mov rdi , chrf");
+				
+				text.push_back("mov "+registers[0]+" , 0");
+				text.push_back("call printf");
+			
+            text.push_back("");
+		}
 		else if(symbol_table.find({root->children[2]->lex_val,"FLOAT"})!=symbol_table.end()){
             text.push_back("");
 			text.push_back("mov "+registers[1]+" , rbp");
@@ -736,6 +752,11 @@ void CodeGenerator(TreeNode* root){
 				}
 				// text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
 				// text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+			}
+			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="CHARACTER_NT"){
+				text.push_back("mov "+registers[2]+" , rbp");
+				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"CHARACTER"}]));
+				text.push_back("mov byte[rcx] , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
 			}
 			else{
 				string err="Error Occured...";
@@ -1783,6 +1804,7 @@ void string_to_number_subroutine(){ // takes the string inside the scanned in bs
 void set_data_segment(){
 	data.push_back("section .data");
 	data.push_back("intf: db \"%ld\",10,0 ");
+	data.push_back("chrf: db \"%s\",10,0 ");
 	data.push_back("lisfs: dq \"[%ld \",32,0 ");
 	data.push_back("lisf: dq \"%ld \",32,0 ");
 	data.push_back("lisfe: db \"%ld]\",10,0 ");
