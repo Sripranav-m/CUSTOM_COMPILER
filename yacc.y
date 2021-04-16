@@ -669,6 +669,11 @@ PEXPRESSION: FUNCTION_IDENTIFIER_NT ONB PARAMS CNB{
 				vector<TreeNode*> v={$1};
 				$$=new TreeNode("PEXPRESSION",v);
 			}
+			|IDENTIFIER_NT OSB INTEGER_NT  CSB{
+				$2 = new TreeNode("OSB"); $4 = new TreeNode("CSB");
+				vector<TreeNode*> v={$1,$2,$3,$4};
+				$$=new TreeNode("PEXPRESSION",v);
+			}
 			| ONB EXPRESSION CNB {
 				$1 = new TreeNode("ONB"); $3 = new TreeNode("CNB");
                 vector<TreeNode*> v = {$1, $2, $3};

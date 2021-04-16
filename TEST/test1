@@ -1,0 +1,11 @@
+# Add Two Integers
+
+int _main(){
+    int a;
+    int b;
+    a=35;
+    b=45;
+    int c;
+    c=a+b;
+    print(c);    # a=80 ( 35+45 = 80 )
+}

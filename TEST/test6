@@ -1,0 +1,23 @@
+# Subtract Two Floats
+
+int _main(){
+    float a;
+    float b;
+    float c;
+
+
+
+    a=123.45;
+    b=456.78;
+
+    c=a-b;
+    print(c);    # c=-333.33 ( 123.45-456.78 = -333.33 )
+
+
+
+    a=45.5;
+    b=25.1;
+
+    c=a-b;
+    print(c);   # c=20.4 ( 45.5-25.1 = 20.4 )  
+}

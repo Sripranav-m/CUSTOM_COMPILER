@@ -270,10 +270,23 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("add rsp , -8");
 			text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
 			text.push_back("lea rsi , ["+registers[2]+"]");
-			text.push_back("mov rdi , intin");
+			text.push_back("mov rdi , intin__");
 			text.push_back("xor "+registers[0]+" , "+registers[0]+"");
 			text.push_back("call scanf");
 			text.push_back("add rsp , 8");
+
+
+			// text.push_back("mov "+registers[0]+" , 0");
+			// text.push_back("mov rdi , 0");
+			// text.push_back("mov rsi , scanned");
+			// text.push_back("mov "+registers[3]+" , 16");
+			// text.push_back("syscall");
+			// string_to_number_subroutine();
+			// text.push_back("mov "+registers[2]+" , rbp");
+			// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
+			// text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+			// data.push_back("intin__: db \"%ld\",0");
+		
 		}
 		else if(variable_types[root->children[2]->children[0]->lex_val]=="FLOAT"){
 			text.push_back("mov "+registers[2]+" , rbp");
@@ -287,17 +300,6 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("fstp dword["+registers[2]+"]");
 			text.push_back("add rsp , 8");
 		}
-		// text.push_back("mov "+registers[0]+" , 0");
-		// text.push_back("mov rdi , 0");
-		// text.push_back("mov rsi , scanned");
-		// text.push_back("mov "+registers[3]+" , 16");
-		// text.push_back("syscall");
-		// string_to_number_subroutine();
-		// text.push_back("mov "+registers[2]+" , rbp");
-		// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
-		// text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-	// 	data.push_back("intin: db \"%ld\",0");
-	// data.push_back("integer:times 4 db 0");
 	}
 	else if(root->NodeName=="RETURN_STATEMENT"){
 		if(root->children[1]->NodeName=="IDENTIFIER_NT"){
@@ -321,7 +323,6 @@ void CodeGenerator(TreeNode* root){
 
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-				
 		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
 			if(variable_types[root->children[0]->children[0]->lex_val]=="INT"){
 				CodeGenerator(root->children[0]->children[1]);
@@ -334,13 +335,88 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
-			////cout<<root->children[0]->children[1]->children[0]->children[0]->NodeName<<endl;
-			if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
-				//cout<<"INTEGER_NT\n";
-				text.push_back("mov "+registers[2]+" , rbp");
-				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-				text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
-				text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+
+
+			//IF WE ARE ASSIGNING TO LIST ELEMENT
+			if(root->children[0]->children[1]->children[0]->children.size()==4 && root->children[0]->children[1]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
+				// LIST ELEMENT EQUALS  LIST ELEMENT
+				TreeNode* identt=root->children[0]->children[1]->children[0]->children[0];
+				int sizz=list_size[identt->lex_val];
+				int reqq_poss=stoi(root->children[0]->children[1]->children[0]->children[2]->lex_val);
+				//cout<<identt->lex_val<<" "<<sizz<<" "<<reqq_poss<<endl;
+				if(reqq_poss>=0 && reqq_poss<sizz){
+					reqq_poss=sizz-reqq_poss-1;
+					//cout<<reqq_poss;
+					text.push_back("mov "+registers[2]+" , rbp");
+					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{identt->lex_val,"LIST"}]));
+					text.push_back("add "+registers[2]+" , "+to_string((reqq_poss)*8));
+					text.push_back("mov "+registers[0]+" , ["+registers[2]+"]");
+				}
+				else{
+					yyerror("Accessing Incorrect List Index...");
+				}
+				
+				if(root->children[0]->children[0]->children.size()==4){
+					TreeNode* ident=root->children[0]->children[0]->children[0];
+					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+					int siz=list_size[ident->lex_val];
+					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+						if(req_pos>=0 && req_pos<siz){
+							req_pos=siz-req_pos-1;
+							text.push_back("mov "+registers[2]+" , rbp");
+							text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+							text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
+							text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+						}
+						else{
+							//
+						}
+					}
+					else{
+						//
+					}
+				}
+				// LIST ELEMENT EQUALS  IDENTIFIER
+				else{
+					text.push_back("mov "+registers[2]+" , rbp");
+					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+					text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+				}
+
+			}
+
+
+			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
+				// IF WE are accessing a particular element from list
+				if(root->children[0]->children[0]->children.size()==4){
+					TreeNode* ident=root->children[0]->children[0]->children[0];
+					int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+					int siz=list_size[ident->lex_val];
+					//cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+					if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+						if(req_pos>=0 && req_pos<siz){
+							req_pos=siz-req_pos-1;
+							text.push_back("mov "+registers[2]+" , rbp");
+							text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+							text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
+							text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+							text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+						}
+						else{
+							//
+						}
+					}
+					else{
+						//
+					}
+				}
+				else{
+					text.push_back("mov "+registers[2]+" , rbp");
+					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+					text.push_back("mov "+registers[0]+" , "+root->children[0]->children[1]->children[0]->children[0]->lex_val);
+					text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+				}
 			}	
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FLOAT_NT"){
 				//cout<<"FLOAT_NT\n";
@@ -352,11 +428,38 @@ void CodeGenerator(TreeNode* root){
 				//cout<<"IDENTIFIER_NT\n";
 				string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->lex_val];
 				if(node_type=="INT"){
-					text.push_back("mov "+registers[2]+" , rbp");
-					text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
-					string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]);
-					int loaded_into=load_into_register(ident);
-					text.push_back("mov ["+registers[2]+"] , "+registers[loaded_into]+" ");
+					// IF WE are accessing a particular element from list
+					if(root->children[0]->children[0]->children.size()==4){
+						TreeNode* ident=root->children[0]->children[0]->children[0];
+						int req_pos=stoi(root->children[0]->children[0]->children[2]->lex_val);
+						int siz=list_size[ident->lex_val];
+						cout<<symbol_table[{ident->lex_val,"LIST"}]<<endl;
+						if(root->children[0]->children[0]->children[2]->NodeName=="INTEGER_NT"){
+							if(req_pos>=0 && req_pos<siz){
+								req_pos=siz-req_pos-1;
+								text.push_back("mov "+registers[2]+" , rbp");
+								text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{ident->lex_val,"LIST"}]));
+								text.push_back("add "+registers[2]+" , "+to_string((req_pos)*8));
+								text.push_back("mov "+registers[3]+" , rbp");
+								text.push_back("add "+registers[3]+" , "+to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]));
+								text.push_back("mov "+registers[0]+" , ["+registers[3]+"]");
+								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+							}
+							else{
+								//
+							}
+						}
+						else{
+							//
+						}
+					}
+					else{
+						text.push_back("mov "+registers[2]+" , rbp");
+						text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
+						string ident =to_string(symbol_table[{root->children[0]->children[1]->children[0]->children[0]->lex_val,"INT"}]);
+						int loaded_into=load_into_register(ident);
+						text.push_back("mov ["+registers[2]+"] , "+registers[loaded_into]+" ");
+					}
 				}
 				else if(node_type=="LIST"){
 					TreeNode* right_list=root->children[0]->children[1]->children[0]->children[0];
@@ -1316,6 +1419,9 @@ void CodeGenerator(TreeNode* root){
 				else if(typ=="MULTIPLY"){
 					text.push_back("mul "+registers[1]+"");
 				}
+				// else if(typ=="DIVIDE"){
+				// 	text.push_back("div "+registers[1]+"");
+				// }
 				else if(typ=="BAND"){
 					text.push_back("and "+registers[0]+" , "+registers[1]+"");
 				}

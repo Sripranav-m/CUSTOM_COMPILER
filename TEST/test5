@@ -1,0 +1,13 @@
+# Add Two Floats
+
+int _main(){
+    float a;
+    float b;
+    float c;
+    a=123.45;
+    b=456.78;
+
+    c=a+b;
+    print(c);    # c=580.23 ( 123.45+456.78 = 580.23 )
+    
+}

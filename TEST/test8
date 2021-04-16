@@ -1,0 +1,25 @@
+# Divide Two Floats
+
+int _main(){
+    float a;
+    float b;
+    float c;
+
+
+
+    a=-4.5;
+    b=1.5;
+
+    c=a/b;
+    print(c);    # c=-3.00 ( -4.5/1.5 = -3.0 )
+
+
+
+
+    a=13.5;
+    b=1.5;
+
+    c=a/b;
+    print(c);   # c=9.00 ( 13.5/1.5 = 9.0 )
+  
+}

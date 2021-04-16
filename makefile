@@ -1,6 +1,6 @@
 a.out: y.tab.cpp lex.yy.c
 	g++ -w lex.yy.c y.tab.cpp main.cpp registers.cpp
-	@echo "Run the Test Codes as : ./a.out < [TEST_FILES/testx]"
+	@echo "Run the Test Codes as : ./a.out < [TEST/testx]"
 	@echo "And then, to run asm code, do : make runnasm"
 
 y.tab.cpp: yacc.y
