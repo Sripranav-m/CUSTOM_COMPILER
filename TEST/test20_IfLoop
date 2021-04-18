@@ -13,5 +13,21 @@ int _main(){
 
     print(b);   
 
+    int c;
+
+    c=a;
+
+    if(c<b && a<b){
+        b=1;
+        print(c);
+    }
+
+    print(b);
+
+    if(c==a ||  b==1){
+        b=0;
+        print(b);
+    }
+
 
 }

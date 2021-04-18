@@ -75,10 +75,10 @@ void CodeGenerator(TreeNode* root){
 			Num_variables=Num_variablesF["_main"];
 			variable_types=all_scopes_variable_types[function_scope_definer[function_scope]];
 			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
-			for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
-				cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
-			}
-			cout<<"==================================\n";
+			// for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
+			// 	cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
+			// }
+			// //cout<<"==================================\n";
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -96,10 +96,10 @@ void CodeGenerator(TreeNode* root){
 			Num_variables=Num_variablesF[fun_name];
 			symbol_table=all_scopes_symbol_tables[function_scope_definer[function_scope]];
 			variable_types=all_scopes_variable_types[function_scope_definer[function_scope]];
-			for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
-				cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
-			}
-			cout<<"==================================\n";
+			// for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
+			// 	cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
+			// }
+			// cout<<"==================================\n";
 
 			vector<string> arguments;
 
@@ -306,7 +306,7 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("add rsp , -8");
 			text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
 			text.push_back("lea rsi , ["+registers[2]+"]");
-			text.push_back("mov rdi , intin__");
+			text.push_back("mov rdi , intin");
 			text.push_back("xor "+registers[0]+" , "+registers[0]+"");
 			text.push_back("call scanf");
 			text.push_back("add rsp , 8");
