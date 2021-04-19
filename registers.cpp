@@ -13,11 +13,13 @@ int u8=0;
 int u9=0;
 int u10=0;
 int u11=0;
+
+vector<int> u(12,0);
 int time_lru=0;
 vector<string> regs_replacement;
 
 int least_recently_used(){
-    return min(u4,min(u5,min(u6,min(u7,min(u8,min(u9,min(u10,u11)))))));
+    return min(u[4],min(u[5],min(u[6],min(u[7],min(u[8],min(u[9],min(u[10],u[11])))))));
 }
 
 // int least_recently_used(){
@@ -29,148 +31,75 @@ int load_into_register(string ident){ // load into register. If it is already th
 	for(int i=4;i<=11;i++){
 		if(regs_replacement[i]==ident){
             //cout<<time_lru<<" "<<i<<" "<<regs_replacement[i]<<"$"<<endl;
-			if(i==4){
-                u4=time_lru;
-                return i;
-            }
-			else if(i==5){
-                u5=time_lru;
-                return i;
-            }
-			else if(i==6){
-                u6=time_lru;
-                return i;
-            }
-			else if(i==7){
-                u7=time_lru;
-                return i;
-            }
-			else if(i==8){
-                u8=time_lru;
-                return i;
-            }
-			else if(i==9){
-                u9=time_lru;
-                return i;
-            }
-			else if(i==10){
-                u10=time_lru;
-                return i;
-            }
-			else if(i==11){
-                u11=time_lru;
-                return i;
-            }
-            else {
-                break;
-            }
+			u[i]=time_lru;
+			return i;
 		}
 	}
-	if(u4==0 || u5==0 || u6==0 || u7==0 || u8==0 || u9==0 || u10==0 || u11==0){
+	if(u[4]==0 || u[5]==0 || u[6]==0 || u[7]==0 || u[8]==0 || u[9]==0 || u[10]==0 || u[11]==0){
 		text.push_back("mov "+registers[3]+" , rbp");
 		text.push_back("add "+registers[3]+" , "+ident);
-		if(u4==0){
-			u4=time_lru;
-			text.push_back("mov "+registers[4]+", ["+registers[3]+"]");
-			regs_replacement[4]=ident;
-			return 4;
+		int i,j;
+		for(int j=4;j<12;j++){
+			if(u[j]==0){
+				i=j;
+				break;
+			}
 		}
-		else if(u5==0){
-			u5=time_lru;
-			text.push_back("mov "+registers[5]+", ["+registers[3]+"]");
-			regs_replacement[5]=ident;
-			return 5;
-		}
-		else if(u6==0){
-			u6=time_lru;
-			text.push_back("mov "+registers[6]+", ["+registers[3]+"]");
-			regs_replacement[6]=ident;
-			return 6;
-		}
-		else if(u7==0){
-			u7=time_lru;
-			text.push_back("mov "+registers[7]+", ["+registers[3]+"]");
-			regs_replacement[7]=ident;
-			return 7;
-		}
-		else if(u8==0){
-			u8=time_lru;
-			text.push_back("mov "+registers[8]+", ["+registers[3]+"]");
-			regs_replacement[8]=ident;
-			return 8;
-		}
-		else if(u9==0){
-			u9=time_lru;
-			text.push_back("mov "+registers[9]+", ["+registers[3]+"]");
-			regs_replacement[9]=ident;
-			return 9;
-		}
-		else if(u10==0){
-			u10=time_lru;
-			text.push_back("mov "+registers[10]+", ["+registers[3]+"]");
-			regs_replacement[10]=ident;
-			return 10;
-		}
-		else if(u11==0){
-			u11=time_lru;
-			text.push_back("mov "+registers[11]+", ["+registers[3]+"]");
-			regs_replacement[11]=ident;
-			return 11;
-		}
-		else{
-			//
-		}
+		u[i]=time_lru;
+		text.push_back("mov "+registers[i]+", ["+registers[3]+"]");
+		regs_replacement[i]=ident;
+		return i;
 	}
 	else{
 		text.push_back("mov "+registers[2]+" , rbp");
 		text.push_back("add "+registers[2]+" , "+ident);
-        if(u4==least_recently_used()){
-			u4=time_lru;
-			text.push_back("mov "+registers[4]+", ["+registers[2]+"]");
-			regs_replacement[4]=ident;
-			return 4;
+		for(int i=4;i<12;i++){
+			if(u[i]==least_recently_used()){
+				u[i]=time_lru;
+				text.push_back("mov "+registers[i]+", ["+registers[2]+"]");
+				regs_replacement[i]=ident;
+				return i;
+			}
 		}
-        else if(u5==least_recently_used()){
-			u5=time_lru;
-			text.push_back("mov "+registers[5]+", ["+registers[3]+"]");
-			regs_replacement[5]=ident;
-			return 5;
-		}	
-        else if(u6==least_recently_used()){
-			u6=time_lru;
-			text.push_back("mov "+registers[6]+", ["+registers[3]+"]");
-			regs_replacement[6]=ident;
-			return 6;
+	}
+}
+
+int store_into_register(string ident){
+	time_lru++;
+	for(int i=4;i<=11;i++){
+		if(regs_replacement[i]==ident){
+            text.push_back("mov "+registers[2]+" , rbp");
+			text.push_back("add "+registers[2]+" , "+ident);
+			text.push_back("mov "+registers[i]+", ["+registers[2]+"]");
+			u[i]=time_lru;
+			return i;
 		}
-        else if(u7==least_recently_used()){
-			u7=time_lru;
-			text.push_back("mov "+registers[7]+", ["+registers[3]+"]");
-			regs_replacement[7]=ident;
-			return 7;
+	}
+	if(u[4]==0 || u[5]==0 || u[6]==0 || u[7]==0 || u[8]==0 || u[9]==0 || u[10]==0 || u[11]==0){
+		text.push_back("mov "+registers[3]+" , rbp");
+		text.push_back("add "+registers[3]+" , "+ident);
+		int i,j;
+		for(int j=4;j<12;j++){
+			if(u[j]==0){
+				i=j;
+				break;
+			}
 		}
-        else if(u8==least_recently_used()){
-			u8=time_lru;
-			text.push_back("mov "+registers[8]+", ["+registers[3]+"]");
-			regs_replacement[8]=ident;
-			return 8;
-		}
-        else if(u9==least_recently_used()){
-			u9=time_lru;
-			text.push_back("mov "+registers[9]+", ["+registers[3]+"]");
-			regs_replacement[9]=ident;
-			return 9;
-		}
-        else if(u10==least_recently_used()){
-			u10=time_lru;
-			text.push_back("mov "+registers[10]+", ["+registers[3]+"]");
-			regs_replacement[10]=ident;
-			return 10;
-		}
-        else{
-			u11=time_lru;
-			text.push_back("mov "+registers[11]+", ["+registers[3]+"]");
-			regs_replacement[11]=ident;
-			return 11;
+		u[i]=time_lru;
+		text.push_back("mov "+registers[i]+", ["+registers[3]+"]");
+		regs_replacement[i]=ident;
+		return i;
+	}
+	else{
+		text.push_back("mov "+registers[2]+" , rbp");
+		text.push_back("add "+registers[2]+" , "+ident);
+		for(int i=4;i<12;i++){
+			if(u[i]==least_recently_used()){
+				u[i]=time_lru;
+				text.push_back("mov "+registers[i]+", ["+registers[2]+"]");
+				regs_replacement[i]=ident;
+				return i;
+			}
 		}
 	}
 }

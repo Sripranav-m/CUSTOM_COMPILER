@@ -7,7 +7,7 @@ int _main(){
 
     int z;
 
-    z=@@m;
+    z=@@m;      # Prints Y dimension of the matrix
 
     print(z);
 }

@@ -39,7 +39,8 @@ extern vector<string> printList;
 extern vector<string> printNewLine;
 extern int count_loops;
 extern int num_scans;
-
+extern vector<int> u;
+extern int store_into_register(string ident);
 
 
 extern vector<string> registers;

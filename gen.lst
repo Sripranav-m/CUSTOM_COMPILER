@@ -1,0 +1,82 @@
+     1                                  section	.text
+     2                                  global main 
+     3                                  main:
+     4 00000000 55                      push rbp
+     5 00000001 4889E5                  mov rbp , rsp
+     6 00000004 4883EC08                sub rsp , 8
+     7 00000008 4883EC08                sub rsp , 8
+     8 0000000C 4889E9                  mov rcx , rbp
+     9 0000000F 4883C1F8                add rcx , -8
+    10 00000013 B823000000              mov rax , 35
+    11 00000018 488901                  mov [rcx] , rax
+    12 0000001B 4889E9                  mov rcx , rbp
+    13 0000001E 4883C1F0                add rcx , -16
+    14 00000022 B82D000000              mov rax , 45
+    15 00000027 488901                  mov [rcx] , rax
+    16 0000002A 4883EC08                sub rsp , 8
+    17 0000002E 4889EA                  mov rdx , rbp
+    18 00000031 4883C2F8                add rdx , -8
+    19 00000035 4C8B02                  mov r8, [rdx]
+    20 00000038 4C89C0                  mov rax ,r8
+    21 0000003B 4889EA                  mov rdx , rbp
+    22 0000003E 4883C2F0                add rdx , -16
+    23 00000042 4C8B0A                  mov r9, [rdx]
+    24 00000045 4C89CB                  mov rbx ,r9
+    25 00000048 4801D8                  add rax , rbx
+    26 0000004B 4889E9                  mov rcx , rbp
+    27 0000004E 4883C1E8                add rcx , -24
+    28 00000052 488901                  mov [rcx] , rax
+    29 00000055 4889EA                  mov rdx , rbp
+    30 00000058 4883C2E8                add rdx , -24
+    31 0000005C 4C8B12                  mov r10, [rdx]
+    32 0000005F 4C89C0                  mov rax ,r8
+    33 00000062 4C89CB                  mov rbx ,r9
+    34 00000065 4829D8                  sub rax , rbx
+    35 00000068 4889E9                  mov rcx , rbp
+    36 0000006B 4883C1E8                add rcx , -24
+    37 0000006F 488901                  mov [rcx] , rax
+    38 00000072 4889E9                  mov rcx , rbp
+    39 00000075 4883C1E8                add rcx , -24
+    40 00000079 4C8B11                  mov r10, [rcx]
+    41 0000007C 4C89C0                  mov rax ,r8
+    42 0000007F 4C89CB                  mov rbx ,r9
+    43 00000082 48F7E3                  mul rbx
+    44 00000085 4889E9                  mov rcx , rbp
+    45 00000088 4883C1E8                add rcx , -24
+    46 0000008C 488901                  mov [rcx] , rax
+    47 0000008F 4889E9                  mov rcx , rbp
+    48 00000092 4883C1E8                add rcx , -24
+    49 00000096 4C8B11                  mov r10, [rcx]
+    50 00000099 4889EC                  mov  rsp, rbp
+    51 0000009C 5D                      pop  rbp
+    52 0000009D B83C000000              mov rax , 60
+    53 000000A2 BF00000000              mov rdi , 0
+    54 000000A7 0F05                    syscall
+    55                                  
+    56                                  
+    57                                  
+    58                                  
+    59                                  extern printf , scanf
+    60                                  section .data
+    61 00000000 256C640A00              intf: db "%ld",10,0 
+    62 00000005 25730A00                chrf: db "%s",10,0 
+    63 00000009 5B256C642000000020-     lisfs: dq "[%ld ",32,0 
+    63 00000012 000000000000000000-
+    63 0000001B 000000000000       
+    64 00000021 256C64200000000020-     lisf: dq "%ld ",32,0 
+    64 0000002A 000000000000000000-
+    64 00000033 000000000000       
+    65 00000039 256C645D0A00            lisfe: db "%ld]",10,0 
+    66 0000003F 256C660A00              fmtf: db "%lf",10,0 
+    67 00000044 256C6400                intin: db "%ld",0
+    68 00000048 256C6600                floatin: db "%lf",0
+    69 0000004C 00<rept>                integer:times 4 db 0
+    70                                  
+    71                                  
+    72                                  section .bss
+    73 00000000 <res 00000010>          scanned resb 16
+    74 00000010 <res 00000008>          temp : resq 1
+    75 00000018 <res 00000008>          temq : resq 1
+    76 00000020 <res 00000064>          digitSpace resb 100
+    77 00000084 <res 00000008>          digitSpacePos resb 8
+    78                                  

@@ -4,9 +4,9 @@ int _main(){
 
     int siz;
     
-    list pran[10];
+    list pran[7];
 
-    pran=[10;9;8;7;6;5;4;3;2;1;];
+    pran=[19;35;4;78;46;23;5;];
 
     siz=@pran;
 

@@ -816,6 +816,8 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov "+registers[2]+" , rbp");
 				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 				text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+				int k;
+				k=store_into_register(to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
 			}
 			else if(node_type2=="FLOAT_NT" || node_type=="FLOAT"){
 				CodeGenerator(root->children[0]->children[1]);
@@ -1526,8 +1528,6 @@ void CodeGenerator(TreeNode* root){
 		else if(node_type=="INT" || node_ident=="INTEGER_NT"){  // NUMBER OR INT IDENTIFIER
 			if(root->children[0]->children[0]->NodeName=="PEXPRESSION"){
 				if(root->children[0]->children[0]->children[0]->NodeName=="IDENTIFIER_NT"){
-					
-
 					string ident =to_string(symbol_table[{root->children[0]->children[0]->children[0]->lex_val,"INT"}]);
 					int loaded_into=load_into_register(ident);
 					text.push_back("mov "+registers[0]+" ,"+registers[loaded_into]);
@@ -1650,12 +1650,9 @@ void CodeGenerator(TreeNode* root){
 		for(int i=0;i<=11;i++){
 			regs_replacement[i]="";
 		}
-		u0=0;u1=0;
-		u2=0;u3=0;
-		u4=0;u5=0;
-		u6=0;u7=0;
-		u8=0;u9=0;
-		u10=0;u11=0;
+		for(int i=0;i<12;i++){
+			u[i]=0;
+		}
 		check_reg=0;
 	}
 }
