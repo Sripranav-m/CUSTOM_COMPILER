@@ -17,9 +17,10 @@ string function_scope="";
 
 int x,y;
 int check_reg=0;
-
+// This function is the main codegenerator function
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
+		//dotraversal(root);
 		registers.push_back("rax");
 		registers.push_back("rbx");
 		registers.push_back("rcx");
@@ -302,26 +303,26 @@ void CodeGenerator(TreeNode* root){
 		check_reg=-1;
 		num_scans++;
 		if(variable_types[root->children[2]->children[0]->lex_val]=="INT"){
-			text.push_back("mov "+registers[2]+" , rbp");
-			text.push_back("add rsp , -8");
-			text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
-			text.push_back("lea rsi , ["+registers[2]+"]");
-			text.push_back("mov rdi , intin");
-			text.push_back("xor "+registers[0]+" , "+registers[0]+"");
-			text.push_back("call scanf");
-			text.push_back("add rsp , 8");
-
-
-			// text.push_back("mov "+registers[0]+" , 0");
-			// text.push_back("mov rdi , 0");
-			// text.push_back("mov rsi , scanned");
-			// text.push_back("mov "+registers[3]+" , 16");
-			// text.push_back("syscall");
-			// string_to_number_subroutine();
 			// text.push_back("mov "+registers[2]+" , rbp");
+			// text.push_back("add rsp , -8");
 			// text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
-			// text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
-			// data.push_back("intin__: db \"%ld\",0");
+			// text.push_back("lea rsi , ["+registers[2]+"]");
+			// text.push_back("mov rdi , intin");
+			// text.push_back("xor "+registers[0]+" , "+registers[0]+"");
+			// text.push_back("call scanf");
+			// text.push_back("add rsp , 8");
+
+
+			text.push_back("mov "+registers[0]+" , 0");
+			text.push_back("mov rdi , 0");
+			text.push_back("mov rsi , scanned");
+			text.push_back("mov "+registers[3]+" , 16");
+			text.push_back("syscall");
+			string_to_number_subroutine();
+			text.push_back("mov "+registers[2]+" , rbp");
+			text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[2]->children[0]->lex_val,"INT"}]));
+			text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
+			//data.push_back("intin__: db \"%ld\",0");
 		
 		}
 		else if(variable_types[root->children[2]->children[0]->lex_val]=="FLOAT"){
@@ -368,7 +369,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 			}
 			else{
-				//
+				yyerror("Size expression can only be assigned to an integer as it is of integer type...");
 			}
 		}
 		else if(root->children[0]->children[1]->children[0]->NodeName=="PEXPRESSION"){
@@ -455,7 +456,7 @@ void CodeGenerator(TreeNode* root){
 								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 							}
 							else{
-								//
+								yyerror("Invalid Index provided to the list...");
 							}
 						}
 						else{
@@ -497,7 +498,7 @@ void CodeGenerator(TreeNode* root){
 							text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 						}
 						else{
-							//
+							yyerror("Invalid Index provided to the list...");
 						}
 					}
 					else if(root->children[0]->children[0]->children[2]->NodeName=="IDENTIFIER_NT"){
@@ -580,7 +581,7 @@ void CodeGenerator(TreeNode* root){
 								text.push_back("mov ["+registers[2]+"] , "+registers[0]+"");
 							}
 							else{
-								//
+								yyerror("Invalid Index provided to the list...");
 							}
 						}
 						
@@ -614,7 +615,7 @@ void CodeGenerator(TreeNode* root){
 						}
 					}
 					else{
-						//
+						yyerror("Both the lists size should be same...");
 					}
 				}
 				else{
@@ -1352,7 +1353,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov "+registers[0]+" , "+to_string(siz));
 			}
 			else{
-				// 
+				yyerror("@@ OPeration should be performed only on Lists(1D) or Matrices(2D)...");
 			}
 			return;
 		}
@@ -1363,7 +1364,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("mov "+registers[0]+" , "+to_string(siz));
 			}
 			else{
-				//
+				yyerror("@@ OPeration should be performed only on Matrices...");
 			}
 			return;
 		}
@@ -1406,7 +1407,7 @@ void CodeGenerator(TreeNode* root){
 							}
 						}
 						else{
-							// error
+							yyerror("Operations Should be done on lists of same dimensions.");
 						}
 					}
 					if(typ=="MINUS"){		
@@ -1438,7 +1439,7 @@ void CodeGenerator(TreeNode* root){
 							}
 						}
 						else{
-							// error
+							yyerror("Operations Should be done on lists of same dimensions. ");
 						}
 					}
 				}
@@ -1488,6 +1489,9 @@ void CodeGenerator(TreeNode* root){
 								number_of_times--;
 							}
 						}
+						else{
+							yyerror("Operations Should be done on matrices of same dimensions. ");
+						}
 					}
 					else if(typ=="MINUS"){		
 						int top_of_stack=Num_variables;
@@ -1520,6 +1524,9 @@ void CodeGenerator(TreeNode* root){
 								top_expanding-=8;
 								number_of_times--;
 							}
+						}
+						else{
+							yyerror("Operations Should be done on matrices of same dimensions. ");
 						}
 					}
 				}
@@ -1559,9 +1566,9 @@ void CodeGenerator(TreeNode* root){
 				else if(typ=="MULTIPLY"){
 					text.push_back("mul "+registers[1]+"");
 				}
-				// else if(typ=="DIVIDE"){
-				// 	text.push_back("div "+registers[1]+"");
-				// }
+				else if(typ=="DIVIDE"){
+					text.push_back("div "+registers[1]+"");
+				}
 				else if(typ=="BAND"){
 					text.push_back("and "+registers[0]+" , "+registers[1]+"");
 				}
@@ -1686,8 +1693,8 @@ void putx86inafile(){
 
 
 void yyerror(string temp){
-	cout<<endl<<temp<<endl;
-	cout<<"Parsing Terminated...Syntax Error:("<<endl;
+	cout<<endl<<temp<<endl<<endl;;
+	cout<<"Parsing Terminated...Syntax Error:("<<endl<<endl;;
 	exit(0);
 }
 void set_go_to_new_line_subroutine(){

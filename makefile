@@ -1,9 +1,10 @@
 a.out: y.tab.cpp lex.yy.c
 	g++ -w lex.yy.c y.tab.cpp main.cpp registers.cpp
-	@echo "Run the Test Codes as : ./a.out < [TEST/testx]"
 	@echo "Each Test File has a naming format"
 	@echo "PLease Look TEST folder to check the test files names"
+	@echo "Run the Test Codes as : ./a.out < [TEST/testx]"
 	@echo "And then, to run asm code, do : make runnasm"
+	@echo "To run all the test cases at once , do : make autorun"
 
 y.tab.cpp: yacc.y
 	yacc -Wno -v -d -g yacc.y -o y.tab.cpp
@@ -19,3 +20,6 @@ runnasm:
 	nasm -f elf64 -l gen.lst gen.asm
 	gcc -m64 -o gen gen.o -no-pie
 	./gen
+
+autorun:
+	python3 test_script.py 

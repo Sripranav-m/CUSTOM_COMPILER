@@ -1,0 +1,37 @@
+# Check if a list is Palindrome 
+
+int _main(){
+
+    int siz;
+    
+    list palin[9];
+
+    palin=[1;2;3;4;5;4;3;2;1;];
+    #palin=[11;2;3;4;5;4;3;2;1;];
+
+    int ispalin;
+
+    ispalin=1;
+
+    int i;
+    int t;
+    int m;
+    int n;
+
+    siz=@palin;
+
+    for(i=0;i<siz;i++;){
+        t=siz;
+        t=t- 1;
+        t=t- i;
+        m=palin[i];
+        n=palin[t];
+        if(m!=n){
+            ispalin=0;
+        }
+    }
+    print(palin);
+    print(ispalin);
+
+
+}

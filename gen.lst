@@ -1,0 +1,303 @@
+     1                                  section	.text
+     2                                  global main 
+     3                                  main:
+     4 00000000 55                      push rbp
+     5 00000001 4889E5                  mov rbp , rsp
+     6 00000004 4883EC08                sub rsp , 8
+     7 00000008 4883EC38                sub rsp , 56
+     8 0000000C 4889E9                  mov rcx , rbp
+     9 0000000F 4883C1C0                add rcx , -64
+    10 00000013 B805000000              mov rax , 5
+    11 00000018 488901                  mov [rcx] , rax
+    12 0000001B 4883C108                add rcx , 8
+    13 0000001F B817000000              mov rax , 23
+    14 00000024 488901                  mov [rcx] , rax
+    15 00000027 4883C108                add rcx , 8
+    16 0000002B B82E000000              mov rax , 46
+    17 00000030 488901                  mov [rcx] , rax
+    18 00000033 4883C108                add rcx , 8
+    19 00000037 B84E000000              mov rax , 78
+    20 0000003C 488901                  mov [rcx] , rax
+    21 0000003F 4883C108                add rcx , 8
+    22 00000043 B804000000              mov rax , 4
+    23 00000048 488901                  mov [rcx] , rax
+    24 0000004B 4883C108                add rcx , 8
+    25 0000004F B823000000              mov rax , 35
+    26 00000054 488901                  mov [rcx] , rax
+    27 00000057 4883C108                add rcx , 8
+    28 0000005B B813000000              mov rax , 19
+    29 00000060 488901                  mov [rcx] , rax
+    30 00000063 B807000000              mov rax , 7
+    31 00000068 4889E9                  mov rcx , rbp
+    32 0000006B 4883C1F8                add rcx , -8
+    33 0000006F 488901                  mov [rcx] , rax
+    34 00000072 4883EC08                sub rsp , 8
+    35 00000076 4883EC08                sub rsp , 8
+    36 0000007A 4883EC08                sub rsp , 8
+    37 0000007E 4883EC08                sub rsp , 8
+    38 00000082 4883EC08                sub rsp , 8
+    39 00000086 4883EC08                sub rsp , 8
+    40 0000008A 4889E9                  mov rcx , rbp
+    41 0000008D 4883C1F8                add rcx , -8
+    42 00000091 488B01                  mov rax , [rcx]
+    43 00000094 4883C0FF                add rax , -1
+    44 00000098 488901                  mov [rcx] , rax
+    45 0000009B 4889E9                  mov rcx , rbp
+    46 0000009E 4883C1B8                add rcx , -72
+    47 000000A2 B800000000              mov rax , 0
+    48 000000A7 488901                  mov [rcx] , rax
+    49                                  LabelFor1:
+    50 000000AA 4889EA                  mov rdx , rbp
+    51 000000AD 4883C2B8                add rdx , -72
+    52 000000B1 4C8B02                  mov r8, [rdx]
+    53 000000B4 4C89C0                  mov rax ,r8
+    54 000000B7 4889EA                  mov rdx , rbp
+    55 000000BA 4883C2F8                add rdx , -8
+    56 000000BE 4C8B0A                  mov r9, [rdx]
+    57 000000C1 4C89CB                  mov rbx ,r9
+    58 000000C4 4839D8                  cmp rax , rbx
+    59 000000C7 0F8D06020000            jge EndFor1
+    60 000000CD 4C89C8                  mov rax ,r9
+    61 000000D0 4C89C3                  mov rbx ,r8
+    62 000000D3 4829D8                  sub rax , rbx
+    63 000000D6 4889E9                  mov rcx , rbp
+    64 000000D9 4883C1A8                add rcx , -88
+    65 000000DD 488901                  mov [rcx] , rax
+    66 000000E0 4889EA                  mov rdx , rbp
+    67 000000E3 4883C2A8                add rdx , -88
+    68 000000E7 4C8B12                  mov r10, [rdx]
+    69 000000EA 4889E9                  mov rcx , rbp
+    70 000000ED 4883C1B0                add rcx , -80
+    71 000000F1 B800000000              mov rax , 0
+    72 000000F6 488901                  mov [rcx] , rax
+    73                                  LabelFor2:
+    74 000000F9 4889EA                  mov rdx , rbp
+    75 000000FC 4883C2B0                add rdx , -80
+    76 00000100 4C8B1A                  mov r11, [rdx]
+    77 00000103 4C89D8                  mov rax ,r11
+    78 00000106 4C89D3                  mov rbx ,r10
+    79 00000109 4839D8                  cmp rax , rbx
+    80 0000010C 0F8DAB010000            jge EndFor2
+    81 00000112 4889E8                  mov rax , rbp
+    82 00000115 4883C0B0                add rax , -80
+    83 00000119 BB07000000              mov rbx , 7
+    84 0000011E 488B08                  mov rcx , [rax]
+    85 00000121 4829CB                  sub rbx , rcx
+    86 00000124 4883EB01                sub  rbx , 1
+    87 00000128 B808000000              mov rax , 8
+    88 0000012D 48F7E3                  mul rbx
+    89 00000130 4889C3                  mov rbx , rax
+    90 00000133 4889E9                  mov rcx , rbp
+    91 00000136 4883C1C0                add rcx , -64
+    92 0000013A 4801D9                  add rcx , rbx
+    93 0000013D 488B01                  mov rax , [rcx]
+    94 00000140 4889E9                  mov rcx , rbp
+    95 00000143 4883C1A0                add rcx , -96
+    96 00000147 488901                  mov [rcx] , rax
+    97 0000014A 4C89D8                  mov rax ,r11
+    98 0000014D B901000000              mov rcx , 1
+    99 00000152 4889CB                  mov rbx , rcx
+   100 00000155 4801D8                  add rax , rbx
+   101 00000158 4889E9                  mov rcx , rbp
+   102 0000015B 4883C190                add rcx , -112
+   103 0000015F 488901                  mov [rcx] , rax
+   104 00000162 4889EA                  mov rdx , rbp
+   105 00000165 4883C290                add rdx , -112
+   106 00000169 4C8B22                  mov r12, [rdx]
+   107 0000016C 4889E8                  mov rax , rbp
+   108 0000016F 4883C090                add rax , -112
+   109 00000173 BB07000000              mov rbx , 7
+   110 00000178 488B08                  mov rcx , [rax]
+   111 0000017B 4829CB                  sub rbx , rcx
+   112 0000017E 4883EB01                sub  rbx , 1
+   113 00000182 B808000000              mov rax , 8
+   114 00000187 48F7E3                  mul rbx
+   115 0000018A 4889C3                  mov rbx , rax
+   116 0000018D 4889E9                  mov rcx , rbp
+   117 00000190 4883C1C0                add rcx , -64
+   118 00000194 4801D9                  add rcx , rbx
+   119 00000197 488B01                  mov rax , [rcx]
+   120 0000019A 4889E9                  mov rcx , rbp
+   121 0000019D 4883C198                add rcx , -104
+   122 000001A1 488901                  mov [rcx] , rax
+   123                                  LabelIf3:
+   124 000001A4 4889EA                  mov rdx , rbp
+   125 000001A7 4883C2A0                add rdx , -96
+   126 000001AB 4C8B2A                  mov r13, [rdx]
+   127 000001AE 4C89E8                  mov rax ,r13
+   128 000001B1 4889EA                  mov rdx , rbp
+   129 000001B4 4883C298                add rdx , -104
+   130 000001B8 4C8B32                  mov r14, [rdx]
+   131 000001BB 4C89F3                  mov rbx ,r14
+   132 000001BE 4839D8                  cmp rax , rbx
+   133 000001C1 0F8EE0000000            jle EndIf3
+   134 000001C7 4889E8                  mov rax , rbp
+   135 000001CA 4883C0B0                add rax , -80
+   136 000001CE BB07000000              mov rbx , 7
+   137 000001D3 488B08                  mov rcx , [rax]
+   138 000001D6 4829CB                  sub rbx , rcx
+   139 000001D9 4883EB01                sub  rbx , 1
+   140 000001DD B808000000              mov rax , 8
+   141 000001E2 48F7E3                  mul rbx
+   142 000001E5 4889C3                  mov rbx , rax
+   143 000001E8 4889E9                  mov rcx , rbp
+   144 000001EB 4883C1C0                add rcx , -64
+   145 000001EF 4801D9                  add rcx , rbx
+   146 000001F2 488B01                  mov rax , [rcx]
+   147 000001F5 4889E9                  mov rcx , rbp
+   148 000001F8 4883C1A0                add rcx , -96
+   149 000001FC 488901                  mov [rcx] , rax
+   150 000001FF 4889E8                  mov rax , rbp
+   151 00000202 4883C090                add rax , -112
+   152 00000206 BB07000000              mov rbx , 7
+   153 0000020B 488B08                  mov rcx , [rax]
+   154 0000020E 4829CB                  sub rbx , rcx
+   155 00000211 4883EB01                sub  rbx , 1
+   156 00000215 B808000000              mov rax , 8
+   157 0000021A 48F7E3                  mul rbx
+   158 0000021D 4889C3                  mov rbx , rax
+   159 00000220 4889E9                  mov rcx , rbp
+   160 00000223 4883C1C0                add rcx , -64
+   161 00000227 4801D9                  add rcx , rbx
+   162 0000022A 488B01                  mov rax , [rcx]
+   163 0000022D 4889E9                  mov rcx , rbp
+   164 00000230 4883C198                add rcx , -104
+   165 00000234 488901                  mov [rcx] , rax
+   166 00000237 4889E8                  mov rax , rbp
+   167 0000023A 4883C0B0                add rax , -80
+   168 0000023E BB07000000              mov rbx , 7
+   169 00000243 488B08                  mov rcx , [rax]
+   170 00000246 4829CB                  sub rbx , rcx
+   171 00000249 4883EB01                sub rbx , 1
+   172 0000024D B808000000              mov rax , 8
+   173 00000252 48F7E3                  mul rbx
+   174 00000255 4889C3                  mov rbx , rax
+   175 00000258 4889E9                  mov rcx , rbp
+   176 0000025B 4883C1C0                add rcx , -64
+   177 0000025F 4801D9                  add rcx , rbx
+   178 00000262 4889EA                  mov rdx , rbp
+   179 00000265 4883C298                add rdx , -104
+   180 00000269 488B02                  mov rax , [rdx]
+   181 0000026C 488901                  mov [rcx] , rax
+   182 0000026F 4889E8                  mov rax , rbp
+   183 00000272 4883C090                add rax , -112
+   184 00000276 BB07000000              mov rbx , 7
+   185 0000027B 488B08                  mov rcx , [rax]
+   186 0000027E 4829CB                  sub rbx , rcx
+   187 00000281 4883EB01                sub rbx , 1
+   188 00000285 B808000000              mov rax , 8
+   189 0000028A 48F7E3                  mul rbx
+   190 0000028D 4889C3                  mov rbx , rax
+   191 00000290 4889E9                  mov rcx , rbp
+   192 00000293 4883C1C0                add rcx , -64
+   193 00000297 4801D9                  add rcx , rbx
+   194 0000029A 4889EA                  mov rdx , rbp
+   195 0000029D 4883C2A0                add rdx , -96
+   196 000002A1 488B02                  mov rax , [rdx]
+   197 000002A4 488901                  mov [rcx] , rax
+   198                                  EndIf3:
+   199 000002A7 4889E9                  mov rcx , rbp
+   200 000002AA 4883C1B0                add rcx , -80
+   201 000002AE 488B01                  mov rax , [rcx]
+   202 000002B1 4883C001                add rax , 1
+   203 000002B5 488901                  mov [rcx] , rax
+   204 000002B8 E93CFEFFFF              jmp LabelFor2
+   205                                  EndFor2:
+   206 000002BD 4889E9                  mov rcx , rbp
+   207 000002C0 4883C1B8                add rcx , -72
+   208 000002C4 488B01                  mov rax , [rcx]
+   209 000002C7 4883C001                add rax , 1
+   210 000002CB 488901                  mov [rcx] , rax
+   211 000002CE E9D7FDFFFF              jmp LabelFor1
+   212                                  EndFor1:
+   213                                  
+   214 000002D3 4889EB                  mov rbx , rbp
+   215 000002D6 4883C3F0                add rbx , -16
+   216 000002DA 488B03                  mov rax , [rbx]
+   217 000002DD 4889C6                  mov rsi , rax
+   218 000002E0 48BF-                   mov rdi , lisfs
+   218 000002E2 [0900000000000000] 
+   219 000002EA B800000000              mov rax , 0
+   220 000002EF E8(00000000)            call printf
+   221 000002F4 4889EB                  mov rbx , rbp
+   222 000002F7 4883C3E8                add rbx , -24
+   223 000002FB 488B03                  mov rax , [rbx]
+   224 000002FE 4889C6                  mov rsi , rax
+   225 00000301 48BF-                   mov rdi , lisf
+   225 00000303 [2100000000000000] 
+   226 0000030B B800000000              mov rax , 0
+   227 00000310 E8(00000000)            call printf
+   228 00000315 4889EB                  mov rbx , rbp
+   229 00000318 4883C3E0                add rbx , -32
+   230 0000031C 488B03                  mov rax , [rbx]
+   231 0000031F 4889C6                  mov rsi , rax
+   232 00000322 48BF-                   mov rdi , lisf
+   232 00000324 [2100000000000000] 
+   233 0000032C B800000000              mov rax , 0
+   234 00000331 E8(00000000)            call printf
+   235 00000336 4889EB                  mov rbx , rbp
+   236 00000339 4883C3D8                add rbx , -40
+   237 0000033D 488B03                  mov rax , [rbx]
+   238 00000340 4889C6                  mov rsi , rax
+   239 00000343 48BF-                   mov rdi , lisf
+   239 00000345 [2100000000000000] 
+   240 0000034D B800000000              mov rax , 0
+   241 00000352 E8(00000000)            call printf
+   242 00000357 4889EB                  mov rbx , rbp
+   243 0000035A 4883C3D0                add rbx , -48
+   244 0000035E 488B03                  mov rax , [rbx]
+   245 00000361 4889C6                  mov rsi , rax
+   246 00000364 48BF-                   mov rdi , lisf
+   246 00000366 [2100000000000000] 
+   247 0000036E B800000000              mov rax , 0
+   248 00000373 E8(00000000)            call printf
+   249 00000378 4889EB                  mov rbx , rbp
+   250 0000037B 4883C3C8                add rbx , -56
+   251 0000037F 488B03                  mov rax , [rbx]
+   252 00000382 4889C6                  mov rsi , rax
+   253 00000385 48BF-                   mov rdi , lisf
+   253 00000387 [2100000000000000] 
+   254 0000038F B800000000              mov rax , 0
+   255 00000394 E8(00000000)            call printf
+   256 00000399 4889EB                  mov rbx , rbp
+   257 0000039C 4883C3C0                add rbx , -64
+   258 000003A0 488B03                  mov rax , [rbx]
+   259 000003A3 4889C6                  mov rsi , rax
+   260 000003A6 48BF-                   mov rdi , lisfe
+   260 000003A8 [3900000000000000] 
+   261 000003B0 B800000000              mov rax , 0
+   262 000003B5 E8(00000000)            call printf
+   263                                  
+   264 000003BA 4889EC                  mov  rsp, rbp
+   265 000003BD 5D                      pop  rbp
+   266 000003BE B83C000000              mov rax , 60
+   267 000003C3 BF00000000              mov rdi , 0
+   268 000003C8 0F05                    syscall
+   269                                  
+   270                                  
+   271                                  
+   272                                  
+   273                                  extern printf , scanf
+   274                                  section .data
+   275 00000000 256C640A00              intf: db "%ld",10,0 
+   276 00000005 25730A00                chrf: db "%s",10,0 
+   277 00000009 5B256C642000000020-     lisfs: dq "[%ld ",32,0 
+   277 00000012 000000000000000000-
+   277 0000001B 000000000000       
+   278 00000021 256C64200000000020-     lisf: dq "%ld ",32,0 
+   278 0000002A 000000000000000000-
+   278 00000033 000000000000       
+   279 00000039 256C645D0A00            lisfe: db "%ld]",10,0 
+   280 0000003F 256C660A00              fmtf: db "%lf",10,0 
+   281 00000044 256C6400                intin: db "%ld",0
+   282 00000048 256C6600                floatin: db "%lf",0
+   283 0000004C 00<rept>                integer:times 4 db 0
+   284                                  
+   285                                  
+   286                                  section .bss
+   287 00000000 <res 00000010>          scanned resb 16
+   288 00000010 <res 00000008>          temp : resq 1
+   289 00000018 <res 00000008>          temq : resq 1
+   290 00000020 <res 00000064>          digitSpace resb 100
+   291 00000084 <res 00000008>          digitSpacePos resb 8
+   292                                  
