@@ -1,18 +1,5 @@
 #include "main.h"
 vector<string> registers;
-int u0=0;
-int u1=0;
-int u2=0;     
-int u3=0;
-
-int u4=0;
-int u5=0;
-int u6=0;
-int u7=0;
-int u8=0;
-int u9=0;
-int u10=0;
-int u11=0;
 
 vector<int> u(12,0);
 int time_lru=0;
