@@ -21,6 +21,7 @@ int check_reg=0;
 void CodeGenerator(TreeNode* root){
 	if(root->NodeName=="PROGRAM"){
 		//dotraversal(root);
+		// Push all the rscratch registers in the registers vector
 		registers.push_back("rax");
 		registers.push_back("rbx");
 		registers.push_back("rcx");
@@ -51,6 +52,7 @@ void CodeGenerator(TreeNode* root){
 		set_data_segment();
 		set_scanner_integer();
 		set_integer_print_subroutine();
+		// call the code generate function for the children[0] , that is declaration lise
 		CodeGenerator(root->children[0]);
 	}
 	else if(root->NodeName=="DECLARATION_LIST"){
@@ -79,7 +81,7 @@ void CodeGenerator(TreeNode* root){
 			// for(auto it=symbol_table.begin();it!=symbol_table.end();it++){
 			// 	cout<<(it->first).first<<"  "<<(it->first).second<<"      "<<(it->second)<<endl;
 			// }
-			// //cout<<"==================================\n";
+			//cout<<"==================================\n";
 			CodeGenerator(root->children[5]);
 			text.push_back("mov  rsp, rbp");
 			text.push_back("pop  rbp");
@@ -88,6 +90,9 @@ void CodeGenerator(TreeNode* root){
 			text.push_back("syscall");
 		}
 		else{
+			// If the function is not main function, find the function scope symbol table from vector of symbol tables
+			// take arguments b pushing them into stack before calling the function
+			// access those by going below stack ( or above if we consider that actually the stack expands bottom)
 			fun_name="_"+fun_name;
 			function_scope=fun_name;
 			text.push_back(""+fun_name+":");
@@ -120,7 +125,7 @@ void CodeGenerator(TreeNode* root){
 				text.push_back("add "+registers[2]+" , -8");
 				text.push_back("add "+registers[1]+" , 8");
 			}
-
+			// generate the code for the function
 			CodeGenerator(root->children[5]);
 
 			text.push_back("mov  rsp, rbp");
@@ -158,16 +163,19 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		else if(root->children[0]->NodeName=="LIST_TYPE"){
+			// if the local declaration is of list type, then allocate stack space accordingly
 			int x=8*stoi(root->children[3]->lex_val);
 			text.push_back("sub rsp , "+to_string(x));
 		}
 		else if(root->children[0]->NodeName=="MATRIX_TYPE"){
+			// if the local declaration is of matrix type, then allocate stack space accordingly
 			int x=stoi(root->children[3]->lex_val)*stoi(root->children[5]->lex_val);
 			x*=8;
 			text.push_back("sub rsp , "+to_string(x));
 		}
 	}
 	else if(root->NodeName=="PRINT_STATEMENT"){
+		// print statement is reached
 		check_reg=-1;
 		if(symbol_table.find({root->children[2]->lex_val,"INT"})!=symbol_table.end()){
             text.push_back("");
@@ -361,7 +369,8 @@ void CodeGenerator(TreeNode* root){
 
 	}
 	else if(root->NodeName=="ASSIGNMENT_STATEMENT"){
-		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){
+		if(root->children[0]->children[1]->children[0]->NodeName=="SIZE_EXPRESSION"){ 
+			// if we get @ or @@ operators, then return their size
 			if(variable_types[root->children[0]->children[0]->lex_val]=="INT"){
 				CodeGenerator(root->children[0]->children[1]);
 				text.push_back("mov "+registers[2]+" , rbp");
@@ -463,8 +472,6 @@ void CodeGenerator(TreeNode* root){
 							//
 						}
 					}
-
-					
 					
 				}
 				// LIST ELEMENT EQUALS  IDENTIFIER
@@ -479,7 +486,6 @@ void CodeGenerator(TreeNode* root){
 
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="INTEGER_NT"){
 				// IF WE are accessing a particular element from list
-
 
 				if(root->children[0]->children[0]->children.size()==4){
 
@@ -689,6 +695,7 @@ void CodeGenerator(TreeNode* root){
 
 			}
 			// FUNCTION CALLING
+			// when user calls a function, come to this part to generate the code for that
 			else if(root->children[0]->children[1]->children[0]->children[0]->NodeName=="FUNCTION_IDENTIFIER_NT"){
 				text.push_back("mov "+registers[2]+" , rbp");
 				text.push_back("add "+registers[2]+" , "+to_string(symbol_table[{root->children[0]->children[0]->lex_val,"INT"}]));
@@ -765,7 +772,8 @@ void CodeGenerator(TreeNode* root){
 			}
 		}
 		
-		else { 	// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES
+		else { 	
+			// PLUS/MINUS/MULTIPLY/BAND/BOR/BXOR NAMES are done between floats / ints / matrices / lists , come here
 			string node_type=variable_types[root->children[0]->children[1]->children[0]->children[0]->children[0]->lex_val];
 			string node_type2=root->children[0]->children[1]->children[0]->children[0]->children[0]->NodeName;
 			////cout<<node_type<<"  "<<node_type2<<endl;
